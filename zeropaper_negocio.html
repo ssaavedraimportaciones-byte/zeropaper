@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="ZeroPaper™ — Calculadora de ROI y Modelo de Negocio para operaciones portuarias. Calcula tu ahorro real.">
+<title>ZeroPaper™ — Modelo de Negocio y ROI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a1628;--bg2:#0f1d32;--bg3:#142540;
+  --fg:#ffffff;--fg2:#e2e8f0;--mu:#8b9ec2;--brd:rgba(255,255,255,.08);
+  --blue:#2563eb;--blue2:#3b82f6;--blue3:#60a5fa;
+  --red:#dc2626;--red2:#ef4444;--red3:#f87171;
+  --green:#16a34a;--green2:#22c55e;--green3:#4ade80;
+  --gold:#fbbf24;
+  --mono:'Space Mono',monospace;--display:'Bebas Neue',sans-serif;--body:'Inter',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);overflow-x:hidden;-webkit-font-smoothing:antialiased;line-height:1.6}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.3}
+.flag-bar{height:5px;background:linear-gradient(90deg,var(--red) 33%,#fff 33%,#fff 66%,var(--blue) 66%)}
+nav{position:fixed;top:5px;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:14px 48px;background:rgba(10,22,40,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--brd);z-index:100}
+.nav-logo{font-family:var(--display);font-size:26px;letter-spacing:3px;color:#fff;text-decoration:none}
+.nav-logo small{color:var(--mu);font-size:11px;font-family:var(--body);font-weight:500}
+.nav-back{color:var(--mu);text-decoration:none;font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px;transition:color .2s}
+.nav-back:hover{color:#fff}
+.nav-cta{background:var(--red);color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:1px;text-decoration:none;transition:all .2s}
+.nav-cta:hover{background:var(--red2);transform:translateY(-1px)}
+.page-header{padding:140px 48px 64px;background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%);border-bottom:1px solid var(--brd);position:relative;overflow:hidden}
+.page-header::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(37,99,235,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(37,99,235,.03) 1px,transparent 1px);background-size:48px 48px}
+.page-header-glow{position:absolute;top:-100px;right:-100px;width:600px;height:600px;background:radial-gradient(ellipse,rgba(34,197,94,.08) 0%,transparent 60%);pointer-events:none}
+.ph-label{font-family:var(--mono);font-size:11px;color:var(--green2);letter-spacing:4px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px;position:relative;z-index:1}
+.ph-label::before{content:'';width:28px;height:2px;background:var(--green2)}
+.ph-title{font-family:var(--display);font-size:clamp(56px,8vw,120px);letter-spacing:4px;line-height:.9;color:#fff;margin-bottom:16px;position:relative;z-index:1}
+.ph-title .acc-r{color:var(--red)}
+.ph-title .acc-g{color:var(--green3)}
+.ph-sub{font-size:18px;color:var(--fg2);max-width:580px;line-height:1.75;position:relative;z-index:1}
+section{padding:80px 48px;position:relative;z-index:1}
+.sec-label{font-family:var(--mono);font-size:11px;color:var(--blue2);letter-spacing:4px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.sec-label::before{content:'';width:28px;height:2px;background:var(--blue2)}
+.sec-label.green{color:var(--green2)}
+.sec-label.green::before{background:var(--green2)}
+.sec-label.red{color:var(--red3)}
+.sec-label.red::before{background:var(--red3)}
+.sec-title{font-family:var(--display);font-size:clamp(36px,4vw,64px);letter-spacing:2px;line-height:1;margin-bottom:20px;color:#fff}
+.sec-sub{font-size:16px;color:var(--fg2);max-width:600px;line-height:1.75;margin-bottom:48px}
+
+/* REAL MATH SECTION */
+.math-reveal{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:48px}
+.dept-calc{background:var(--bg2);border:1px solid var(--brd);border-radius:20px;overflow:hidden}
+.dept-calc-header{padding:20px 28px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:12px}
+.dept-calc-header .icon{font-size:28px}
+.dept-calc-header .name{font-weight:700;font-size:16px;color:#fff}
+.dept-calc-header .sub{font-family:var(--mono);font-size:10px;color:var(--mu);margin-top:2px}
+.dept-calc-header.ctrl{border-top:3px solid var(--red)}
+.dept-calc-header.gda{border-top:3px solid var(--blue2)}
+.math-rows{padding:24px 28px;display:flex;flex-direction:column;gap:14px}
+.math-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-radius:10px}
+.math-row-label{font-size:13px;color:var(--fg2)}
+.math-row-val{font-family:var(--mono);font-size:14px;font-weight:700}
+.math-row-val.blue{color:var(--blue2)}
+.math-row-val.red{color:var(--red3)}
+.math-row-val.green{color:var(--green3)}
+.math-row-val.gold{color:var(--gold)}
+.math-eq{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--mu);padding:0 16px;flex-wrap:wrap}
+.math-eq .op-sym{color:var(--blue2);font-size:16px;font-weight:700}
+.math-eq .val{color:#fff;font-size:14px;font-weight:700;background:rgba(37,99,235,.1);padding:3px 10px;border-radius:6px}
+.math-eq .val.r{background:rgba(220,38,38,.1);color:var(--red3)}
+.math-eq .val.g{background:rgba(34,197,94,.1);color:var(--green3)}
+.math-eq .val.gold{background:rgba(251,191,36,.1);color:var(--gold)}
+.math-total{margin:0 28px 28px;padding:18px 20px;background:linear-gradient(135deg,rgba(34,197,94,.1),rgba(37,99,235,.06));border:1px solid rgba(34,197,94,.2);border-radius:12px}
+.math-total-label{font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:2px;margin-bottom:6px}
+.math-total-val{font-family:var(--display);font-size:40px;color:var(--green3);letter-spacing:2px;line-height:1}
+.math-total-sub{font-size:12px;color:var(--fg2);margin-top:4px}
+
+/* GRAND TOTAL */
+.grand-total-box{background:linear-gradient(135deg,rgba(34,197,94,.12),rgba(37,99,235,.08));border:1px solid rgba(34,197,94,.25);border-radius:24px;padding:48px;text-align:center;margin-bottom:48px}
+.gt-label{font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:3px;margin-bottom:16px}
+.gt-number{font-family:var(--display);font-size:clamp(64px,10vw,128px);line-height:1;letter-spacing:4px;color:var(--green3)}
+.gt-unit{font-family:var(--body);font-size:20px;color:var(--fg2);font-weight:600;margin-bottom:8px}
+.gt-sub{font-size:15px;color:var(--mu);margin-bottom:32px}
+.gt-breakdown{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;padding-top:24px;border-top:1px solid var(--brd)}
+.gt-item{text-align:center}
+.gt-item-num{font-family:var(--display);font-size:36px;letter-spacing:2px;color:#fff}
+.gt-item-label{font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:1px;margin-top:4px}
+
+/* CALCULATOR */
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+.calc-panel{background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:36px}
+.calc-panel h3{font-family:var(--display);font-size:28px;letter-spacing:2px;color:#fff;margin-bottom:28px}
+.calc-field{margin-bottom:24px}
+.calc-field label{font-size:13px;color:var(--fg2);font-weight:600;display:flex;justify-content:space-between;margin-bottom:10px}
+.calc-field label span{font-family:var(--mono);font-size:14px;color:var(--blue2);font-weight:700}
+.slider{width:100%;appearance:none;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--blue) var(--pct,50%),rgba(255,255,255,.1) var(--pct,50%));outline:none;cursor:pointer}
+.slider::-webkit-slider-thumb{appearance:none;width:22px;height:22px;border-radius:50%;background:var(--blue);border:3px solid #fff;cursor:pointer;box-shadow:0 2px 8px rgba(37,99,235,.5)}
+.results-panel{background:var(--bg3);border:1px solid rgba(34,197,94,.2);border-radius:20px;padding:36px}
+.results-panel h3{font-family:var(--display);font-size:28px;letter-spacing:2px;color:#fff;margin-bottom:8px}
+.results-panel .rp-sub{font-size:13px;color:var(--mu);margin-bottom:28px}
+.r-row{display:flex;align-items:center;gap:14px;padding:16px 0;border-bottom:1px solid var(--brd)}
+.r-row:last-child{border-bottom:none}
+.r-icon{font-size:28px;width:44px;text-align:center;flex-shrink:0}
+.r-label{font-size:13px;color:var(--mu);font-weight:500;margin-bottom:3px}
+.r-val{font-family:var(--display);font-size:34px;color:#fff;letter-spacing:1px;line-height:1}
+.r-val.green{color:var(--green3)}
+.r-val.blue{color:var(--blue2)}
+.r-val.red{color:var(--red3)}
+.r-val.gold{color:var(--gold)}
+.r-sub{font-size:11px;color:var(--mu);margin-top:2px}
+.roi-bar-wrap{margin-top:20px;background:rgba(255,255,255,.05);border-radius:100px;height:12px;overflow:hidden}
+.roi-bar{height:100%;background:linear-gradient(90deg,var(--green),var(--blue2));border-radius:100px;transition:width .5s ease;width:0%}
+.roi-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--mu);margin-top:6px}
+
+/* PRICING TABLE */
+.pricing-table{width:100%;border-collapse:collapse;margin-bottom:48px}
+.pricing-table th{background:var(--bg3);padding:16px 20px;text-align:left;font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:2px;font-weight:700;border-bottom:1px solid var(--brd)}
+.pricing-table td{padding:18px 20px;border-bottom:1px solid var(--brd);font-size:14px;vertical-align:middle}
+.pricing-table tr:last-child td{border-bottom:none}
+.pricing-table tr:hover td{background:rgba(255,255,255,.02)}
+.pricing-table tr.best td{background:linear-gradient(90deg,rgba(220,38,38,.08),rgba(37,99,235,.05))}
+.pt-plan{font-weight:700;font-size:15px;color:#fff}
+.pt-plan small{display:block;font-size:12px;color:var(--mu);font-weight:500;margin-top:2px}
+.pt-price{font-family:var(--display);font-size:28px;color:#fff;letter-spacing:1px;line-height:1}
+.pt-price small{font-family:var(--body);font-size:12px;color:var(--mu);font-weight:500}
+.pt-price.free{color:var(--blue2)}
+.pt-incl{display:flex;flex-direction:column;gap:4px}
+.pt-check{font-size:13px;color:var(--fg2);display:flex;align-items:center;gap:6px}
+.pt-check::before{content:'✓';color:var(--green2);font-weight:700;font-size:12px;flex-shrink:0}
+.pt-badge{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:100px}
+.badge-pop{background:rgba(220,38,38,.2);color:var(--red3);border:1px solid rgba(220,38,38,.3)}
+.badge-new{background:rgba(34,197,94,.15);color:var(--green2);border:1px solid rgba(34,197,94,.25)}
+.pt-roi-cell{font-family:var(--mono);font-size:12px;color:var(--green3);font-weight:700}
+.pt-roi-cell small{color:var(--mu);font-weight:500;font-size:10px}
+
+/* MODELO DE NEGOCIO */
+.modelo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:48px}
+.modelo-card{background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:28px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
+.modelo-card:hover{transform:translateY(-4px);border-color:rgba(37,99,235,.25)}
+.modelo-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.modelo-card.m1::before{background:var(--blue)}
+.modelo-card.m2::before{background:var(--red)}
+.modelo-card.m3::before{background:var(--green2)}
+.mc-num{font-family:var(--display);font-size:72px;color:rgba(255,255,255,.05);position:absolute;top:8px;right:16px;line-height:1}
+.mc-icon{font-size:36px;margin-bottom:16px}
+.mc-title{font-weight:700;font-size:16px;color:#fff;margin-bottom:10px}
+.mc-desc{font-size:13px;color:var(--fg2);line-height:1.7}
+
+/* PARA QUIEN */
+.para-quien-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.pq-card{background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:32px;text-align:center;transition:all .2s}
+.pq-card:hover{transform:translateY(-5px)}
+.pq-icon{font-size:48px;margin-bottom:16px;display:block}
+.pq-role{font-family:var(--display);font-size:28px;letter-spacing:2px;color:#fff;margin-bottom:10px}
+.pq-desc{font-size:14px;color:var(--fg2);line-height:1.65;margin-bottom:20px}
+.pq-link{display:block;padding:13px 24px;border-radius:10px;font-size:13px;font-weight:700;letter-spacing:1px;text-decoration:none;transition:all .2s}
+.pq-link.blue{background:var(--blue);color:#fff}
+.pq-link.blue:hover{background:var(--blue2);transform:translateY(-2px)}
+.pq-link.red{background:var(--red);color:#fff}
+.pq-link.red:hover{background:var(--red2);transform:translateY(-2px)}
+.pq-link.outline{border:2px solid var(--brd);color:var(--fg2)}
+.pq-link.outline:hover{border-color:var(--blue2);color:#fff}
+
+/* FINAL CTA */
+.final-cta{background:linear-gradient(135deg,rgba(220,38,38,.12),rgba(37,99,235,.08));border:1px solid rgba(220,38,38,.2);border-radius:24px;padding:64px;text-align:center}
+.fc-title{font-family:var(--display);font-size:clamp(48px,7vw,96px);letter-spacing:4px;color:#fff;line-height:1;margin-bottom:16px}
+.fc-sub{font-size:17px;color:var(--fg2);max-width:480px;margin:0 auto 36px}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav{padding:12px 24px}
+  .page-header{padding:100px 24px 48px}
+  section{padding:60px 24px}
+  .math-reveal{grid-template-columns:1fr}
+  .calc-grid{grid-template-columns:1fr}
+  .modelo-grid{grid-template-columns:1fr}
+  .para-quien-grid{grid-template-columns:1fr}
+  .gt-breakdown{gap:28px}
+  .pricing-table{font-size:12px}
+  .pricing-table th,.pricing-table td{padding:12px}
+}
+</style>
+</head>
+<body>
+<div class="flag-bar"></div>
+
+<nav>
+  <a href="/" class="nav-logo">ZEROPAPER™ <small>Modelo de Negocio</small></a>
+  <a href="/" class="nav-back">← Volver al inicio</a>
+  <a href="/admin" class="nav-cta">DEMO ADMIN</a>
+</nav>
+
+<!-- HEADER -->
+<div class="page-header">
+  <div class="page-header-glow"></div>
+  <div class="ph-label">Retorno de Inversión · Puerto Tipo · Chile 🇨🇱</div>
+  <h1 class="ph-title">EL <span class="acc-r">COSTO</span><br>DEL <span class="acc-g">PAPEL</span></h1>
+  <p class="ph-sub">Cada formulario físico que imprimes tiene un costo real: papel, toner, tiempo del operario, riesgo de error y pérdida de trazabilidad. Calculamos el impacto exacto de tu operación.</p>
+</div>
+
+<!-- CALCULO REAL -->
+<section>
+  <div class="sec-label green">Cálculo Real de Operación Portuaria</div>
+  <h2 class="sec-title">LOS NÚMEROS<br>QUE NO SE VEN</h2>
+  <p class="sec-sub">Basado en una operación portuaria estándar chilena con 3 turnos rotativos y 2 operarios por departamento. Estos son los formularios que se imprimen cada mes.</p>
+
+  <div class="math-reveal">
+    <!-- CONTROL -->
+    <div class="dept-calc">
+      <div class="dept-calc-header ctrl">
+        <span class="icon">🚛</span>
+        <div>
+          <div class="name">Departamento Control de Acceso</div>
+          <div class="sub">3 TURNOS · 2 OPERARIOS/TURNO · 1 INGRESO + 1 EGRESO</div>
+        </div>
+      </div>
+      <div class="math-rows">
+        <div class="math-row">
+          <span class="math-row-label">Operarios por turno</span>
+          <span class="math-row-val blue">2</span>
+        </div>
+        <div class="math-row">
+          <span class="math-row-label">Turnos por día</span>
+          <span class="math-row-val blue">3</span>
+        </div>
+        <div class="math-row">
+          <span class="math-row-label">Operaciones por turno/op</span>
+          <span class="math-row-val blue">~80</span>
+        </div>
+        <div class="math-row">
+          <span class="math-row-label">Días al mes</span>
+          <span class="math-row-val blue">22</span>
+        </div>
+        <div style="padding:12px 16px">
+          <div class="math-eq">
+            <div class="val">3 turnos</div><div class="op-sym">×</div>
+            <div class="val">2 ops</div><div class="op-sym">×</div>
+            <div class="val">80 ops/turno</div><div class="op-sym">=</div>
+            <div class="val">480/día</div>
+          </div>
+          <div class="math-eq" style="margin-top:8px">
+            <div class="val">480/día</div><div class="op-sym">×</div>
+            <div class="val">22 días</div><div class="op-sym">=</div>
+            <div class="val g">5.280 ops/mes</div>
+          </div>
+        </div>
+        <div class="math-row">
+          <span class="math-row-label">Hojas por operación (formulario + copia)</span>
+          <span class="math-row-val red">4 hojas</span>
+        </div>
+      </div>
+      <div class="math-total">
+        <div class="math-total-label">HOJAS/MES EN CONTROL</div>
+        <div class="math-total-val">21.120</div>
+        <div class="math-total-sub">= 5.280 operaciones × 4 hojas</div>
+      </div>
+    </div>
+
+    <!-- GUARDA -->
+    <div class="dept-calc">
+      <div class="dept-calc-header gda">
+        <span class="icon">📦</span>
+        <div>
+          <div class="name">Departamento Guarda Almacén</div>
+          <div class="sub">3 TURNOS · 2 OPERARIOS/TURNO · RECEPCIÓN + DESPACHO</div>
+        </div>
+      </div>
+      <div class="math-rows">
+        <div class="math-row">
+          <span class="math-row-label">Operarios por turno</span>
+          <span class="math-row-val blue">2</span>
+        </div>
+        <div class="math-row">
+          <span class="math-row-label">Turnos por día</span>
+          <span class="math-row-val blue">3</span>
+        </div>
+        <div class="math-row">
+          <span class="math-row-label">Operaciones por turno/op</span>
+          <span class="math-row-val blue">~40</span>
+        </div>
+        <div class="math-row">
+          <span class="math-row-label">Días al mes</span>
+          <span class="math-row-val blue">22</span>
+        </div>
+        <div style="padding:12px 16px">
+          <div class="math-eq">
+            <div class="val">3 turnos</div><div class="op-sym">×</div>
+            <div class="val">2 ops</div><div class="op-sym">×</div>
+            <div class="val">40 ops/turno</div><div class="op-sym">=</div>
+            <div class="val">240/día</div>
+          </div>
+          <div class="math-eq" style="margin-top:8px">
+            <div class="val">240/día</div><div class="op-sym">×</div>
+            <div class="val">22 días</div><div class="op-sym">=</div>
+            <div class="val g">2.640 ops/mes</div>
+          </div>
+        </div>
+        <div class="math-row">
+          <span class="math-row-label">Hojas por operación (guía + recibo + registro)</span>
+          <span class="math-row-val red">5 hojas</span>
+        </div>
+      </div>
+      <div class="math-total">
+        <div class="math-total-label">HOJAS/MES EN GUARDA</div>
+        <div class="math-total-val">13.200</div>
+        <div class="math-total-sub">= 2.640 operaciones × 5 hojas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRAND TOTAL -->
+  <div class="grand-total-box">
+    <div class="gt-label">COSTO TOTAL DEL PAPEL EN ESTA OPERACIÓN</div>
+    <div class="gt-number">$2.062.500</div>
+    <div class="gt-unit">CLP por mes</div>
+    <div class="gt-sub">34.320 hojas × $55 CLP (papel + toner + desgaste impresora) + 131 hrs tiempo operario ($25.000/hr)</div>
+    <div class="gt-breakdown">
+      <div class="gt-item">
+        <div class="gt-item-num">34.320</div>
+        <div class="gt-item-label">HOJAS/MES</div>
+      </div>
+      <div class="gt-item">
+        <div class="gt-item-num">$1.887.600</div>
+        <div class="gt-item-label">COSTO PAPEL+TONER</div>
+      </div>
+      <div class="gt-item">
+        <div class="gt-item-num">131 hrs</div>
+        <div class="gt-item-label">TIEMPO FORMULARIOS</div>
+      </div>
+      <div class="gt-item">
+        <div class="gt-item-num" style="color:var(--red3)">$174.900</div>
+        <div class="gt-item-label">COSTO TIEMPO OPERARIO</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARACION -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+    <div style="background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.2);border-radius:16px;padding:32px">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--red3);letter-spacing:2px;margin-bottom:16px">HOY · SIN ZEROPAPER</div>
+      <div style="font-family:var(--display);font-size:52px;color:var(--red3);letter-spacing:2px">$2.062.500</div>
+      <div style="font-size:13px;color:var(--fg2);margin-top:8px">mes en papel + tiempo operacional</div>
+      <div style="margin-top:20px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:13px;color:var(--fg2);display:flex;align-items:center;gap:8px"><span style="color:var(--red3)">✗</span> Sin trazabilidad digital</div>
+        <div style="font-size:13px;color:var(--fg2);display:flex;align-items:center;gap:8px"><span style="color:var(--red3)">✗</span> Búsqueda manual de registros</div>
+        <div style="font-size:13px;color:var(--fg2);display:flex;align-items:center;gap:8px"><span style="color:var(--red3)">✗</span> Riesgo de pérdida de documentos</div>
+        <div style="font-size:13px;color:var(--fg2);display:flex;align-items:center;gap:8px"><span style="color:var(--red3)">✗</span> Sin reportes automáticos</div>
+      </div>
+    </div>
+    <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:16px;padding:32px">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--green2);letter-spacing:2px;margin-bottom:16px">CON ZEROPAPER OPERACIONAL</div>
+      <div style="font-family:var(--display);font-size:52px;color:var(--green3);letter-spacing:2px">$64.900</div>
+      <div style="font-size:13px;color:var(--fg2);margin-top:8px">mes todo incluido · plan Operacional</div>
+      <div style="margin-top:20px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:13px;color:var(--fg2);display:flex;align-items:center;gap:8px"><span style="color:var(--green2)">✓</span> Trazabilidad 100% digital</div>
+        <div style="font-size:13px;color:var(--fg2);display:flex;align-items:center;gap:8px"><span style="color:var(--green2)">✓</span> Búsqueda instantánea</div>
+        <div style="font-size:13px;color:var(--fg2);display:flex;align-items:center;gap:8px"><span style="color:var(--green2)">✓</span> Respaldo en nube para siempre</div>
+        <div style="font-size:13px;color:var(--fg2);display:flex;align-items:center;gap:8px"><span style="color:var(--green2)">✓</span> Reportes automáticos por depto</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(37,99,235,.08));border:1px solid rgba(34,197,94,.3);border-radius:16px;padding:28px;margin-top:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+    <div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:2px">AHORRO NETO MENSUAL</div>
+      <div style="font-family:var(--display);font-size:64px;color:var(--green3);letter-spacing:3px;line-height:1">$1.997.600</div>
+      <div style="font-size:14px;color:var(--fg2)">Retorno: <strong style="color:var(--gold)">30× tu inversión</strong> cada mes</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:1px;margin-bottom:8px">RECUPERAS LA INVERSIÓN EN</div>
+      <div style="font-family:var(--display);font-size:72px;color:var(--gold);letter-spacing:3px;line-height:1">1.2</div>
+      <div style="font-size:16px;color:var(--fg2);font-weight:700">DÍAS</div>
+    </div>
+  </div>
+</section>
+
+<!-- CALCULADORA INTERACTIVA -->
+<section style="background:var(--bg2);border-top:1px solid var(--brd);border-bottom:1px solid var(--brd)">
+  <div class="sec-label">Calculadora Personalizada</div>
+  <h2 class="sec-title">TU OPERACIÓN,<br>TU AHORRO</h2>
+  <p class="sec-sub">Ajusta los parámetros según tu puerto real. Los resultados se calculan automáticamente.</p>
+
+  <div class="calc-grid">
+    <div class="calc-panel">
+      <h3>PARÁMETROS</h3>
+      <div class="calc-field">
+        <label>Operaciones Control/turno <span id="v-ctrl-ops">80</span></label>
+        <input type="range" class="slider" id="ctrl-ops" min="20" max="200" value="80" oninput="calcular()">
+      </div>
+      <div class="calc-field">
+        <label>Operaciones Guarda/turno <span id="v-gda-ops">40</span></label>
+        <input type="range" class="slider" id="gda-ops" min="10" max="120" value="40" oninput="calcular()">
+      </div>
+      <div class="calc-field">
+        <label>Hojas por formulario Control <span id="v-ctrl-sh">4</span></label>
+        <input type="range" class="slider" id="ctrl-sh" min="1" max="8" value="4" oninput="calcular()">
+      </div>
+      <div class="calc-field">
+        <label>Hojas por formulario Guarda <span id="v-gda-sh">5</span></label>
+        <input type="range" class="slider" id="gda-sh" min="1" max="10" value="5" oninput="calcular()">
+      </div>
+      <div class="calc-field">
+        <label>Costo hoja (CLP) <span id="v-costo-hoja">$55</span></label>
+        <input type="range" class="slider" id="costo-hoja" min="30" max="120" value="55" oninput="calcular()">
+      </div>
+      <div class="calc-field">
+        <label>Sueldo operario (CLP/hr) <span id="v-sueldo">$25.000</span></label>
+        <input type="range" class="slider" id="sueldo" min="10000" max="50000" step="1000" value="25000" oninput="calcular()">
+      </div>
+      <div class="calc-field">
+        <label>Días laborales/mes <span id="v-dias">22</span></label>
+        <input type="range" class="slider" id="dias" min="20" max="30" value="22" oninput="calcular()">
+      </div>
+    </div>
+
+    <div class="results-panel">
+      <h3>RESULTADOS</h3>
+      <div class="rp-sub">Calculado en tiempo real con tus datos</div>
+
+      <div class="r-row">
+        <span class="r-icon">📋</span>
+        <div>
+          <div class="r-label">Formularios/mes (total)</div>
+          <div class="r-val blue" id="r-ops">7.920</div>
+          <div class="r-sub">Control + Guarda</div>
+        </div>
+      </div>
+      <div class="r-row">
+        <span class="r-icon">📄</span>
+        <div>
+          <div class="r-label">Hojas impresas/mes</div>
+          <div class="r-val red" id="r-hojas">34.320</div>
+          <div class="r-sub">hojas físicas que dejarás de imprimir</div>
+        </div>
+      </div>
+      <div class="r-row">
+        <span class="r-icon">💸</span>
+        <div>
+          <div class="r-label">Costo papel + toner/mes</div>
+          <div class="r-val red" id="r-papel">$1.887.600</div>
+          <div class="r-sub">solo en insumos directos</div>
+        </div>
+      </div>
+      <div class="r-row">
+        <span class="r-icon">⏱️</span>
+        <div>
+          <div class="r-label">Tiempo llenando formularios</div>
+          <div class="r-val" id="r-tiempo" style="color:var(--gold)">131 hrs/mes</div>
+          <div class="r-sub" id="r-tiempo-costo">= $3.275.000 en tiempo operario</div>
+        </div>
+      </div>
+      <div class="r-row">
+        <span class="r-icon">💰</span>
+        <div>
+          <div class="r-label">Costo total mensual sin ZeroPaper</div>
+          <div class="r-val red" id="r-total">$2.062.500</div>
+        </div>
+      </div>
+      <div class="r-row">
+        <span class="r-icon">✅</span>
+        <div>
+          <div class="r-label">Ahorro neto mensual</div>
+          <div class="r-val green" id="r-ahorro">$1.997.600</div>
+          <div class="r-sub">vs Plan Operacional $64.900/mes</div>
+        </div>
+      </div>
+      <div class="r-row">
+        <span class="r-icon">🚀</span>
+        <div>
+          <div class="r-label">Retorno de inversión (ROI)</div>
+          <div class="r-val gold" id="r-roi">30×</div>
+          <div class="r-sub" id="r-payback">Recuperas en 1.2 días</div>
+        </div>
+      </div>
+      <div class="roi-bar-wrap">
+        <div class="roi-bar" id="roi-bar" style="width:95%"></div>
+      </div>
+      <div class="roi-label"><span>Costo</span><span id="roi-pct">95% de ahorro</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- TABLA DE PRECIOS -->
+<section>
+  <div class="sec-label red">Planes y Precios</div>
+  <h2 class="sec-title">PRECIO POR<br>DEPARTAMENTO</h2>
+  <p class="sec-sub">No cobramos por usuario — los operadores rotan en turnos. Cobramos por departamento activo. Así el sistema es justo para todos.</p>
+
+  <table class="pricing-table">
+    <thead>
+      <tr>
+        <th>PLAN</th>
+        <th>PRECIO/MES</th>
+        <th>QUÉ INCLUYE</th>
+        <th>ROI ESTIMADO</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="pt-plan">Piloto <span class="pt-badge badge-new">30 DÍAS</span></div>
+          <small style="color:var(--mu);font-size:12px">1 departamento · sin tarjeta</small>
+        </td>
+        <td><div class="pt-price free">GRATIS</div></td>
+        <td>
+          <div class="pt-incl">
+            <div class="pt-check">1 departamento activo</div>
+            <div class="pt-check">Operadores ilimitados</div>
+            <div class="pt-check">Exportación básica CSV</div>
+            <div class="pt-check">Soporte por email</div>
+          </div>
+        </td>
+        <td><div class="pt-roi-cell">—<br><small>período de prueba</small></div></td>
+        <td><a href="/app" style="background:var(--bg3);color:var(--fg2);padding:10px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">COMENZAR →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="pt-plan">Básico</div>
+          <small style="color:var(--mu);font-size:12px">1-2 departamentos</small>
+        </td>
+        <td><div class="pt-price">$35.900<small>/mes</small></div></td>
+        <td>
+          <div class="pt-incl">
+            <div class="pt-check">2 departamentos activos</div>
+            <div class="pt-check">Operadores ilimitados</div>
+            <div class="pt-check">Exportación CSV/JSON</div>
+            <div class="pt-check">Panel administrador</div>
+          </div>
+        </td>
+        <td><div class="pt-roi-cell">~15×<br><small>ahorro mensual</small></div></td>
+        <td><a href="/admin" style="background:var(--bg3);color:var(--fg2);padding:10px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">VER DEMO →</a></td>
+      </tr>
+      <tr class="best">
+        <td>
+          <div class="pt-plan">Operacional ⭐ <span class="pt-badge badge-pop">+ POPULAR</span></div>
+          <small style="color:var(--mu);font-size:12px">3-4 departamentos</small>
+        </td>
+        <td><div class="pt-price" style="color:var(--red3)">$64.900<small>/mes</small></div></td>
+        <td>
+          <div class="pt-incl">
+            <div class="pt-check">Control + Guarda + Adm + Importación</div>
+            <div class="pt-check">Exportación CSV/JSON/SAP</div>
+            <div class="pt-check">Portal cliente importador</div>
+            <div class="pt-check">Reportes por turno y depto</div>
+            <div class="pt-check">Soporte prioritario</div>
+          </div>
+        </td>
+        <td><div class="pt-roi-cell" style="color:var(--green3)">30×<br><small>ahorro mensual</small></div></td>
+        <td><a href="/admin" style="background:var(--red);color:#fff;padding:10px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">CONTRATAR →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="pt-plan">Portuario</div>
+          <small style="color:var(--mu);font-size:12px">5+ departamentos</small>
+        </td>
+        <td><div class="pt-price">$99.900<small>/mes</small></div></td>
+        <td>
+          <div class="pt-incl">
+            <div class="pt-check">Departamentos ilimitados</div>
+            <div class="pt-check">API REST para integración ERP</div>
+            <div class="pt-check">Exportación multiformato</div>
+            <div class="pt-check">SLA 99.9% uptime</div>
+            <div class="pt-check">Onboarding presencial</div>
+          </div>
+        </td>
+        <td><div class="pt-roi-cell">45×<br><small>ahorro mensual</small></div></td>
+        <td><a href="mailto:contacto@zeropaper.cl" style="background:var(--bg3);color:var(--fg2);padding:10px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">CONTACTAR →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="pt-plan">Corporativo</div>
+          <small style="color:var(--mu);font-size:12px">Múltiples puertos · SAP · ADUANAS</small>
+        </td>
+        <td><div class="pt-price" style="font-size:20px">A CONVENIR</div></td>
+        <td>
+          <div class="pt-incl">
+            <div class="pt-check">Multi-puerto centralizado</div>
+            <div class="pt-check">Integración SAP / sistema aduanero</div>
+            <div class="pt-check">Desarrollo a medida</div>
+            <div class="pt-check">Soporte dedicado 24/7</div>
+          </div>
+        </td>
+        <td><div class="pt-roi-cell">60×+<br><small>estimado</small></div></td>
+        <td><a href="mailto:contacto@zeropaper.cl" style="background:var(--blue);color:#fff;padding:10px 20px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">COTIZAR →</a></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- MODELO DE NEGOCIO -->
+<section style="background:var(--bg2);border-top:1px solid var(--brd);border-bottom:1px solid var(--brd)">
+  <div class="sec-label">Modelo de Negocio</div>
+  <h2 class="sec-title">¿POR QUÉ<br>POR DEPARTAMENTO?</h2>
+  <p class="sec-sub">En un puerto los operadores rotan en 3 turnos. Si cobráramos por usuario, tendrías que pagar 6 usuarios por departamento. Eso no es justo. Nosotros cobramos por el departamento que opera — sin importar cuántos operarios rotan en él.</p>
+
+  <div class="modelo-grid">
+    <div class="modelo-card m1">
+      <div class="mc-num">1</div>
+      <div class="mc-icon">🔄</div>
+      <div class="mc-title">Turnos Rotativos</div>
+      <p class="mc-desc">Un operario del turno 1 y uno del turno 3 usan el mismo departamento pero nunca coinciden. ZeroPaper los une en un solo registro compartido y continuo.</p>
+    </div>
+    <div class="modelo-card m2">
+      <div class="mc-num">2</div>
+      <div class="mc-icon">📊</div>
+      <div class="mc-title">Sin Límite de Usuarios</div>
+      <p class="mc-desc">Puedes agregar o rotar operarios libremente sin pagar más. El costo es fijo por departamento activo, independiente de cuántas personas trabajen en él.</p>
+    </div>
+    <div class="modelo-card m3">
+      <div class="mc-num">3</div>
+      <div class="mc-icon">💼</div>
+      <div class="mc-title">Escalable</div>
+      <p class="mc-desc">Empieza con 1 departamento gratis. A medida que digitalizas más áreas, tu costo sube marginalmente pero tu ahorro se multiplica. El ROI mejora con escala.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PARA QUIEN + LINKS DIRECTOS -->
+<section>
+  <div class="sec-label">Acceso Directo</div>
+  <h2 class="sec-title">ENTRA AHORA<br>CON TU ROL</h2>
+  <p class="sec-sub">Cada usuario accede a su área con una URL directa. Sin menús confusos. Sin configuración. Entra y opera.</p>
+
+  <div class="para-quien-grid">
+    <div class="pq-card">
+      <span class="pq-icon">👷</span>
+      <div class="pq-role">OPERADOR</div>
+      <p class="pq-desc">Registra ingresos y egresos desde celular. Funciona sin internet. Instálala como app en tu teléfono.</p>
+      <a href="/app" class="pq-link blue">IR A /app →</a>
+      <div style="margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--mu);text-align:center">zeropaper-swart.vercel.app/app</div>
+    </div>
+    <div class="pq-card">
+      <span class="pq-icon">🧑‍💼</span>
+      <div class="pq-role">ADMIN</div>
+      <p class="pq-desc">Panel de control completo. Dashboard en tiempo real, reportes y exportación por departamento.</p>
+      <a href="/admin" class="pq-link red">IR A /admin →</a>
+      <div style="margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--mu);text-align:center">zeropaper-swart.vercel.app/admin</div>
+    </div>
+    <div class="pq-card">
+      <span class="pq-icon">🏢</span>
+      <div class="pq-role">IMPORTADOR</div>
+      <p class="pq-desc">Rastrea el estado de tu carga en tiempo real. Sin llamar al puerto. Con tu código de seguimiento.</p>
+      <a href="/seguimiento" class="pq-link outline">IR A /seguimiento →</a>
+      <div style="margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--mu);text-align:center">zeropaper-swart.vercel.app/seguimiento</div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section>
+  <div class="final-cta">
+    <div class="fc-title">COMIENZA<br><span style="color:var(--red)">HOY</span></div>
+    <p class="fc-sub">30 días gratis. Sin tarjeta de crédito. Implementación en 1 día. Soporte en español.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:24px">
+      <a href="/app" style="background:var(--red);color:#fff;padding:18px 48px;border-radius:12px;font-size:15px;font-weight:800;letter-spacing:2px;text-decoration:none;transition:all .2s;display:inline-block">PROBAR GRATIS →</a>
+      <a href="/" style="border:2px solid var(--blue);color:var(--blue2);padding:18px 48px;border-radius:12px;font-size:15px;font-weight:700;letter-spacing:2px;text-decoration:none;display:inline-block">VER LA APP</a>
+    </div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:1px">
+      ¿Preguntas? → contacto@zeropaper.cl
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:var(--bg2);border-top:1px solid var(--brd);padding:40px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;position:relative;z-index:1">
+  <div>
+    <div style="font-family:var(--display);font-size:22px;letter-spacing:3px;color:#fff">ZEROPAPER™</div>
+    <div style="font-size:12px;color:var(--mu);margin-top:4px">Control Portuario Digital · Chile 🇨🇱</div>
+  </div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap">
+    <a href="/" style="color:var(--mu);text-decoration:none;font-size:13px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=''">Inicio</a>
+    <a href="/app" style="color:var(--mu);text-decoration:none;font-size:13px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=''">App Operador</a>
+    <a href="/admin" style="color:var(--mu);text-decoration:none;font-size:13px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=''">Admin</a>
+    <a href="/seguimiento" style="color:var(--mu);text-decoration:none;font-size:13px;transition:color .2s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color=''">Seguimiento</a>
+  </div>
+  <div style="font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:1px">© 2025 ZeroPaper™</div>
+</footer>
+
+<script>
+function fmt(n){return'$'+Math.round(n).toLocaleString('es-CL')}
+function calcular(){
+  const ctrlOps=+document.getElementById('ctrl-ops').value;
+  const gdaOps=+document.getElementById('gda-ops').value;
+  const ctrlSh=+document.getElementById('ctrl-sh').value;
+  const gdaSh=+document.getElementById('gda-sh').value;
+  const costoHoja=+document.getElementById('costo-hoja').value;
+  const sueldo=+document.getElementById('sueldo').value;
+  const dias=+document.getElementById('dias').value;
+
+  document.getElementById('v-ctrl-ops').textContent=ctrlOps;
+  document.getElementById('v-gda-ops').textContent=gdaOps;
+  document.getElementById('v-ctrl-sh').textContent=ctrlSh;
+  document.getElementById('v-gda-sh').textContent=gdaSh;
+  document.getElementById('v-costo-hoja').textContent='$'+costoHoja;
+  document.getElementById('v-sueldo').textContent='$'+sueldo.toLocaleString('es-CL');
+  document.getElementById('v-dias').textContent=dias;
+
+  // Calculo
+  const ctrlOpsMes=3*2*ctrlOps*dias/22; // ajuste por días
+  const gdaOpsMes=3*2*gdaOps*dias/22;
+  const totalOps=Math.round(ctrlOpsMes+gdaOpsMes);
+  const hojas=Math.round(ctrlOpsMes*ctrlSh+gdaOpsMes*gdaSh);
+  const costoPapel=hojas*costoHoja;
+  // tiempo: 2 min por formulario
+  const minutos=totalOps*2;
+  const horas=minutos/60;
+  const costoTiempo=horas*sueldo;
+  const costoTotal=costoPapel+costoTiempo;
+  const planZP=64900;
+  const ahorro=costoTotal-planZP;
+  const roi=ahorro/planZP;
+  const paybackDias=(planZP/(ahorro/30)).toFixed(1);
+
+  document.getElementById('r-ops').textContent=totalOps.toLocaleString('es-CL');
+  document.getElementById('r-hojas').textContent=hojas.toLocaleString('es-CL');
+  document.getElementById('r-papel').textContent=fmt(costoPapel);
+  document.getElementById('r-tiempo').textContent=Math.round(horas)+' hrs/mes';
+  document.getElementById('r-tiempo-costo').textContent='= '+fmt(costoTiempo)+' en tiempo operario';
+  document.getElementById('r-total').textContent=fmt(costoTotal);
+  document.getElementById('r-ahorro').textContent=fmt(ahorro);
+  document.getElementById('r-roi').textContent=Math.round(roi)+'×';
+  document.getElementById('r-payback').textContent='Recuperas en '+paybackDias+' días';
+  const pct=Math.min(98,Math.round((ahorro/costoTotal)*100));
+  document.getElementById('roi-bar').style.width=pct+'%';
+  document.getElementById('roi-pct').textContent=pct+'% de ahorro';
+
+  // Update sliders visually
+  document.querySelectorAll('.slider').forEach(s=>{
+    const min=+s.min,max=+s.max,val=+s.value;
+    const pct=((val-min)/(max-min)*100).toFixed(1);
+    s.style.setProperty('--pct',pct+'%');
+  });
+}
+// Init
+document.querySelectorAll('.slider').forEach(s=>{
+  const min=+s.min,max=+s.max,val=+s.value;
+  const pct=((val-min)/(max-min)*100).toFixed(1);
+  s.style.setProperty('--pct',pct+'%');
+});
+calcular();
+</script>
+</body>
+</html>

@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZeroPaper™ — Certificado de Impacto Ambiental</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap');
+
+:root{
+  --forest:#1B4332; --forest2:#2D6A4F; --forest3:#40916C;
+  --mint:#D8F3DC; --mint2:#B7E4C7; --cream:#FAFAF7;
+  --gold:#C8932A; --gold2:#E8B84B;
+  --text:#1a1a1a; --muted:#6b7280;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--cream);
+  font-family:'Inter',sans-serif;
+  color:var(--text);
+  min-height:100vh;
+}
+
+/* ── LOADING ─────────────────────────── */
+#loader{
+  position:fixed;inset:0;background:var(--cream);z-index:999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+}
+.loader-logo{font-size:48px;animation:pulse 1.5s ease-in-out infinite;}
+.loader-text{font-family:'Inter',sans-serif;font-size:13px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.loader-bar{width:200px;height:3px;background:#e5e7eb;border-radius:2px;overflow:hidden;}
+.loader-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--forest),var(--forest3));border-radius:2px;transition:width .4s ease;}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
+/* ── SELECTOR (si no hay params) ──── */
+#selectorPanel{
+  display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px;
+}
+.selector-box{
+  background:#fff;border:1px solid #e5e7eb;border-radius:20px;
+  padding:40px 32px;width:100%;max-width:440px;text-align:center;
+  box-shadow:0 4px 24px rgba(27,67,50,.08);
+}
+.sel-logo{font-size:48px;margin-bottom:12px;}
+.sel-title{font-size:22px;font-weight:800;color:var(--forest);margin-bottom:4px;}
+.sel-sub{font-size:13px;color:var(--muted);margin-bottom:28px;}
+.sel-inp{
+  width:100%;border:1.5px solid #e5e7eb;border-radius:10px;
+  padding:12px 14px;font-size:14px;color:var(--text);
+  background:#fafafa;margin-bottom:12px;font-family:'Inter',sans-serif;
+  transition:border-color .2s;
+}
+.sel-inp:focus{outline:none;border-color:var(--forest);}
+.sel-btn{
+  width:100%;padding:13px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,var(--forest),var(--forest3));
+  color:#fff;font-weight:700;font-size:14px;cursor:pointer;
+  font-family:'Inter',sans-serif;transition:opacity .2s;
+}
+.sel-btn:hover{opacity:.9;}
+
+/* ── TOOLBAR ─────────────────────────── */
+#toolbar{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(255,255,255,0.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid #e5e7eb;
+  padding:10px 24px;display:none;
+  align-items:center;justify-content:space-between;gap:12px;
+}
+.tb-brand{display:flex;align-items:center;gap:8px;}
+.tb-logo-text{font-weight:800;font-size:16px;color:var(--forest);}
+.tb-sub{font-size:11px;color:var(--muted);letter-spacing:1px;}
+.tb-actions{display:flex;gap:8px;align-items:center;}
+.tb-btn{
+  padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;
+  cursor:pointer;border:none;font-family:'Inter',sans-serif;transition:all .2s;
+  display:flex;align-items:center;gap:6px;
+}
+.tb-print{background:linear-gradient(135deg,var(--forest),var(--forest3));color:#fff;}
+.tb-print:hover{opacity:.9;}
+.tb-share{background:#f3f4f6;color:var(--text);border:1px solid #e5e7eb;}
+.tb-share:hover{background:#e5e7eb;}
+.tb-back{background:#f3f4f6;color:var(--text);border:1px solid #e5e7eb;text-decoration:none;}
+.tb-back:hover{background:#e5e7eb;}
+
+/* ── CERT WRAPPER ─────────────────────── */
+#certWrapper{
+  display:none;padding:80px 24px 40px;
+  min-height:100vh;
+  background:var(--cream);
+}
+
+/* ── CERTIFICATE ─────────────────────── */
+.cert{
+  max-width:820px;margin:0 auto;
+  background:#fff;
+  border-radius:24px;
+  box-shadow:0 8px 48px rgba(27,67,50,.12), 0 2px 8px rgba(0,0,0,.04);
+  overflow:hidden;
+  position:relative;
+}
+
+/* Header verde */
+.cert-header{
+  background:linear-gradient(135deg, var(--forest) 0%, var(--forest2) 60%, var(--forest3) 100%);
+  padding:40px 48px 36px;
+  position:relative;
+  overflow:hidden;
+}
+.cert-header::before{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:280px;height:280px;border-radius:50%;
+  background:rgba(255,255,255,.04);
+}
+.cert-header::after{
+  content:'';position:absolute;bottom:-40px;left:-40px;
+  width:200px;height:200px;border-radius:50%;
+  background:rgba(255,255,255,.03);
+}
+.cert-header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;position:relative;z-index:1;}
+.cert-brand{display:flex;align-items:center;gap:12px;}
+.cert-brand-text{color:#fff;}
+.cert-brand-name{font-size:22px;font-weight:800;letter-spacing:.5px;}
+.cert-brand-sub{font-size:10px;opacity:.7;letter-spacing:3px;text-transform:uppercase;}
+.cert-badge{
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  border-radius:100px;padding:6px 14px;
+  color:#fff;font-size:10px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;backdrop-filter:blur(4px);
+}
+.cert-title-block{position:relative;z-index:1;text-align:center;}
+.cert-title-small{
+  font-size:10px;color:rgba(255,255,255,.7);
+  letter-spacing:4px;text-transform:uppercase;margin-bottom:10px;
+}
+.cert-title-main{
+  font-family:'Playfair Display',serif;
+  font-size:38px;font-weight:900;color:#fff;
+  line-height:1.1;margin-bottom:8px;
+  text-shadow:0 2px 12px rgba(0,0,0,.15);
+}
+.cert-title-main span{color:var(--gold2);}
+.cert-period{
+  display:inline-block;
+  background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);
+  border-radius:100px;padding:6px 20px;
+  color:#fff;font-size:13px;font-weight:600;
+  margin-top:6px;letter-spacing:.5px;
+}
+
+/* Empresa section */
+.cert-empresa{
+  padding:28px 48px 24px;
+  border-bottom:1px solid #f0f0f0;
+  text-align:center;
+  background:linear-gradient(180deg,rgba(27,67,50,.03),transparent);
+}
+.cert-empresa-label{
+  font-size:10px;color:var(--muted);letter-spacing:3px;
+  text-transform:uppercase;margin-bottom:8px;
+}
+.cert-empresa-name{
+  font-family:'Playfair Display',serif;
+  font-size:28px;font-weight:700;color:var(--forest);
+  margin-bottom:4px;
+}
+.cert-empresa-certifica{
+  font-size:13px;color:var(--muted);
+  max-width:480px;margin:0 auto;
+  line-height:1.5;
+}
+.cert-empresa-certifica strong{color:var(--forest);}
+
+/* Números de impacto */
+.cert-impact{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:0;
+  padding:32px 48px;
+  border-bottom:1px solid #f0f0f0;
+}
+.impact-item{
+  text-align:center;
+  padding:16px 12px;
+  position:relative;
+}
+.impact-item:not(:last-child)::after{
+  content:'';position:absolute;right:0;top:20%;bottom:20%;
+  width:1px;background:#e5e7eb;
+}
+.impact-icon{font-size:32px;margin-bottom:8px;display:block;}
+.impact-number{
+  font-size:36px;font-weight:900;color:var(--forest);
+  line-height:1;margin-bottom:4px;
+  font-variant-numeric:tabular-nums;
+}
+.impact-number.gold{color:var(--gold);}
+.impact-unit{
+  font-size:11px;color:var(--forest3);font-weight:700;
+  letter-spacing:.5px;margin-bottom:4px;
+}
+.impact-label{
+  font-size:11px;color:var(--muted);
+  line-height:1.3;
+}
+
+/* Equivalencias visuales */
+.cert-visual{
+  padding:28px 48px;
+  background:#f8fdf9;
+  border-bottom:1px solid #e8f5e8;
+}
+.visual-title{
+  font-size:11px;color:var(--forest3);font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:18px;text-align:center;
+}
+.visual-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+}
+.visual-card{
+  background:#fff;border:1px solid #d8f3dc;border-radius:14px;
+  padding:16px;text-align:center;
+}
+.visual-emoji{font-size:28px;margin-bottom:8px;display:block;}
+.visual-val{font-size:22px;font-weight:800;color:var(--forest);margin-bottom:2px;}
+.visual-desc{font-size:11px;color:var(--muted);line-height:1.4;}
+
+/* Detalle mensual */
+.cert-detail{
+  padding:24px 48px;
+  border-bottom:1px solid #f0f0f0;
+}
+.detail-title{
+  font-size:11px;color:var(--muted);
+  letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:14px;
+}
+.detail-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+}
+.detail-item{
+  background:#f9fafb;border:1px solid #f0f0f0;border-radius:10px;
+  padding:12px 14px;display:flex;flex-direction:column;gap:2px;
+}
+.detail-key{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.detail-val{font-size:16px;font-weight:700;color:var(--text);}
+
+/* Mensaje corporativo */
+.cert-message{
+  padding:24px 48px;
+  border-bottom:1px solid #f0f0f0;
+}
+.cert-msg-box{
+  background:linear-gradient(135deg,rgba(27,67,50,.04),rgba(64,145,108,.04));
+  border:1px solid #d8f3dc;border-radius:14px;
+  padding:20px 24px;
+  font-size:13px;color:var(--text);
+  line-height:1.7;
+  font-style:italic;
+  position:relative;
+}
+.cert-msg-box::before{
+  content:'"';
+  position:absolute;top:-8px;left:16px;
+  font-family:'Playfair Display',serif;
+  font-size:60px;color:var(--forest3);opacity:.3;
+  line-height:1;
+}
+
+/* Footer del cert */
+.cert-footer{
+  padding:24px 48px;
+  display:flex;align-items:flex-end;justify-content:space-between;
+  background:linear-gradient(180deg,transparent,rgba(27,67,50,.03));
+}
+.cert-number{
+  font-size:10px;color:var(--muted);
+  letter-spacing:2px;text-transform:uppercase;
+  line-height:1.8;
+}
+.cert-number span{
+  display:block;font-family:'Courier New',monospace;
+  font-size:12px;color:var(--forest);font-weight:700;
+}
+.cert-seal{
+  width:90px;height:90px;border-radius:50%;
+  border:3px solid var(--forest);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;text-align:center;
+  background:linear-gradient(135deg,rgba(27,67,50,.06),rgba(27,67,50,.02));
+  position:relative;
+}
+.cert-seal::before{
+  content:'';position:absolute;inset:5px;border-radius:50%;
+  border:1px dashed var(--forest3);opacity:.4;
+}
+.cert-seal-icon{font-size:24px;}
+.cert-seal-text{font-size:7px;font-weight:800;color:var(--forest);letter-spacing:1.5px;text-transform:uppercase;line-height:1.3;}
+.cert-sign{text-align:right;}
+.cert-sign-line{
+  width:140px;height:1.5px;background:var(--forest);
+  margin-bottom:6px;margin-left:auto;
+}
+.cert-sign-name{font-size:12px;font-weight:700;color:var(--forest);}
+.cert-sign-sub{font-size:10px;color:var(--muted);}
+
+/* Stripe acento inferior */
+.cert-stripe{
+  height:6px;
+  background:linear-gradient(90deg,var(--forest),var(--forest3),var(--gold),var(--forest3),var(--forest));
+}
+
+/* ── PRINT STYLES ──────────────────────── */
+@media print {
+  #toolbar,#loader,#selectorPanel,#printNote{ display:none !important; }
+  #certWrapper{ display:block !important; padding:0; background:#fff; }
+  body{ background:#fff; }
+  .cert{ box-shadow:none; border-radius:0; max-width:100%; margin:0; }
+  .cert-header{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .cert-impact,.cert-visual,.cert-detail{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .cert-stripe{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+
+/* ── PRINT NOTE ────────────────────────── */
+#printNote{
+  max-width:820px;margin:16px auto 0;
+  background:rgba(27,67,50,.06);border:1px solid #d8f3dc;border-radius:12px;
+  padding:14px 20px;text-align:center;
+  font-size:12px;color:var(--forest);
+}
+
+/* ── ERROR STATE ──────────────────────── */
+#errorState{
+  display:none;min-height:60vh;align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;padding:40px;text-align:center;
+}
+.err-icon{font-size:48px;}
+.err-text{font-size:16px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader">
+  <div class="loader-logo">🌿</div>
+  <div class="loader-text">Generando certificado...</div>
+  <div class="loader-bar"><div class="loader-fill" id="loaderFill"></div></div>
+</div>
+
+<!-- Selector (fallback sin params) -->
+<div id="selectorPanel" style="display:none;align-items:center;justify-content:center;min-height:100vh;">
+  <div class="selector-box">
+    <div class="sel-logo">🏅</div>
+    <div class="sel-title">Certificado de Impacto</div>
+    <div class="sel-sub">Ingresa los datos para generar el certificado mensual</div>
+    <input class="sel-inp" id="selEmpresa" placeholder="ID de empresa (ej: emp_demo2025)">
+    <input class="sel-inp" id="selNombre" placeholder="Nombre de la empresa">
+    <input class="sel-inp" type="month" id="selMes">
+    <button class="sel-btn" onclick="generarDesdeSelector()">📄 Generar Certificado</button>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div id="toolbar">
+  <div class="tb-brand">
+    <div class="tb-brand-text">
+      <div class="tb-logo-text">ZeroPaper™</div>
+      <div class="tb-sub">CERTIFICADO AMBIENTAL</div>
+    </div>
+  </div>
+  <div class="tb-actions">
+    <a href="/admin" class="tb-btn tb-back" style="text-decoration:none;">← Volver</a>
+    <button class="tb-btn tb-share" onclick="compartir()">🔗 Compartir</button>
+    <button class="tb-btn tb-print" onclick="window.print()">⬇ Descargar PDF</button>
+  </div>
+</div>
+
+<!-- Certificate wrapper -->
+<div id="certWrapper">
+  <div class="cert" id="certMain">
+    <!-- Stripe top -->
+    <div class="cert-stripe"></div>
+
+    <!-- Header -->
+    <div class="cert-header">
+      <div class="cert-header-top">
+        <div class="cert-brand">
+          <div class="cert-brand-text">
+            <div class="cert-brand-name">ZeroPaper™</div>
+            <div class="cert-brand-sub">Operación Digital · Chile</div>
+          </div>
+        </div>
+        <div class="cert-badge">✓ Certificado Verificado</div>
+      </div>
+      <div class="cert-title-block">
+        <div class="cert-title-small">Documento Oficial</div>
+        <div class="cert-title-main">Certificado de<br><span>Impacto Ambiental</span></div>
+        <div class="cert-period" id="certPeriodo">— — — — —</div>
+      </div>
+    </div>
+
+    <!-- Empresa -->
+    <div class="cert-empresa">
+      <div class="cert-empresa-label">Se certifica que la empresa</div>
+      <div class="cert-empresa-name" id="certEmpresaNombre">—</div>
+      <div class="cert-empresa-certifica">
+        ha digitalizando su operación con ZeroPaper™, logrando un impacto ambiental
+        <strong>verificado y medible</strong> durante el período indicado.
+      </div>
+    </div>
+
+    <!-- Números impacto -->
+    <div class="cert-impact">
+      <div class="impact-item">
+        <span class="impact-icon">📋</span>
+        <div class="impact-number" id="impDocumentos">—</div>
+        <div class="impact-unit">DOCUMENTOS</div>
+        <div class="impact-label">formularios<br>digitales creados</div>
+      </div>
+      <div class="impact-item">
+        <span class="impact-icon">📄</span>
+        <div class="impact-number" id="impHojas">—</div>
+        <div class="impact-unit">HOJAS</div>
+        <div class="impact-label">de papel<br>eliminadas</div>
+      </div>
+      <div class="impact-item">
+        <span class="impact-icon">🌳</span>
+        <div class="impact-number gold" id="impArboles">—</div>
+        <div class="impact-unit">ÁRBOLES</div>
+        <div class="impact-label">equivalentes<br>protegidos</div>
+      </div>
+      <div class="impact-item">
+        <span class="impact-icon">💧</span>
+        <div class="impact-number" id="impAgua">—</div>
+        <div class="impact-unit">LITROS</div>
+        <div class="impact-label">de agua<br>ahorrada</div>
+      </div>
+    </div>
+
+    <!-- Visual equivalencias -->
+    <div class="cert-visual">
+      <div class="visual-title">¿Qué significa este impacto?</div>
+      <div class="visual-grid">
+        <div class="visual-card">
+          <span class="visual-emoji">🌫</span>
+          <div class="visual-val" id="eqCO2">—</div>
+          <div class="visual-desc">kg de CO₂ no<br>emitidos a la atmósfera</div>
+        </div>
+        <div class="visual-card">
+          <span class="visual-emoji">🚿</span>
+          <div class="visual-val" id="eqDuchas">—</div>
+          <div class="visual-desc">duchas de 5 min.<br>equivalentes en agua</div>
+        </div>
+        <div class="visual-card">
+          <span class="visual-emoji">📦</span>
+          <div class="visual-val" id="eqResmas">—</div>
+          <div class="visual-desc">resmas de papel<br>que no se compraron</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalle operacional -->
+    <div class="cert-detail">
+      <div class="detail-title">Detalle del período</div>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-key">Período</div>
+          <div class="detail-val" id="detPeriodo">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Documentos aprobados</div>
+          <div class="detail-val" id="detAprobados">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Promedio diario</div>
+          <div class="detail-val" id="detPromedio">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Hojas por documento</div>
+          <div class="detail-val">3 hojas</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Kg papel ahorrado</div>
+          <div class="detail-val" id="detKgPapel">—</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-key">Emisión evitada</div>
+          <div class="detail-val" id="detCO2">— kg CO₂</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje -->
+    <div class="cert-message">
+      <div class="cert-msg-box" id="certMensaje">
+        Cada documento digital es una pequeña decisión que, sumada a miles de otras,
+        transforma la forma en que la industria opera. Esta empresa lidera el cambio
+        hacia una operación más eficiente, trazable y respetuosa del medio ambiente.
+      </div>
+    </div>
+
+    <!-- Footer firma y sello -->
+    <div class="cert-footer">
+      <div class="cert-number">
+        Certificado N°
+        <span id="certNumero">ZP-2025-000000</span>
+        Emitido por ZeroPaper™ · zeropaper-swart.vercel.app<br>
+        <span id="certFechaEmision" style="font-size:10px;font-family:monospace;color:var(--muted);">—</span>
+      </div>
+      <div class="cert-seal">
+        <div class="cert-seal-icon">🌿</div>
+        <div class="cert-seal-text">Zero<br>Paper™<br>Cert.</div>
+      </div>
+      <div class="cert-sign">
+        <div class="cert-sign-line"></div>
+        <div class="cert-sign-name">ZeroPaper™ Platform</div>
+        <div class="cert-sign-sub">Verificado digitalmente</div>
+        <div class="cert-sign-sub" style="margin-top:2px;font-size:9px;">Datos desde Firestore · zeropaper-prod</div>
+      </div>
+    </div>
+
+    <!-- Stripe bottom -->
+    <div class="cert-stripe"></div>
+  </div>
+
+  <div id="printNote">
+    💡 Para guardar como PDF: <strong>Descargar PDF</strong> → en el diálogo de impresión elige <em>"Guardar como PDF"</em>
+    &nbsp;|&nbsp; Formato A4 horizontal recomendado
+  </div>
+</div>
+
+<!-- Error state -->
+<div id="errorState" style="display:none;min-height:60vh;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:40px;text-align:center;">
+  <div style="font-size:48px;">⚠️</div>
+  <div style="font-size:18px;font-weight:700;color:#1B4332;">No se pudieron cargar los datos</div>
+  <div style="font-size:14px;color:#6b7280;max-width:320px;" id="errorMsg">Verifica que el ID de empresa sea correcto.</div>
+  <button onclick="location.reload()" style="margin-top:8px;padding:10px 24px;background:#1B4332;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;">Reintentar</button>
+</div>
+
+<script>
+// ── CONFIG ───────────────────────────────────────
+const FB = {
+  projectId: 'zeropaper-prod',
+  apiKey:    'AIzaSyCli7F4hLi-XEmmekGZpO2KQ1SO612I85Y'
+};
+const FS = () => `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
+
+// ── MATH ─────────────────────────────────────────
+const HOJAS_POR_DOC = 3;         // hojas de papel por documento
+const AGUA_POR_HOJA = 10;        // litros de agua por hoja A4
+const CO2_POR_HOJA  = 0.0044;    // kg CO2 por hoja (4.4g)
+const HOJAS_POR_ARBOL = 8333;    // hojas por árbol en vida útil
+const AGUA_DUCHA    = 65;        // litros por ducha de 5 min
+const HOJAS_POR_RESMA = 500;     // estándar
+
+// ── UTILS ─────────────────────────────────────────
+function fmt(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000)    return n.toLocaleString('es-CL');
+  return String(n);
+}
+function parseFs(doc) {
+  const f = doc.fields || {};
+  const get = (k) => f[k]?.stringValue ?? f[k]?.integerValue ?? f[k]?.doubleValue ?? f[k]?.timestampValue ?? null;
+  return {
+    ts:           Number(get('ts')) || 0,
+    fecha:        get('fecha') || '',
+    tipo:         get('tipo') || '',
+    estado:       get('estado') || 'PENDIENTE',
+    departamento: get('departamento') || get('depto') || '—',
+    operador:     get('operador') || get('operadorNombre') || '—',
+  };
+}
+function mesNombre(mes) {
+  const [y, m] = mes.split('-');
+  const nombres = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  return `${nombres[parseInt(m)-1]} ${y}`;
+}
+function certNum(empresaId, mes) {
+  let hash = 0;
+  const str = empresaId + mes;
+  for(let i=0;i<str.length;i++) hash = ((hash<<5)-hash)+str.charCodeAt(i);
+  return 'ZP-' + mes.replace('-','') + '-' + Math.abs(hash % 999999).toString().padStart(6,'0');
+}
+
+// ── PROGRESS ──────────────────────────────────────
+function progress(pct) {
+  document.getElementById('loaderFill').style.width = pct + '%';
+}
+
+// ── MAIN ──────────────────────────────────────────
+async function init() {
+  const params  = new URLSearchParams(location.search);
+  const empresa = params.get('empresa');
+  const nombre  = params.get('nombre') || empresa;
+  const mes     = params.get('mes') || new Date().toISOString().slice(0,7);
+
+  progress(20);
+
+  if (!empresa) {
+    // Sin params: mostrar selector
+    document.getElementById('loader').style.display = 'none';
+    const sp = document.getElementById('selectorPanel');
+    sp.style.display = 'flex';
+    // Default mes = mes actual
+    document.getElementById('selMes').value = mes;
+    return;
+  }
+
+  progress(40);
+
+  try {
+    const ops = await cargarOps(empresa);
+    progress(70);
+
+    const opsDelMes = filtrarPorMes(ops, mes);
+    progress(90);
+
+    renderCertificado(empresa, nombre, mes, opsDelMes, ops);
+    progress(100);
+
+    setTimeout(() => {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('certWrapper').style.display = 'block';
+      document.getElementById('toolbar').style.display = 'flex';
+    }, 400);
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('loader').style.display = 'none';
+    const err = document.getElementById('errorState');
+    err.style.display = 'flex';
+    document.getElementById('errorMsg').textContent = e.message || 'Error al cargar datos.';
+  }
+}
+
+async function cargarOps(empresaId) {
+  // Modo demo
+  if (empresaId === 'emp_demo2025' || empresaId === 'demo') {
+    return generarOpsDemo();
+  }
+
+  const res = await fetch(`${FS()}/empresas/${empresaId}/ops?key=${FB.apiKey}&pageSize=1000`);
+  if (!res.ok) throw new Error(`Error ${res.status}: No se encontró la empresa "${empresaId}"`);
+  const data = await res.json();
+  if (!data.documents) return [];
+  return data.documents.map(parseFs);
+}
+
+function generarOpsDemo() {
+  const ops = [];
+  const hoy = new Date();
+  const base = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+  const tipos = ['INGRESO','SALIDA','MANTENCION','INSPECCION','DESPACHO'];
+  const estados = ['APROBADO','APROBADO','APROBADO','PENDIENTE','RECHAZADO'];
+  for(let i=0;i<87;i++) {
+    const d = new Date(base.getTime() + Math.random()*(hoy-base));
+    ops.push({
+      ts: d.getTime(),
+      fecha: d.toISOString().slice(0,10),
+      tipo: tipos[Math.floor(Math.random()*tipos.length)],
+      estado: estados[Math.floor(Math.random()*estados.length)],
+    });
+  }
+  return ops;
+}
+
+function filtrarPorMes(ops, mes) {
+  return ops.filter(o => {
+    if (o.fecha) return o.fecha.startsWith(mes);
+    if (o.ts) return new Date(o.ts).toISOString().startsWith(mes);
+    return false;
+  });
+}
+
+function renderCertificado(empresaId, nombre, mes, opsDelMes, todasOps) {
+  const totalDocs  = opsDelMes.length;
+  const aprobados  = opsDelMes.filter(o => o.estado === 'APROBADO').length;
+  const hojas      = totalDocs * HOJAS_POR_DOC;
+  const arboles    = Math.max(1, Math.round(hojas / HOJAS_POR_ARBOL * 10) / 10);
+  const agua       = Math.round(hojas * AGUA_POR_HOJA);
+  const co2        = Math.round(hojas * CO2_POR_HOJA * 10) / 10;
+  const duchas     = Math.round(agua / AGUA_DUCHA);
+  const resmas     = Math.round(hojas / HOJAS_POR_RESMA * 10) / 10;
+  const kgPapel    = Math.round(hojas * 5) / 1000; // ~5g por hoja
+
+  // Días del mes que tienen ops
+  const diasConOps = new Set(opsDelMes.map(o => o.fecha)).size;
+  const promDiario = diasConOps > 0 ? (totalDocs / diasConOps).toFixed(1) : totalDocs;
+
+  // Período
+  const periodoNombre = mesNombre(mes);
+  const [y, m]        = mes.split('-');
+  const diasEnMes     = new Date(+y, +m, 0).getDate();
+
+  // Número certificado
+  const numCert = certNum(empresaId, mes);
+
+  // Fecha emisión
+  const hoyStr = new Date().toLocaleDateString('es-CL', { year:'numeric', month:'long', day:'numeric' });
+
+  // Render
+  document.getElementById('certPeriodo').textContent        = periodoNombre;
+  document.getElementById('certEmpresaNombre').textContent  = nombre || empresaId;
+  document.getElementById('impDocumentos').textContent      = fmt(totalDocs);
+  document.getElementById('impHojas').textContent           = fmt(hojas);
+  document.getElementById('impArboles').textContent         = arboles < 1 ? '<1' : fmt(arboles);
+  document.getElementById('impAgua').textContent            = fmt(agua);
+  document.getElementById('eqCO2').textContent              = co2 + ' kg';
+  document.getElementById('eqDuchas').textContent           = fmt(duchas);
+  document.getElementById('eqResmas').textContent           = resmas;
+  document.getElementById('detPeriodo').textContent         = periodoNombre;
+  document.getElementById('detAprobados').textContent       = aprobados;
+  document.getElementById('detPromedio').textContent        = promDiario + ' docs/día';
+  document.getElementById('detKgPapel').textContent         = kgPapel + ' kg';
+  document.getElementById('detCO2').textContent             = co2 + ' kg CO₂';
+  document.getElementById('certNumero').textContent         = numCert;
+  document.getElementById('certFechaEmision').textContent   = 'Emitido el ' + hoyStr;
+
+  // Mensaje dinámico según volumen
+  let msg;
+  if (totalDocs === 0) {
+    msg = 'Este certificado está listo para el próximo mes. Cada registro digital cuenta.';
+  } else if (totalDocs < 50) {
+    msg = `Con ${totalDocs} documentos digitales en ${periodoNombre}, esta empresa da sus primeros pasos hacia una operación completamente sin papel. Un inicio que marca la diferencia.`;
+  } else if (totalDocs < 200) {
+    msg = `${totalDocs} documentos digitales en ${periodoNombre} representan ${hojas} hojas de papel que no existieron. Cada formulario digital es una decisión de futuro.`;
+  } else {
+    msg = `Con ${fmt(totalDocs)} documentos digitales procesados en ${periodoNombre}, esta empresa demuestra que digitalizar la operación industrial no es el futuro — es el presente.`;
+  }
+  document.getElementById('certMensaje').textContent = msg;
+
+  // Title de la página
+  document.title = `Certificado Ambiental ${periodoNombre} — ${nombre}`;
+}
+
+function generarDesdeSelector() {
+  const empresa = document.getElementById('selEmpresa').value.trim();
+  const nombre  = document.getElementById('selNombre').value.trim();
+  const mes     = document.getElementById('selMes').value;
+  if (!empresa || !mes) { alert('Completa el ID de empresa y el mes'); return; }
+  const params = new URLSearchParams({ empresa, nombre, mes });
+  location.href = '/certificado?' + params.toString();
+}
+
+async function compartir() {
+  const url = location.href;
+  try {
+    await navigator.share({ title: 'Certificado ZeroPaper™', url });
+  } catch(e) {
+    await navigator.clipboard.writeText(url);
+    alert('✅ Enlace copiado al portapapeles');
+  }
+}
+
+init();
+</script>
+</body>
+</html>

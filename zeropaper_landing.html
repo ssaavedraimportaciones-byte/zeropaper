@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="ZeroPaper™ — Plataforma de gestión portuaria digital. Digitaliza tus operaciones de puerto desde hoy. Sin papeles, sin errores, sin demoras.">
+<meta name="theme-color" content="#0a0f0d">
+<link rel="manifest" href="/manifest.json">
+<title>ZeroPaper™ — Gestión Portuaria Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080c0a;
+  --bg2:#0e1510;
+  --bg3:#141c15;
+  --fg:#e8ede9;
+  --mu:#5a6b5c;
+  --brd:rgba(255,255,255,.06);
+  --g:#1a6b3a;
+  --g2:#22c55e;
+  --g3:#4ade80;
+  --glow:rgba(34,197,94,.15);
+  --mono:'Space Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);overflow-x:hidden}
+
+/* ── NOISE OVERLAY ── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:.4;
+}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 48px;
+  background:rgba(8,12,10,.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--brd);
+  z-index:100;
+}
+.nav-logo{font-family:var(--display);font-size:28px;letter-spacing:3px;color:var(--g2);}
+.nav-logo span{color:var(--mu);font-size:14px;font-family:var(--mono);letter-spacing:1px;display:block;margin-top:-4px}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{color:var(--mu);text-decoration:none;font-size:13px;font-family:var(--mono);letter-spacing:1px;transition:color .2s}
+.nav-links a:hover{color:var(--fg)}
+.nav-cta{
+  background:var(--g2);color:#000;
+  padding:9px 20px;border-radius:6px;
+  font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:1px;
+  text-decoration:none;transition:all .2s;
+}
+.nav-cta:hover{background:var(--g3);transform:translateY(-1px)}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:140px 48px 80px;
+  position:relative;overflow:hidden;
+}
+/* Grid lines decorativas */
+.hero::after{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(34,197,94,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34,197,94,.04) 1px, transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;
+}
+/* Glow */
+.hero-glow{
+  position:absolute;top:20%;left:50%;transform:translateX(-50%);
+  width:800px;height:400px;
+  background:radial-gradient(ellipse,rgba(34,197,94,.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+.hero-eyebrow{
+  font-family:var(--mono);font-size:10px;color:var(--g2);
+  letter-spacing:4px;margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;
+}
+.hero-eyebrow::before{content:'';width:40px;height:1px;background:var(--g2)}
+
+.hero-title{
+  font-family:var(--display);
+  font-size:clamp(72px,10vw,140px);
+  line-height:.92;
+  letter-spacing:4px;
+  color:var(--fg);
+  margin-bottom:8px;
+}
+.hero-title .accent{color:var(--g2)}
+.hero-title .tm{font-family:var(--body);font-size:24px;color:var(--g2);vertical-align:top}
+
+.hero-sub{
+  font-family:var(--display);
+  font-size:clamp(40px,5vw,72px);
+  line-height:1;
+  letter-spacing:2px;
+  color:var(--mu);
+  margin-bottom:32px;
+}
+
+.hero-desc{
+  max-width:560px;
+  font-size:17px;line-height:1.65;
+  color:#8aa08c;
+  margin-bottom:40px;
+  font-weight:300;
+}
+
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:60px}
+.btn-hero-main{
+  background:var(--g2);color:#000;
+  padding:14px 32px;border-radius:8px;
+  font-size:13px;font-family:var(--mono);font-weight:700;letter-spacing:2px;
+  text-decoration:none;transition:all .2s;display:inline-block;
+}
+.btn-hero-main:hover{background:var(--g3);transform:translateY(-2px);box-shadow:0 8px 30px rgba(34,197,94,.3)}
+.btn-hero-sec{
+  border:1px solid var(--brd);color:var(--mu);
+  padding:14px 32px;border-radius:8px;
+  font-size:13px;font-family:var(--mono);letter-spacing:2px;
+  text-decoration:none;transition:all .2s;display:inline-block;
+}
+.btn-hero-sec:hover{border-color:var(--g2);color:var(--g2)}
+
+.hero-stats{
+  display:flex;gap:40px;
+  border-top:1px solid var(--brd);padding-top:32px;
+}
+.hero-stat-n{font-family:var(--display);font-size:42px;color:var(--g2);letter-spacing:2px;line-height:1}
+.hero-stat-l{font-family:var(--mono);font-size:8px;color:var(--mu);letter-spacing:2px;margin-top:4px}
+
+/* ── TICKER ── */
+.ticker{
+  background:var(--bg2);border-top:1px solid var(--brd);border-bottom:1px solid var(--brd);
+  padding:12px 0;overflow:hidden;white-space:nowrap;
+}
+.ticker-inner{
+  display:inline-block;
+  animation:ticker 30s linear infinite;
+  font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:2px;
+}
+.ticker-inner span{margin:0 40px;color:var(--g2)}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── SECTION ── */
+section{padding:100px 48px;position:relative;z-index:1}
+.section-label{
+  font-family:var(--mono);font-size:9px;color:var(--g2);letter-spacing:4px;
+  margin-bottom:16px;display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:32px;height:1px;background:var(--g2)}
+.section-title{
+  font-family:var(--display);font-size:clamp(36px,5vw,64px);
+  letter-spacing:2px;line-height:1;margin-bottom:20px;
+}
+.section-sub{font-size:16px;color:#8aa08c;max-width:540px;line-height:1.6;font-weight:300;margin-bottom:60px}
+
+/* ── PROBLEMA ── */
+.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-bottom:60px}
+.prob-item{
+  background:var(--bg2);padding:28px;
+  border:1px solid var(--brd);
+  transition:border-color .2s;
+}
+.prob-item:hover{border-color:rgba(239,68,68,.3)}
+.prob-item:first-child{border-radius:12px 0 0 0}
+.prob-item:nth-child(2){border-radius:0 12px 0 0}
+.prob-item:nth-child(3){border-radius:0 0 0 12px}
+.prob-item:last-child{border-radius:0 0 12px 0}
+.prob-icon{font-size:28px;margin-bottom:12px}
+.prob-title{font-weight:700;font-size:15px;margin-bottom:6px}
+.prob-desc{font-size:13px;color:var(--mu);line-height:1.6}
+
+/* ── FEATURES ── */
+#features{background:var(--bg2)}
+.feat-list{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--brd)}
+.feat-item{
+  background:var(--bg2);padding:32px 28px;
+  transition:background .2s;cursor:default;
+}
+.feat-item:hover{background:var(--bg3)}
+.feat-num{font-family:var(--mono);font-size:10px;color:var(--g2);letter-spacing:2px;margin-bottom:16px}
+.feat-icon{font-size:32px;margin-bottom:12px}
+.feat-title{font-weight:700;font-size:16px;margin-bottom:8px}
+.feat-desc{font-size:13px;color:var(--mu);line-height:1.65}
+
+/* ── DEPTOS ── */
+.deptos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.depto-card{
+  background:var(--bg2);border:1px solid var(--brd);border-radius:12px;
+  padding:24px;position:relative;overflow:hidden;
+  transition:transform .2s,border-color .2s;
+}
+.depto-card:hover{transform:translateY(-4px);border-color:rgba(34,197,94,.3)}
+.depto-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--glow),transparent 60%);
+  opacity:0;transition:opacity .2s;
+}
+.depto-card:hover::before{opacity:1}
+.depto-emoji{font-size:36px;margin-bottom:12px}
+.depto-name{font-weight:700;font-size:15px;margin-bottom:4px}
+.depto-desc{font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:1px;margin-bottom:12px}
+.depto-docs{display:flex;flex-wrap:wrap;gap:4px}
+.doc-chip{
+  font-family:var(--mono);font-size:8px;color:var(--mu);
+  background:rgba(255,255,255,.04);border:1px solid var(--brd);
+  padding:2px 6px;border-radius:4px;
+}
+
+/* ── PRICING ── */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:900px}
+.price-card{
+  background:var(--bg2);border:1px solid var(--brd);border-radius:16px;
+  padding:32px;position:relative;overflow:hidden;
+  transition:transform .2s;
+}
+.price-card:hover{transform:translateY(-4px)}
+.price-card.featured{
+  border-color:var(--g2);
+  background:linear-gradient(160deg,rgba(34,197,94,.06),var(--bg2));
+}
+.price-card.featured::before{
+  content:'RECOMENDADO';position:absolute;top:16px;right:-30px;
+  background:var(--g2);color:#000;
+  font-family:var(--mono);font-size:8px;letter-spacing:2px;font-weight:700;
+  padding:4px 40px;transform:rotate(45deg);
+}
+.price-name{font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:3px;margin-bottom:20px}
+.price-amount{font-family:var(--display);font-size:56px;letter-spacing:2px;color:var(--fg);line-height:1}
+.price-cur{font-family:var(--mono);font-size:12px;color:var(--mu);margin-top:4px;margin-bottom:20px}
+.price-divider{height:1px;background:var(--brd);margin:20px 0}
+.price-feature{
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;color:#8aa08c;margin-bottom:10px;
+}
+.price-feature::before{content:'—';color:var(--g2);font-family:var(--mono)}
+.price-feature.featured-item{color:var(--fg)}
+.price-btn{
+  display:block;text-align:center;text-decoration:none;
+  margin-top:24px;padding:12px;border-radius:8px;
+  font-family:var(--mono);font-size:11px;letter-spacing:2px;font-weight:700;
+  transition:all .2s;
+}
+.price-btn-main{background:var(--g2);color:#000}
+.price-btn-main:hover{background:var(--g3)}
+.price-btn-ghost{border:1px solid var(--brd);color:var(--mu)}
+.price-btn-ghost:hover{border-color:var(--g2);color:var(--g2)}
+
+/* ── PROOF / HOW ── */
+.how-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative}
+.how-steps::before{
+  content:'';position:absolute;top:28px;left:10%;right:10%;
+  height:1px;background:linear-gradient(90deg,transparent,var(--g2),transparent);
+  opacity:.3;
+}
+.how-step{text-align:center;padding:0 12px}
+.how-num{
+  width:56px;height:56px;border-radius:50%;
+  border:1px solid var(--g2);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:28px;color:var(--g2);
+  margin:0 auto 16px;background:var(--bg);
+  position:relative;z-index:1;
+}
+.how-title{font-weight:700;font-size:14px;margin-bottom:6px}
+.how-desc{font-size:12px;color:var(--mu);line-height:1.6}
+
+/* ── TERMINAL DEMO ── */
+.terminal{
+  background:#0a0f0a;border:1px solid rgba(34,197,94,.2);border-radius:12px;
+  font-family:var(--mono);font-size:12px;overflow:hidden;
+  box-shadow:0 0 60px rgba(34,197,94,.05);
+}
+.term-bar{
+  background:var(--bg2);padding:12px 16px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid rgba(34,197,94,.1);
+}
+.term-dot{width:10px;height:10px;border-radius:50%}
+.term-body{padding:20px;line-height:2}
+.term-line{color:#4ade80;opacity:0;animation:fadeIn .3s forwards}
+.term-comment{color:#374151}
+.term-key{color:#60a5fa}
+.term-val{color:#fbbf24}
+.term-ok{color:#22c55e;font-weight:700}
+@keyframes fadeIn{to{opacity:1}}
+
+/* ── CTA FINAL ── */
+.cta-section{
+  padding:100px 48px;text-align:center;
+  background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 50%,var(--bg) 100%);
+  position:relative;overflow:hidden;
+}
+.cta-section::before{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:600px;height:300px;
+  background:radial-gradient(ellipse,rgba(34,197,94,.06) 0%,transparent 70%);
+}
+.cta-title{font-family:var(--display);font-size:clamp(48px,6vw,80px);letter-spacing:3px;margin-bottom:16px}
+.cta-sub{font-size:17px;color:#8aa08c;margin-bottom:40px;font-weight:300}
+.cta-badges{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:40px}
+.cta-badge{
+  font-family:var(--mono);font-size:9px;color:var(--mu);
+  border:1px solid var(--brd);border-radius:100px;
+  padding:6px 16px;letter-spacing:2px;
+}
+
+/* ── FOOTER ── */
+footer{
+  background:var(--bg2);border-top:1px solid var(--brd);
+  padding:40px 48px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.foot-logo{font-family:var(--display);font-size:22px;color:var(--g2);letter-spacing:2px}
+.foot-links{display:flex;gap:24px}
+.foot-links a{font-family:var(--mono);font-size:10px;color:var(--mu);text-decoration:none;letter-spacing:1px;transition:color .2s}
+.foot-links a:hover{color:var(--fg)}
+.foot-copy{font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:1px}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  nav{padding:14px 20px}
+  .nav-links{display:none}
+  .hero{padding:100px 20px 60px}
+  section{padding:60px 20px}
+  .problem-grid{grid-template-columns:1fr}
+  .prob-item{border-radius:0!important}
+  .feat-list{grid-template-columns:1fr}
+  .deptos-grid{grid-template-columns:1fr 1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .how-steps{grid-template-columns:1fr;gap:24px}
+  .how-steps::before{display:none}
+  footer{flex-direction:column;gap:16px;text-align:center}
+  .foot-links{flex-wrap:wrap;justify-content:center}
+}
+@media(max-width:480px){
+  .deptos-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">ZEROPAPER<span>GESTIÓN PORTUARIA</span></div>
+  <div class="nav-links">
+    <a href="#features">Funciones</a>
+    <a href="#deptos">Departamentos</a>
+    <a href="#pricing">Precios</a>
+    <a href="#como">Cómo funciona</a>
+  </div>
+  <a href="/zeropaper_app.html" class="nav-cta">ABRIR APP →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-eyebrow">PLATAFORMA DIGITAL PORTUARIA · CHILE</div>
+  <h1 class="hero-title">ZERO<span class="accent">PAPER</span><sup class="tm">™</sup></h1>
+  <h2 class="hero-sub">OPERACIÓN SIN PAPELES</h2>
+  <p class="hero-desc">
+    Registra ingresos y salidas desde el celular. Escanea documentos, sincroniza en tiempo real y da acceso a tus clientes. Todo en una app que funciona sin internet.
+  </p>
+  <div class="hero-btns">
+    <a href="/zeropaper_app.html" class="btn-hero-main">INGRESAR A LA APP →</a>
+    <a href="#como" class="btn-hero-sec">¿CÓMO FUNCIONA?</a>
+  </div>
+  <div class="hero-stats">
+    <div><div class="hero-stat-n">100%</div><div class="hero-stat-l">SIN PAPEL</div></div>
+    <div><div class="hero-stat-n">$0</div><div class="hero-stat-l">INSTALACIÓN</div></div>
+    <div><div class="hero-stat-n">30s</div><div class="hero-stat-l">POR OPERACIÓN</div></div>
+    <div><div class="hero-stat-n">24/7</div><div class="hero-stat-l">DISPONIBLE</div></div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span>GUARDA ALMACÉN</span> CONOCIMIENTO DE EMBARQUE <span>INTERCHECK</span> EIR <span>BOOKING</span> GATE IN / GATE OUT <span>DUS</span> DAM <span>AFORO</span> LEVANTE <span>MIC/DTA</span> GUÍA DESPACHO <span>ORDEN COMPRA</span> PASE SALIDA &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <span>GUARDA ALMACÉN</span> CONOCIMIENTO DE EMBARQUE <span>INTERCHECK</span> EIR <span>BOOKING</span> GATE IN / GATE OUT <span>DUS</span> DAM <span>AFORO</span> LEVANTE <span>MIC/DTA</span> GUÍA DESPACHO <span>ORDEN COMPRA</span> PASE SALIDA
+  </div>
+</div>
+
+<!-- EL PROBLEMA -->
+<section id="problema">
+  <div class="section-label">EL PROBLEMA</div>
+  <h2 class="section-title">ASÍ OPERA HOY<br>TU PUERTO</h2>
+  <p class="section-sub">Cada uno de estos puntos cuesta tiempo, dinero y errores que se acumulan turno a turno.</p>
+  <div class="problem-grid">
+    <div class="prob-item">
+      <div class="prob-icon">📱</div>
+      <div class="prob-title">Coordinación por WhatsApp</div>
+      <div class="prob-desc">Mensajes perdidos entre turnos. Sin trazabilidad. Sin confirmaciones. Información que desaparece cuando el turno termina.</div>
+    </div>
+    <div class="prob-item">
+      <div class="prob-icon">📄</div>
+      <div class="prob-title">Documentos físicos</div>
+      <div class="prob-desc">Se imprimen, firman, escanean y archivan manualmente. Documentos perdidos, ilegibles o mal clasificados.</div>
+    </div>
+    <div class="prob-item">
+      <div class="prob-icon">🔍</div>
+      <div class="prob-title">Búsqueda manual en archivos</div>
+      <div class="prob-desc">¿Cuándo ingresó el camión de la semana pasada? Dos horas buscando entre carpetas, cuadernos o planillas Excel.</div>
+    </div>
+    <div class="prob-item">
+      <div class="prob-icon">📞</div>
+      <div class="prob-title">Clientes que llaman a preguntar</div>
+      <div class="prob-desc">Sin acceso en tiempo real, el importador llama para saber el estado de su carga. Tiempo perdido en ambos lados.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-label">LA SOLUCIÓN</div>
+  <h2 class="section-title">TODO LO QUE<br>NECESITAS</h2>
+  <p class="section-sub">Diseñado específicamente para la operación portuaria chilena.</p>
+  <div class="feat-list">
+    <div class="feat-item">
+      <div class="feat-num">01</div>
+      <div class="feat-icon">📥</div>
+      <div class="feat-title">Registro instantáneo</div>
+      <div class="feat-desc">Ingreso y salida en menos de 30 segundos. Patente, tipo de documento, folio y foto desde el celular del operador.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">02</div>
+      <div class="feat-icon">📷</div>
+      <div class="feat-title">Escaneo de documentos</div>
+      <div class="feat-desc">Fotografía el documento desde la cámara. Se clasifica y guarda automáticamente ligado a la operación.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">03</div>
+      <div class="feat-icon">🏗</div>
+      <div class="feat-title">Multi-departamento</div>
+      <div class="feat-desc">Guarda Almacén, Control, Aduana, Recepción — cada uno con su set de documentos. Configurable en 30 segundos.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">04</div>
+      <div class="feat-icon">🏢</div>
+      <div class="feat-title">Panel de cliente</div>
+      <div class="feat-desc">Tu cliente ve el estado de su carga en tiempo real. Sin llamadas. Sin emails. Sin fricción.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">05</div>
+      <div class="feat-icon">🔥</div>
+      <div class="feat-title">Sincronización en nube</div>
+      <div class="feat-desc">Firebase Firestore. Todos los turnos ven los mismos datos en tiempo real. Sin conflictos, sin versiones duplicadas.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">06</div>
+      <div class="feat-icon">📴</div>
+      <div class="feat-title">Funciona sin internet</div>
+      <div class="feat-desc">IndexedDB local. Los datos se guardan aunque no haya señal y se sincronizan automáticamente cuando vuelve la conexión.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">07</div>
+      <div class="feat-icon">📊</div>
+      <div class="feat-title">Exportación de datos</div>
+      <div class="feat-desc">CSV en un clic. Compatible con Excel, SAP, cualquier ERP. Tus datos son tuyos, siempre.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">08</div>
+      <div class="feat-icon">🖥</div>
+      <div class="feat-title">Panel administrador</div>
+      <div class="feat-desc">Dashboard completo con estadísticas, historial filtrable, gestión de departamentos y acceso multi-cliente.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">09</div>
+      <div class="feat-icon">📲</div>
+      <div class="feat-title">Instalable como app</div>
+      <div class="feat-desc">PWA. Se instala en el celular como una app nativa sin pasar por App Store ni Play Store. Sin actualizaciones manuales.</div>
+    </div>
+  </div>
+</section>
+
+<!-- DEPTOS -->
+<section id="deptos">
+  <div class="section-label">DEPARTAMENTOS</div>
+  <h2 class="section-title">CUATRO ÁREAS,<br>UN SISTEMA</h2>
+  <p class="section-sub">Pre-configurados para la operación portuaria chilena. Puedes agregar los tuyos en cualquier momento.</p>
+  <div class="deptos-grid">
+    <div class="depto-card">
+      <div class="depto-emoji">🏭</div>
+      <div class="depto-name">Guarda Almacén</div>
+      <div class="depto-desc">CABOTAJE NACIONAL</div>
+      <div class="depto-docs">
+        <span class="doc-chip">CONOCIMIENTO EMBARQUE</span>
+        <span class="doc-chip">GUÍA CABOTAJE</span>
+        <span class="doc-chip">MANIFIESTO</span>
+        <span class="doc-chip">LISTA EMPAQUE</span>
+        <span class="doc-chip">ORDEN CARGA</span>
+        <span class="doc-chip">RECIBO BODEGA</span>
+      </div>
+    </div>
+    <div class="depto-card">
+      <div class="depto-emoji">📦</div>
+      <div class="depto-name">Control</div>
+      <div class="depto-desc">CONTENEDORES · INTERCHECK</div>
+      <div class="depto-docs">
+        <span class="doc-chip">INTERCHECK</span>
+        <span class="doc-chip">EIR</span>
+        <span class="doc-chip">BOOKING</span>
+        <span class="doc-chip">GATE IN / OUT</span>
+        <span class="doc-chip">DAMAGE REPORT</span>
+        <span class="doc-chip">TARJA</span>
+      </div>
+    </div>
+    <div class="depto-card">
+      <div class="depto-emoji">🌍</div>
+      <div class="depto-name">Aduana</div>
+      <div class="depto-desc">DUS · DAM · DESPACHO</div>
+      <div class="depto-docs">
+        <span class="doc-chip">DUS</span>
+        <span class="doc-chip">DAM</span>
+        <span class="doc-chip">AFORO</span>
+        <span class="doc-chip">LEVANTE</span>
+        <span class="doc-chip">MIC/DTA</span>
+        <span class="doc-chip">CARTA PORTE</span>
+      </div>
+    </div>
+    <div class="depto-card">
+      <div class="depto-emoji">🚪</div>
+      <div class="depto-name">Recepción General</div>
+      <div class="depto-desc">ENTRADA · SALIDA</div>
+      <div class="depto-docs">
+        <span class="doc-chip">GUÍA DESPACHO</span>
+        <span class="doc-chip">ORDEN COMPRA</span>
+        <span class="doc-chip">FACTURA</span>
+        <span class="doc-chip">NOTA ENTREGA</span>
+        <span class="doc-chip">PASE SALIDA</span>
+        <span class="doc-chip">CONTROL ACCESO</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CÓMO FUNCIONA -->
+<section id="como" style="background:var(--bg2)">
+  <div class="section-label">PROCESO</div>
+  <h2 class="section-title">EN PRODUCCIÓN<br>EN 5 PASOS</h2>
+  <p class="section-sub">Sin instalación de software. Sin configuración de servidores. Sin IT.</p>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="how-num">1</div>
+      <div class="how-title">Abre la app</div>
+      <div class="how-desc">Desde cualquier celular en zeropaper.cl — sin instalar nada.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">2</div>
+      <div class="how-title">Configura tu empresa</div>
+      <div class="how-desc">Nombre, operador y selecciona tu departamento activo.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">3</div>
+      <div class="how-title">Registra una operación</div>
+      <div class="how-desc">Patente + documento + foto → guardar. 30 segundos.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">4</div>
+      <div class="how-title">Sincroniza automático</div>
+      <div class="how-desc">Firebase guarda y distribuye a todos los turnos en tiempo real.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">5</div>
+      <div class="how-title">Cliente ve su carga</div>
+      <div class="how-desc">Panel de seguimiento en tiempo real sin llamadas.</div>
+    </div>
+  </div>
+</section>
+
+<!-- TERMINAL DEMO -->
+<section>
+  <div class="section-label">DEMO EN VIVO</div>
+  <h2 class="section-title">ASÍ SE VE<br>UNA OPERACIÓN</h2>
+  <div style="max-width:640px">
+    <div class="terminal">
+      <div class="term-bar">
+        <div class="term-dot" style="background:#ef4444"></div>
+        <div class="term-dot" style="background:#eab308"></div>
+        <div class="term-dot" style="background:#22c55e"></div>
+        <span style="font-size:10px;color:#374151;margin-left:10px">zeropaper_app.html — operación registrada</span>
+      </div>
+      <div class="term-body">
+        <div class="term-line term-comment" style="animation-delay:.2s">// INGRESO · Guarda Almacén · 14:32</div>
+        <div class="term-line" style="animation-delay:.5s"><span class="term-key">patente</span>   : <span class="term-val">"HJKL-72"</span></div>
+        <div class="term-line" style="animation-delay:.8s"><span class="term-key">documento</span> : <span class="term-val">"CONOCIMIENTO_EMBARQUE"</span></div>
+        <div class="term-line" style="animation-delay:1.1s"><span class="term-key">folio</span>     : <span class="term-val">"CBT-2025-4821"</span></div>
+        <div class="term-line" style="animation-delay:1.4s"><span class="term-key">foto</span>      : <span class="term-val">"foto_op_1741234567.jpg"</span></div>
+        <div class="term-line" style="animation-delay:1.7s"><span class="term-key">depto</span>     : <span class="term-val">"guarda_almacen"</span></div>
+        <div class="term-line" style="animation-delay:2.0s"><span class="term-key">sync</span>      : <span class="term-val">"pending"</span></div>
+        <div class="term-line" style="animation-delay:2.5s">&nbsp;</div>
+        <div class="term-line" style="animation-delay:2.8s"><span class="term-comment">// Guardando en IndexedDB...</span></div>
+        <div class="term-line" style="animation-delay:3.2s"><span class="term-comment">// Sincronizando con Firebase...</span></div>
+        <div class="term-line term-ok" style="animation-delay:3.8s">✓ OPERACIÓN REGISTRADA EN 0.3s · SYNC: OK</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background:var(--bg2)">
+  <div class="section-label">PRECIOS</div>
+  <h2 class="section-title">SIMPLE,<br>SIN SORPRESAS</h2>
+  <p class="section-sub">Prueba gratis 30 días. Sin tarjeta de crédito. Sin permanencia.</p>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-name">PILOTO</div>
+      <div class="price-amount">$0</div>
+      <div class="price-cur">USD · 30 días gratis</div>
+      <div class="price-divider"></div>
+      <div class="price-feature">1 departamento activo</div>
+      <div class="price-feature">Hasta 500 operaciones</div>
+      <div class="price-feature">Soporte por email</div>
+      <div class="price-feature">Sin tarjeta de crédito</div>
+      <a href="/zeropaper_app.html" class="price-btn price-btn-ghost">EMPEZAR GRATIS</a>
+    </div>
+    <div class="price-card featured">
+      <div class="price-name">PROFESIONAL</div>
+      <div class="price-amount">$80</div>
+      <div class="price-cur">USD / mes</div>
+      <div class="price-divider"></div>
+      <div class="price-feature featured-item">Departamentos ilimitados</div>
+      <div class="price-feature featured-item">Panel cliente incluido</div>
+      <div class="price-feature featured-item">Soporte prioritario 12h</div>
+      <div class="price-feature featured-item">Exportación CSV/JSON</div>
+      <div class="price-feature featured-item">Historial completo + fotos</div>
+      <div class="price-feature featured-item">Panel admin incluido</div>
+      <a href="mailto:contacto@zeropaper.cl" class="price-btn price-btn-main">CONTRATAR</a>
+    </div>
+    <div class="price-card">
+      <div class="price-name">CORPORATIVO</div>
+      <div class="price-amount">TBD</div>
+      <div class="price-cur">A convenir</div>
+      <div class="price-divider"></div>
+      <div class="price-feature">Multi-empresa</div>
+      <div class="price-feature">API REST</div>
+      <div class="price-feature">Integración ERP/SAP</div>
+      <div class="price-feature">Capacitación presencial</div>
+      <div class="price-feature">SLA garantizado</div>
+      <a href="mailto:contacto@zeropaper.cl" class="price-btn price-btn-ghost">CONTACTAR</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <div class="section-label" style="justify-content:center">COMIENZA HOY</div>
+  <h2 class="cta-title">TU OPERACIÓN<br>SIN PAPEL</h2>
+  <p class="cta-sub">30 días gratis. Sin instalación. Sin compromiso.</p>
+  <div class="cta-badges">
+    <div class="cta-badge">GRATIS 30 DÍAS</div>
+    <div class="cta-badge">SIN TARJETA</div>
+    <div class="cta-badge">INSTALACIÓN $0</div>
+    <div class="cta-badge">SOPORTE INCLUIDO</div>
+  </div>
+  <a href="/zeropaper_app.html" class="btn-hero-main">ABRIR ZEROPAPER™ →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">ZEROPAPER™</div>
+  <div class="foot-links">
+    <a href="/zeropaper_app.html">Aplicación</a>
+    <a href="/zeropaper_admin.html">Admin</a>
+    <a href="#features">Funciones</a>
+    <a href="#pricing">Precios</a>
+    <a href="mailto:contacto@zeropaper.cl">contacto@zeropaper.cl</a>
+  </div>
+  <div class="foot-copy">© 2025 ZEROPAPER™ · VALPARAÍSO, CHILE</div>
+</footer>
+
+</body>
+</html>

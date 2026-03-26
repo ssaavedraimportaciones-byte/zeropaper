@@ -1,0 +1,33 @@
+{
+  "name": "ZeroPaper™ — Gestión Portuaria",
+  "short_name": "ZeroPaper™",
+  "description": "Plataforma de gestión portuaria digital multi-departamento para Chile",
+  "start_url": "/zeropaper_app.html",
+  "display": "standalone",
+  "background_color": "#0d0d1a",
+  "theme_color": "#2D6A4F",
+  "orientation": "portrait-primary",
+  "lang": "es-CL",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Nuevo Ingreso",
+      "url": "/zeropaper_app.html",
+      "description": "Registrar ingreso de vehículo"
+    },
+    {
+      "name": "Panel Admin",
+      "url": "/zeropaper_admin.html",
+      "description": "Abrir panel de administración"
+    }
+  ]
+}

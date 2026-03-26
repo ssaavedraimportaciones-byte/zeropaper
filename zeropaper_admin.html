@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZeroPaper™ — Admin</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ZeroPaper™ Admin">
+<meta name="theme-color" content="#0d0d1a">
+<style>
+:root {
+  --bg:#0d0d1a; --bg2:#13132a; --bg3:#1a1a35;
+  --fg:#e8e8f0; --mu:#6b7280; --brd:rgba(255,255,255,.08);
+  --g:#2D6A4F; --g2:#40916C; --o:#ff6d00; --r:#ef4444; --b:#3b82f6;
+  --card:rgba(255,255,255,.04); --mono:'Courier New',monospace;
+  --disp:system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--fg);font-family:var(--disp);min-height:100vh;}
+
+/* LOGIN */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+.login-box{background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:40px 32px;width:100%;max-width:380px;text-align:center;}
+.login-logo{font-size:48px;margin-bottom:8px;}
+.login-title{font-weight:800;font-size:24px;color:var(--g);margin-bottom:4px;}
+.login-sub{font-family:var(--mono);font-size:12px;color:var(--mu);letter-spacing:2px;margin-bottom:28px;}
+.login-inp{width:100%;background:var(--bg3);border:1px solid var(--brd);border-radius:10px;padding:13px 16px;color:var(--fg);font-size:15px;margin-bottom:12px;}
+.login-inp:focus{outline:none;border-color:var(--g);}
+.login-btn{width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--g),var(--g2));color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-bottom:10px;}
+.login-btn:active{opacity:.8;}
+.login-err{color:var(--r);font-size:13px;font-family:var(--mono);min-height:20px;margin-top:4px;}
+.login-note{font-family:var(--mono);font-size:12px;color:var(--mu);margin-top:14px;letter-spacing:.5px;line-height:1.8;}
+.login-link{color:var(--g2);cursor:pointer;font-size:12px;font-family:var(--mono);text-decoration:underline;background:none;border:none;padding:0;margin-top:10px;display:block;text-align:center;}
+.setup-box{display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--brd);}
+.setup-title{font-family:var(--mono);font-size:11px;color:var(--g);letter-spacing:2px;margin-bottom:12px;text-transform:uppercase;}
+
+/* LAYOUT */
+#adminPanel{display:none;}
+.sidebar{position:fixed;left:0;top:0;width:220px;height:100vh;background:var(--bg2);border-right:1px solid var(--brd);padding:20px 0;display:flex;flex-direction:column;z-index:100;}
+.sidebar-logo{padding:0 20px 20px;border-bottom:1px solid var(--brd);}
+.sidebar-logo-title{font-weight:800;font-size:20px;color:var(--g);}
+.sidebar-logo-sub{font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:2px;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;color:var(--mu);font-size:14px;transition:all .15s;border-left:3px solid transparent;}
+.nav-item:hover{color:var(--fg);background:var(--card);}
+.nav-item.on{color:var(--g);border-left-color:var(--g);background:rgba(45,106,79,.08);}
+.nav-icon{font-size:20px;width:24px;text-align:center;}
+.sidebar-bottom{margin-top:auto;padding:16px 20px;border-top:1px solid var(--brd);}
+.sidebar-user-name{font-family:var(--mono);font-size:12px;color:var(--mu);letter-spacing:.5px;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sidebar-empresa{font-family:var(--mono);font-size:11px;color:var(--g);letter-spacing:.5px;margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.logout-btn{width:100%;padding:10px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;color:#f87171;font-size:13px;cursor:pointer;font-family:var(--mono);}
+
+/* MAIN */
+.main{margin-left:220px;padding:24px;min-height:100vh;}
+.page{display:none;}
+.page.active{display:block;}
+.page-title{font-size:22px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.stat-card{background:var(--bg2);border:1px solid var(--brd);border-radius:14px;padding:16px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent,var(--g));}
+.stat-n{font-size:32px;font-weight:800;color:var(--fg);margin-bottom:4px;}
+.stat-l{font-family:var(--mono);font-size:12px;color:var(--mu);letter-spacing:1px;}
+.stat-trend{font-size:11px;margin-top:6px;}
+
+/* TABLA */
+.table-card{background:var(--bg2);border:1px solid var(--brd);border-radius:14px;overflow:hidden;}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--brd);}
+.table-title{font-weight:700;font-size:14px;}
+.table-actions{display:flex;gap:8px;align-items:center;}
+.filter-sel{background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:6px 10px;color:var(--fg);font-size:12px;font-family:var(--mono);}
+.btn-sm{padding:6px 12px;border:none;border-radius:8px;font-size:13px;font-family:var(--mono);cursor:pointer;font-weight:700;}
+.btn-green{background:linear-gradient(135deg,var(--g),var(--g2));color:#fff;}
+.btn-gray{background:var(--bg3);border:1px solid var(--brd);color:var(--mu);}
+.btn-blue{background:linear-gradient(135deg,var(--b),var(--b2));color:#fff;}
+.btn-red{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.2);color:#f87171;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--bg3);}
+th{text-align:left;padding:10px 14px;font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+td{padding:10px 14px;border-bottom:1px solid var(--brd);font-size:13px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--card);}
+tr{cursor:pointer;}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-family:var(--mono);font-size:11px;font-weight:700;}
+.badge-in{background:rgba(45,106,79,.2);color:var(--g2);}
+.badge-out{background:rgba(255,109,0,.2);color:#ff8c00;}
+.badge-sync{background:rgba(59,130,246,.15);color:#60a5fa;}
+.badge-pend{background:rgba(239,68,68,.15);color:#f87171;}
+.badge-admin{background:rgba(45,106,79,.2);color:var(--g2);}
+.badge-op{background:rgba(107,114,128,.15);color:var(--mu);}
+.no-foto{width:32px;height:32px;border-radius:6px;background:var(--bg3);display:inline-flex;align-items:center;justify-content:center;font-size:14px;}
+.empty-row td{text-align:center;padding:40px;color:var(--mu);font-family:var(--mono);font-size:13px;}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:var(--bg2);border:1px solid var(--brd);border-radius:18px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:24px;}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;}
+.modal-title{font-weight:700;font-size:16px;}
+.modal-x{background:none;border:none;color:var(--mu);font-size:20px;cursor:pointer;}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.detail-item{background:var(--bg3);border-radius:10px;padding:10px 12px;}
+.detail-lbl{font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:1px;margin-bottom:4px;}
+.detail-val{font-weight:600;font-size:13px;}
+
+/* ESTADOS */
+.est-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.8px;padding:2px 8px;border-radius:100px;white-space:nowrap;}
+.est-pendiente{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3);}
+.est-aprobado {background:rgba(34,197,94,.15); color:#4ade80;border:1px solid rgba(34,197,94,.3);}
+.est-rechazado{background:rgba(239,68,68,.15); color:#f87171;border:1px solid rgba(239,68,68,.3);}
+.est-revision {background:rgba(59,130,246,.15); color:#60a5fa;border:1px solid rgba(59,130,246,.3);}
+
+/* APROBACIONES */
+.aprob-card{background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:20px;margin-bottom:12px;transition:border-color .2s;}
+.aprob-card:hover{border-color:rgba(59,130,246,.25);}
+.aprob-card.rechazada{border-color:rgba(239,68,68,.2);}
+.aprob-card.aprobada{border-color:rgba(34,197,94,.2);}
+.aprob-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.aprob-plate{font-weight:800;font-size:20px;color:#fff;letter-spacing:1px;}
+.aprob-meta{font-size:13px;color:var(--mu);margin-bottom:12px;}
+.aprob-docs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.aprob-doc-tag{font-family:var(--mono);font-size:10px;padding:3px 10px;background:var(--bg3);border:1px solid var(--brd);border-radius:6px;color:var(--fg);}
+.aprob-actions{display:flex;gap:8px;}
+.btn-aprobar{padding:8px 20px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:8px;color:#4ade80;font-size:12px;font-weight:700;font-family:var(--mono);cursor:pointer;transition:all .2s;}
+.btn-aprobar:hover{background:rgba(34,197,94,.25);}
+.btn-rechazar{padding:8px 20px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);border-radius:8px;color:#f87171;font-size:12px;font-weight:700;font-family:var(--mono);cursor:pointer;transition:all .2s;}
+.btn-rechazar:hover{background:rgba(239,68,68,.22);}
+.btn-revision{padding:8px 16px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:8px;color:#60a5fa;font-size:11px;font-weight:700;font-family:var(--mono);cursor:pointer;}
+.log-trail{margin-top:12px;padding-top:12px;border-top:1px solid var(--brd);display:flex;flex-direction:column;gap:6px;}
+.log-entry{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--fg);}
+.log-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.ld-c{background:#4ade80;}.ld-a{background:#4ade80;}.ld-r{background:#f87171;}.ld-v{background:#60a5fa;}
+.log-ts-a{font-family:var(--mono);font-size:10px;color:var(--mu);}
+
+/* DEPTOS */
+.depto-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
+.depto-card{background:var(--bg2);border:1px solid var(--brd);border-radius:14px;padding:16px;}
+.depto-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.depto-icon{font-size:40px;}
+.depto-name{font-weight:700;font-size:17px;}
+.depto-count{font-family:var(--mono);font-size:13px;color:var(--mu);}
+.doc-tag{display:inline-block;background:var(--bg3);border:1px solid var(--brd);border-radius:6px;padding:2px 8px;font-family:var(--mono);font-size:11px;color:var(--mu);margin:2px;}
+
+/* CHART */
+.chart-card{background:var(--bg2);border:1px solid var(--brd);border-radius:14px;padding:18px;margin-bottom:20px;}
+.chart-title{font-weight:700;font-size:14px;margin-bottom:14px;}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:120px;}
+.bar-wrap{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px;height:100%;}
+.bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(to top,var(--g),var(--g2));transition:height .3s;min-height:4px;}
+.bar-label{font-family:var(--mono);font-size:8px;color:var(--mu);text-align:center;white-space:nowrap;}
+.bar-val{font-family:var(--mono);font-size:9px;color:var(--fg);font-weight:700;}
+
+/* SEARCH */
+.search-row{display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap;}
+.search-inp{flex:1;background:var(--bg3);border:1px solid var(--brd);border-radius:10px;padding:9px 14px;color:var(--fg);font-size:13px;}
+.search-inp:focus{outline:none;border-color:var(--g);}
+
+/* CODIGO EMPRESA */
+.empresa-code-box{background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:16px;margin-bottom:16px;text-align:center;}
+.empresa-code{font-family:var(--mono);font-size:28px;letter-spacing:8px;color:var(--g);font-weight:700;}
+.empresa-code-label{font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:1px;margin-bottom:8px;}
+.empresa-code-hint{font-family:var(--mono);font-size:10px;color:var(--mu);margin-top:8px;}
+
+/* OPERATORS TABLE */
+.op-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--g2));display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0;}
+
+/* TURNOS */
+.turno-card{background:var(--bg2);border:1px solid var(--brd);border-radius:14px;padding:18px;margin-bottom:16px;}
+.turno-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.turno-op{font-weight:700;font-size:15px;}
+.turno-fecha{font-family:var(--mono);font-size:10px;color:var(--mu);}
+.turno-body{font-family:var(--mono);font-size:11px;color:var(--mu);background:var(--bg3);border-radius:8px;padding:10px;white-space:pre-wrap;line-height:1.6;}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{width:60px;}
+  .sidebar-logo,.nav-item span,.sidebar-bottom .logout-btn,.sidebar-user-name,.sidebar-empresa{display:none;}
+  .main{margin-left:60px;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .depto-grid{grid-template-columns:1fr;}
+}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--brd);border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:10px;opacity:0;transition:all .3s;pointer-events:none;z-index:600;}
+#toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🔒</div>
+    <div class="login-title">ZeroPaper™</div>
+    <div class="login-sub">PANEL DE ADMINISTRACIÓN</div>
+    <input class="login-inp" id="loginEmail" type="email" placeholder="Correo electrónico" autocomplete="email">
+    <input class="login-inp" id="loginPass" type="password" placeholder="Contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Entrar al panel</button>
+    <button class="login-btn" onclick="doLoginDemo()" style="background:linear-gradient(135deg,#1e3a5f,#2563eb);margin-top:4px">🧪 Entrar en MODO DEMO</button>
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-note">Solo administradores de empresa tienen acceso.<br>Ingresa con tu cuenta ZeroPaper™.<br><br><span style="color:#3b82f6">Modo Demo: sin registro, datos de ejemplo.</span></div>
+    <button class="login-link" onclick="toggleSetup()">⚙ Primera vez? Configurar acceso admin</button>
+    <div class="setup-box" id="setupBox">
+      <div class="setup-title">🔧 Crear primer administrador</div>
+      <input class="login-inp" id="setupEmail" type="email" placeholder="Tu correo admin" autocomplete="off" style="margin-bottom:8px">
+      <input class="login-inp" id="setupPass" type="password" placeholder="Contraseña (mín. 8 caracteres)" autocomplete="new-password" style="margin-bottom:8px">
+      <input class="login-inp" id="setupEmpresa" type="text" placeholder="ID empresa (ej: empresa1)" autocomplete="off" style="margin-bottom:8px">
+      <input class="login-inp" id="setupNombre" type="text" placeholder="Nombre del administrador" autocomplete="off" style="margin-bottom:8px">
+      <button class="login-btn" onclick="crearPrimerAdmin()" style="background:linear-gradient(135deg,#166534,#16a34a)">Crear cuenta admin</button>
+      <div class="login-err" id="setupErr" style="margin-top:8px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADMIN PANEL ── -->
+<div id="adminPanel">
+
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-title">ZeroPaper™</div>
+      <div class="sidebar-logo-sub">ADMIN v5.0</div>
+    </div>
+    <div class="nav-item on" onclick="showPage('dashboard',this)"><span class="nav-icon">📊</span><span>Dashboard</span></div>
+    <div class="nav-item" onclick="showPage('aprobaciones',this)" id="navAprobaciones"><span class="nav-icon">✅</span><span>Aprobaciones <span id="pendBadge" style="display:none;background:#ef4444;color:#fff;border-radius:100px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:4px">0</span></span></div>
+    <div class="nav-item" onclick="showPage('operaciones',this)"><span class="nav-icon">📋</span><span>Operaciones</span></div>
+    <div class="nav-item" onclick="showPage('turnos',this)"><span class="nav-icon">🔄</span><span>Turnos</span></div>
+    <div class="nav-item" onclick="showPage('operadores',this)"><span class="nav-icon">👥</span><span>Operadores</span></div>
+    <div class="nav-item" onclick="showPage('deptos',this)"><span class="nav-icon">🏗</span><span>Departamentos</span></div>
+    <div class="nav-item" onclick="showPage('config',this)"><span class="nav-icon">⚙</span><span>Configuración</span></div>
+    <div class="nav-item" onclick="showPage('reportes',this)" style="margin-top:8px;border-top:1px solid var(--brd);padding-top:14px;"><span class="nav-icon">📈</span><span>Reportes IA</span></div>
+    <div class="nav-item" onclick="abrirCertificado()"><span class="nav-icon">🏅</span><span>Certificado Ambiental</span></div>
+    <div class="sidebar-bottom">
+      <div class="sidebar-user-name" id="sidebarUser">—</div>
+      <div class="sidebar-empresa" id="sidebarEmpresa">—</div>
+      <button class="logout-btn" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="pDashboard">
+      <div class="page-title">📊 Dashboard <span style="font-size:12px;color:var(--mu);font-weight:400" id="dashFecha"></span></div>
+      <div class="stats-row">
+        <div class="stat-card" style="--accent:var(--g)">
+          <div class="stat-n" id="dTotal">—</div><div class="stat-l">TOTAL OPERACIONES</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--g)">
+          <div class="stat-n" id="dHoy">—</div><div class="stat-l">OPERACIONES HOY</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--o)">
+          <div class="stat-n" id="dConFoto">—</div><div class="stat-l">DOCS ESCANEADOS</div>
+        </div>
+        <div class="stat-card" style="--accent:var(--b)">
+          <div class="stat-n" id="dEnPlanta">—</div><div class="stat-l">VEHÍCULOS EN PLANTA</div>
+        </div>
+        <div class="stat-card" style="--accent:#f59e0b">
+          <div class="stat-n" id="dPendientes" style="color:#fbbf24">—</div><div class="stat-l">PENDIENTES REVISIÓN</div>
+        </div>
+        <div class="stat-card" style="--accent:#22c55e">
+          <div class="stat-n" id="dTasaAprobacion" style="color:#4ade80">—%</div><div class="stat-l">TASA APROBACIÓN</div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title">Operaciones — Últimos 7 días</div>
+        <div class="bar-chart" id="barChart"></div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">Últimas operaciones</div>
+          <button class="btn-sm btn-green" onclick="showPage('operaciones',null)">Ver todas →</button>
+        </div>
+        <table><thead><tr>
+          <th>Tipo</th><th>Patente</th><th>Documento</th><th>Depto</th><th>Operador</th><th>Fecha/Hora</th><th>Doc</th>
+        </tr></thead>
+        <tbody id="dashTable"></tbody></table>
+      </div>
+    </div>
+
+    <!-- APROBACIONES -->
+    <div class="page" id="pAprobaciones">
+      <div class="page-title">✅ Cola de Aprobaciones <span style="font-size:13px;color:var(--mu);font-weight:400">— Revisión de documentos operativos</span></div>
+
+      <!-- Resumen estados -->
+      <div class="stats-row" style="margin-bottom:20px">
+        <div class="stat-card" style="--accent:#f59e0b;cursor:pointer" onclick="filtrarAprobaciones('PENDIENTE')">
+          <div class="stat-n" id="aPendN" style="color:#fbbf24">—</div><div class="stat-l">PENDIENTES</div>
+        </div>
+        <div class="stat-card" style="--accent:#3b82f6;cursor:pointer" onclick="filtrarAprobaciones('EN_REVISION')">
+          <div class="stat-n" id="aRevN" style="color:#60a5fa">—</div><div class="stat-l">EN REVISIÓN</div>
+        </div>
+        <div class="stat-card" style="--accent:#22c55e;cursor:pointer" onclick="filtrarAprobaciones('APROBADO')">
+          <div class="stat-n" id="aAprobN" style="color:#4ade80">—</div><div class="stat-l">APROBADOS</div>
+        </div>
+        <div class="stat-card" style="--accent:#ef4444;cursor:pointer" onclick="filtrarAprobaciones('RECHAZADO')">
+          <div class="stat-n" id="aRechN" style="color:#f87171">—</div><div class="stat-l">RECHAZADOS</div>
+        </div>
+      </div>
+
+      <!-- Filtro rápido -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+        <select class="filter-sel" id="aFiltroEstado" onchange="renderAprobaciones()" style="max-width:180px">
+          <option value="PENDIENTE">⏳ Pendientes</option>
+          <option value="EN_REVISION">👁 En Revisión</option>
+          <option value="APROBADO">✓ Aprobados</option>
+          <option value="RECHAZADO">✗ Rechazados</option>
+          <option value="">Todos</option>
+        </select>
+        <select class="filter-sel" id="aFiltroDepto" onchange="renderAprobaciones()" style="max-width:180px"></select>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--mu);margin-left:auto" id="aCount">—</span>
+      </div>
+
+      <!-- Lista de operaciones para aprobar -->
+      <div id="aprobacionesList"></div>
+    </div>
+
+    <!-- MODAL RECHAZO -->
+    <div id="rechazoModal" style="display:none" class="modal-ov" onclick="if(event.target===this)this.style.display='none'">
+      <div class="modal-box" style="max-width:420px">
+        <div class="modal-hdr">
+          <div class="modal-title">✗ Rechazar Operación</div>
+          <button class="modal-x" onclick="document.getElementById('rechazoModal').style.display='none'">✕</button>
+        </div>
+        <p style="font-size:13px;color:var(--mu);margin-bottom:14px">El operador verá el motivo del rechazo en su app. Sé específico.</p>
+        <label style="font-family:var(--mono);font-size:10px;color:var(--mu);display:block;margin-bottom:4px">MOTIVO DEL RECHAZO *</label>
+        <textarea id="rechazoComentario" placeholder="Ej: Folio duplicado, falta documento de respaldo, patente incorrecta..." style="width:100%;background:var(--bg3);border:1px solid var(--brd);border-radius:10px;padding:12px;color:var(--fg);font-size:13px;min-height:80px;resize:vertical;margin-bottom:12px"></textarea>
+        <div style="display:flex;gap:8px">
+          <button class="btn-sm btn-gray" onclick="document.getElementById('rechazoModal').style.display='none'" style="flex:1;padding:10px">Cancelar</button>
+          <button class="btn-sm btn-red" onclick="confirmarRechazo()" style="flex:2;padding:10px;font-size:13px">✗ Confirmar Rechazo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPERACIONES -->
+    <div class="page" id="pOperaciones">
+      <div class="page-title">📋 Operaciones</div>
+      <div class="search-row">
+        <input class="search-inp" id="opsSearch" placeholder="🔍  Buscar por patente, folio, documento..." oninput="filtrarOps()">
+        <select class="filter-sel" id="opsTipo" onchange="filtrarOps()">
+          <option value="">Todos los tipos</option>
+          <option value="INGRESO">Ingreso</option>
+          <option value="SALIDA">Salida</option>
+        </select>
+        <select class="filter-sel" id="opsDepto" onchange="filtrarOps()"></select>
+        <select class="filter-sel" id="opsEstado" onchange="filtrarOps()">
+          <option value="">Todos los estados</option>
+          <option value="PENDIENTE">⏳ Pendiente</option>
+          <option value="EN_REVISION">👁 En Revisión</option>
+          <option value="APROBADO">✓ Aprobado</option>
+          <option value="RECHAZADO">✗ Rechazado</option>
+        </select>
+        <input type="date" class="filter-sel" id="opsDesde" onchange="filtrarOps()">
+        <input type="date" class="filter-sel" id="opsHasta" onchange="filtrarOps()">
+        <button class="btn-sm btn-green" onclick="exportarCSV()">📊 CSV Todo</button>
+        <button class="btn-sm btn-blue" onclick="showExportDeptoModal()">📁 Por Depto</button>
+        <button class="btn-sm btn-gray" onclick="exportarJSON()">🔄 JSON/ERP</button>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title" id="opsCount">Cargando...</div>
+          <div class="table-actions">
+            <button class="btn-sm btn-gray" onclick="recargarOps()">↻ Actualizar</button>
+          </div>
+        </div>
+        <table><thead><tr>
+          <th>Estado</th><th>Tipo</th><th>Patente</th><th>Documento</th><th>Folio</th><th>Depto</th><th>Operador</th><th>Fecha</th><th>Hora</th><th>Doc</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="opsTable"></tbody></table>
+      </div>
+    </div>
+
+    <!-- TURNOS -->
+    <div class="page" id="pTurnos">
+      <div class="page-title">🔄 Historial de Turnos</div>
+      <div id="turnosContainer">
+        <div style="text-align:center;padding:40px;color:var(--mu);font-family:var(--mono);font-size:11px">Cargando turnos...</div>
+      </div>
+    </div>
+
+    <!-- OPERADORES -->
+    <div class="page" id="pOperadores">
+      <div class="page-title">👥 Operadores de la Empresa</div>
+
+      <div class="empresa-code-box">
+        <div class="empresa-code-label">CÓDIGO PARA UNIRSE A ESTA EMPRESA</div>
+        <div class="empresa-code" id="empresaCodigo">— — — — — —</div>
+        <div class="empresa-code-hint">Comparte este código con nuevos operadores para que ingresen a tu empresa</div>
+        <button class="btn-sm btn-green" style="margin-top:12px" onclick="copiarCodigo()">Copiar código</button>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title" id="opsCountOp">Operadores</div>
+          <button class="btn-sm btn-gray" onclick="cargarOperadores()">↻ Actualizar</button>
+        </div>
+        <table><thead><tr>
+          <th>Operador</th><th>Correo</th><th>Rol</th><th>Operaciones</th><th>Último Turno</th>
+        </tr></thead>
+        <tbody id="operadoresTable"></tbody></table>
+      </div>
+    </div>
+
+    <!-- DEPARTAMENTOS -->
+    <div class="page" id="pDeptos">
+      <div class="page-title">🏗 Departamentos</div>
+      <div style="display:flex;gap:10px;margin-bottom:16px">
+        <button class="btn-sm btn-green" onclick="showNewDeptoModal()">+ Nuevo departamento</button>
+        <button class="btn-sm btn-gray" onclick="showNewDocModal()">+ Agregar documento</button>
+      </div>
+      <div class="depto-grid" id="deptosGrid"></div>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="page" id="pConfig">
+      <div class="page-title">⚙ Configuración</div>
+      <div style="max-width:480px">
+        <div class="table-card" style="padding:20px;margin-bottom:16px">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:2px;margin-bottom:14px">DATOS DE LA EMPRESA</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--mu);line-height:2">
+            Empresa ID: <span id="cfgEmpresaId" style="color:var(--fg)">—</span><br>
+            Correo admin: <span id="cfgEmail" style="color:var(--fg)">—</span><br>
+            Rol: <span id="cfgRol" style="color:var(--g)">—</span>
+          </div>
+        </div>
+
+        <div class="table-card" style="padding:20px;margin-bottom:16px">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:2px;margin-bottom:14px">LINK PORTAL CLIENTE</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--mu);margin-bottom:10px">Comparte este link para que los clientes vean el estado de sus vehículos en tiempo real.</div>
+          <div id="portalLinkBox" style="background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:11px;color:var(--g);margin-bottom:10px;word-break:break-all;">—</div>
+          <button class="btn-sm btn-green" onclick="copiarPortalLink()">Copiar link</button>
+        </div>
+
+        <!-- EMAIL REPORTES -->
+        <div class="table-card" style="padding:20px;margin-bottom:16px">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:2px;margin-bottom:14px">📧 EMAIL PARA REPORTES</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--mu);margin-bottom:10px">Recibe exportaciones semanales y reportes IA mensuales por correo.</div>
+          <input id="cfgEmailReportes" placeholder="email@empresa.cl" style="width:100%;background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:12px;color:var(--fg);margin-bottom:8px;">
+          <button class="btn-sm btn-green" onclick="guardarEmailReportes()">Guardar email</button>
+          <span id="cfgEmailMsg" style="font-size:10px;color:var(--g);margin-left:8px;"></span>
+        </div>
+
+        <!-- TIPOS DE DOCUMENTOS -->
+        <div class="table-card" style="padding:20px;margin-bottom:16px">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:2px;margin-bottom:14px">📋 TIPOS DE DOCUMENTOS</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--mu);margin-bottom:10px">Define qué tipos de documentos maneja tu operación.</div>
+          <div id="tipoDocsList" style="margin-bottom:10px;"></div>
+          <div style="display:flex;gap:6px;">
+            <input id="cfgNuevoTipo" placeholder="Ej: Guía de despacho" style="flex:1;background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:8px 10px;font-family:var(--mono);font-size:11px;color:var(--fg);">
+            <button class="btn-sm btn-green" onclick="agregarTipoDoc()">+ Agregar</button>
+          </div>
+        </div>
+
+        <div class="table-card" style="padding:20px">
+          <div style="font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:2px;margin-bottom:14px">APLICACIÓN</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--mu);line-height:1.8">
+            Versión: ZeroPaper™ v6.0<br>
+            Firebase: zeropaper-prod<br>
+            Auth: Firebase Auth (email/password)<br>
+            DB: Firestore — empresas/{empresaId}/ops<br>
+            IA: Claude Sonnet 4.5 (soporte + reportes)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REPORTES IA ──────────────────────────── -->
+    <div class="page" id="pReportes">
+      <div class="page-title">📈 Reportes IA <span style="font-size:13px;color:var(--mu);font-weight:400">— Exportaciones y análisis ejecutivos</span></div>
+
+      <!-- Acciones rápidas -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;">
+        <button class="btn-sm btn-green" onclick="generarExportacion()">⬇ Exportar CSV ahora</button>
+        <button class="btn-sm btn-blue" onclick="generarReporteIA()" id="btnReporteIA">🤖 Reporte IA del mes pasado</button>
+        <button class="btn-sm btn-gray" onclick="cargarReportes()">🔄 Actualizar lista</button>
+      </div>
+
+      <!-- Banner info cron -->
+      <div style="background:rgba(64,145,108,.1);border:1px solid rgba(64,145,108,.25);border-radius:12px;padding:14px 16px;margin-bottom:20px;font-family:var(--mono);font-size:10px;color:var(--g);line-height:1.8;">
+        ⏰ <strong>Automático:</strong> Exportación CSV cada <strong>lunes 07:00 Chile</strong> &nbsp;|&nbsp;
+        🤖 Reporte IA cada <strong>día 1 del mes 08:00 Chile</strong><br>
+        📧 Para recibir por email, configura <code>EXPORT_EMAIL</code> y <code>RESEND_API_KEY</code> en Vercel env vars.
+      </div>
+
+      <!-- Lista de reportes -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title" id="reportesCount">Cargando reportes...</div>
+        </div>
+        <div id="reportesList" style="padding:16px;">
+          <div style="text-align:center;color:var(--mu);padding:32px;font-size:13px;">Cargando...</div>
+        </div>
+      </div>
+
+      <!-- Panel detalle reporte IA -->
+      <div id="reporteDetalle" style="display:none;margin-top:20px;" class="table-card">
+        <div style="padding:20px 24px;border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-weight:700;font-size:15px;" id="reporteDetalleTitle">Reporte</div>
+          <button class="btn-sm btn-gray" onclick="document.getElementById('reporteDetalle').style.display='none'">✕ Cerrar</button>
+        </div>
+        <div id="reporteDetalleContent" style="padding:24px;font-size:13px;line-height:1.9;color:var(--fg);white-space:pre-wrap;font-family:system-ui,sans-serif;max-width:760px;"></div>
+      </div>
+    </div>
+
+  </div><!-- fin main -->
+</div><!-- fin adminPanel -->
+
+<!-- MODAL DETALLE OP -->
+<div id="detModal" style="display:none" class="modal-ov" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title">Detalle Operación</div>
+      <button class="modal-x" onclick="document.getElementById('detModal').style.display='none'">✕</button>
+    </div>
+    <div id="detContent"></div>
+  </div>
+</div>
+
+<!-- MODAL EXPORTAR POR DEPARTAMENTO -->
+<div id="exportDeptoModal" style="display:none" class="modal-ov" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-hdr">
+      <div class="modal-title">📁 Exportar por Departamento</div>
+      <button class="modal-x" onclick="document.getElementById('exportDeptoModal').style.display='none'">✕</button>
+    </div>
+    <p style="font-size:13px;color:var(--mu);margin-bottom:16px">Descarga los registros ordenados por departamento. Compatible con SAP, Excel, ERP y sistemas de auditoría.</p>
+    <div id="exportDeptoList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+    <div style="display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--brd)">
+      <button class="btn-sm btn-green" onclick="exportarTodosDeptos()" style="flex:1;padding:10px">📦 Descargar TODOS los deptos (un CSV c/u)</button>
+    </div>
+    <div style="margin-top:10px;padding:10px 14px;background:var(--bg3);border-radius:8px;font-family:var(--mono);font-size:10px;color:var(--mu)">
+      Formato: <span style="color:var(--b2)">CSV UTF-8</span> · Incluye todos los campos · Compatible con Excel, SAP, ERP
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO DEPTO -->
+<div id="newDeptoModal" style="display:none" class="modal-ov" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <div class="modal-hdr"><div class="modal-title">Nuevo Departamento</div>
+    <button class="modal-x" onclick="document.getElementById('newDeptoModal').style.display='none'">✕</button></div>
+    <label style="font-family:var(--mono);font-size:9px;color:var(--mu);display:block;margin-bottom:4px">NOMBRE</label>
+    <input class="search-inp" id="ndNombre" placeholder="Ej: Operaciones" style="margin-bottom:10px;width:100%">
+    <label style="font-family:var(--mono);font-size:9px;color:var(--mu);display:block;margin-bottom:4px">ÍCONO (emoji)</label>
+    <input class="search-inp" id="ndIcon" placeholder="🏗" maxlength="4" style="margin-bottom:10px;width:100%">
+    <label style="font-family:var(--mono);font-size:9px;color:var(--mu);display:block;margin-bottom:4px">DESCRIPCIÓN</label>
+    <input class="search-inp" id="ndDesc" placeholder="Descripción breve" style="margin-bottom:10px;width:100%">
+    <label style="font-family:var(--mono);font-size:9px;color:var(--mu);display:block;margin-bottom:4px">DOCUMENTOS (separados por coma)</label>
+    <input class="search-inp" id="ndDocs" placeholder="GUIA,FACTURA,ORDEN_COMPRA" style="margin-bottom:14px;width:100%">
+    <button class="btn-sm btn-green" onclick="crearDepto()" style="width:100%;padding:10px">✓ Crear</button>
+  </div>
+</div>
+
+<!-- MODAL NUEVO DOC -->
+<div id="newDocModal" style="display:none" class="modal-ov" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal-box">
+    <div class="modal-hdr"><div class="modal-title">Agregar Tipo de Documento</div>
+    <button class="modal-x" onclick="document.getElementById('newDocModal').style.display='none'">✕</button></div>
+    <label style="font-family:var(--mono);font-size:9px;color:var(--mu);display:block;margin-bottom:4px">DEPARTAMENTO</label>
+    <select class="search-inp" id="ndDocDepto" style="margin-bottom:10px;width:100%"></select>
+    <label style="font-family:var(--mono);font-size:9px;color:var(--mu);display:block;margin-bottom:4px">NOMBRE DEL DOCUMENTO</label>
+    <input class="search-inp" id="ndDocNombre" placeholder="Ej: CARTA PORTE" oninput="this.value=this.value.toUpperCase()" style="margin-bottom:14px;width:100%">
+    <button class="btn-sm btn-green" onclick="crearDoc()" style="width:100%;padding:10px">✓ Agregar</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"><span id="tIco"></span><span id="tMsg" style="font-size:13px;font-family:var(--mono)"></span></div>
+
+<script>
+'use strict';
+
+// ── FIREBASE CONFIG ──
+const FB = {
+  projectId: 'zeropaper-prod',
+  apiKey:    'AIzaSyCli7F4hLi-XEmmekGZpO2KQ1SO612I85Y'
+};
+const FS_BASE = () => `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
+
+// ── AUTH HELPERS ──
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+function emailToUid(email) {
+  return email.toLowerCase().replace(/[^a-z0-9]/g,'_').slice(0,40);
+}
+function genToken() {
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── ESTADO ──
+const K_SESSION_ADMIN = 'zp5_admin_session';
+const K_DEPTOS        = 'zp5_deptos';
+const DEPTOS_DEFAULT  = [
+  { id:'guarda_almacen', nombre:'Guarda Almacén', icon:'🏭', desc:'Cabotaje nacional',
+    docs:['CONOCIMIENTO_EMBARQUE','GUIA_CABOTAJE','MANIFIESTO','LISTA_EMPAQUE','ORDEN_CARGA','RECIBO_BODEGA','AUTORIZACIÓN_SALIDA'] },
+  { id:'control', nombre:'Control', icon:'📦', desc:'Contenedores · Intercheck',
+    docs:['INTERCHECK','EIR','BOOKING','GATE_IN','GATE_OUT','DAMAGE_REPORT','SEAL_REPORT','TARJA'] },
+  { id:'aduana', nombre:'Aduana', icon:'🌍', desc:'DUS · DAM · Despacho',
+    docs:['DUS','DAM','AFORO','LEVANTE','MIC_DTA','DECLARACION_INGRESO','FACTURA_COMERCIAL','CARTA_PORTE'] },
+  { id:'recepcion', nombre:'Recepción General', icon:'🚪', desc:'Entrada y salida general',
+    docs:['GUIA_DESPACHO','ORDEN_COMPRA','FACTURA','NOTA_ENTREGA','CONTROL_ACCESO','PASE_SALIDA'] }
+];
+
+let session  = null;  // { uid, email, localToken, expiresAt, empresaId, empresaNombre, nombre, rol }
+let allOps   = [];
+let deptos   = [];
+let toastT   = null;
+
+// ── AUTH ──
+function getValidToken() {
+  if (!session) return null;
+  if (Date.now() > session.expiresAt) { doLogout(); return null; }
+  return session.localToken || 'local';
+}
+
+// ── SETUP PRIMER ADMIN ──
+function toggleSetup() {
+  const box = document.getElementById('setupBox');
+  box.style.display = box.style.display === 'block' ? 'none' : 'block';
+}
+
+async function crearPrimerAdmin() {
+  const email   = document.getElementById('setupEmail').value.trim().toLowerCase();
+  const pass    = document.getElementById('setupPass').value;
+  const empresa = document.getElementById('setupEmpresa').value.trim();
+  const nombre  = document.getElementById('setupNombre').value.trim();
+  const errEl   = document.getElementById('setupErr');
+
+  if (!email || !pass || !empresa || !nombre) { errEl.textContent = 'Completa todos los campos.'; return; }
+  if (pass.length < 8) { errEl.textContent = 'La contraseña debe tener al menos 8 caracteres.'; return; }
+
+  const btn = document.querySelectorAll('#setupBox .login-btn')[0];
+  btn.textContent = 'Creando...';
+  errEl.textContent = '';
+
+  try {
+    const uid      = emailToUid(email);
+    const passHash = await sha256(email + '::' + pass);
+
+    // Verificar si ya existe
+    const existRes = await fetch(`${FS_BASE()}/usuarios/${uid}?key=${FB.apiKey}`);
+    if (existRes.ok) {
+      const existData = await existRes.json();
+      if (existData.fields) {
+        errEl.textContent = '⚠ Ya existe un usuario con este correo.';
+        btn.textContent = 'Crear cuenta admin';
+        return;
+      }
+    }
+
+    // Crear usuario admin en Firestore
+    await fetch(`${FS_BASE()}/usuarios/${uid}?key=${FB.apiKey}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: {
+        email:         { stringValue: email },
+        nombre:        { stringValue: nombre },
+        passHash:      { stringValue: passHash },
+        rol:           { stringValue: 'admin' },
+        empresaId:     { stringValue: empresa },
+        empresaNombre: { stringValue: empresa },
+        creadoEn:      { integerValue: String(Date.now()) }
+      }})
+    });
+
+    // Crear empresa en Firestore si no existe
+    await fetch(`${FS_BASE()}/empresas/${empresa}?key=${FB.apiKey}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: {
+        nombre:     { stringValue: empresa },
+        creadoEn:  { integerValue: String(Date.now()) }
+      }})
+    });
+
+    // Crear operador admin en empresa
+    await fetch(`${FS_BASE()}/empresas/${empresa}/operadores/${uid}?key=${FB.apiKey}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: {
+        nombre: { stringValue: nombre },
+        email:  { stringValue: email },
+        rol:    { stringValue: 'admin' },
+        creadoEn: { integerValue: String(Date.now()) }
+      }})
+    });
+
+    errEl.style.color = '#4ade80';
+    errEl.textContent = '✅ Cuenta creada. Inicia sesión con tus datos.';
+    document.getElementById('setupBox').style.display = 'none';
+    document.getElementById('loginEmail').value = email;
+    setTimeout(() => { errEl.textContent = ''; errEl.style.color = ''; }, 4000);
+
+  } catch(e) {
+    errEl.textContent = 'Error al crear cuenta: ' + e.message;
+  } finally {
+    btn.textContent = 'Crear cuenta admin';
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('loginPass').value;
+  if (!email || !pass) { showErr('Completa los campos'); return; }
+
+  document.querySelector('.login-btn').textContent = 'Verificando...';
+  try {
+    const uid  = emailToUid(email);
+    const hash = await sha256(email + '::' + pass);
+
+    // Buscar perfil en Firestore
+    const perfRes = await fetch(`${FS_BASE()}/usuarios/${uid}?key=${FB.apiKey}`);
+    if (!perfRes.ok) { showErr('Correo o contraseña incorrectos.'); return; }
+    const perfData = parseFs(await perfRes.json());
+
+    if (!perfData.passHash || perfData.passHash !== hash) {
+      showErr('Correo o contraseña incorrectos.');
+      return;
+    }
+    if (perfData.rol !== 'admin') {
+      showErr('Solo administradores tienen acceso al panel.');
+      return;
+    }
+
+    session = {
+      uid, email,
+      localToken:   genToken(),
+      expiresAt:    Date.now() + 12 * 3600 * 1000,
+      empresaId:    perfData.empresaId || '',
+      empresaNombre:perfData.empresaNombre || '',
+      nombre:       perfData.nombre || email,
+      rol:          perfData.rol || 'admin'
+    };
+    localStorage.setItem(K_SESSION_ADMIN, JSON.stringify(session));
+
+    // Asegurar registro en operadores de empresa
+    try {
+      await fsSet(`empresas/${session.empresaId}/operadores/${uid}`, {
+        nombre: session.nombre, email, rol: 'admin', creadoEn: Date.now()
+      });
+    } catch(e) {}
+
+    entrarPanel();
+
+  } catch(e) {
+    showErr('Error de conexión. Intenta nuevamente.');
+  } finally {
+    document.querySelector('.login-btn').textContent = 'Entrar al panel';
+  }
+}
+
+function showErr(msg) {
+  const el = document.getElementById('loginErr');
+  el.textContent = msg;
+  setTimeout(() => el.textContent = '', 4000);
+}
+
+// ── MODO DEMO ──
+function doLoginDemo() {
+  const now = Date.now();
+  session = {
+    uid: 'demo_admin',
+    email: 'demo@zeropaper.cl',
+    nombre: 'Admin Demo',
+    empresaId: 'emp_demo2025',
+    empresaNombre: 'Puerto Demo S.A.',
+    rol: 'admin',
+    localToken: 'demo_token',
+    expiresAt: now + 86400000,
+    isDemo: true
+  };
+  localStorage.setItem(K_SESSION_ADMIN, JSON.stringify(session));
+
+  // Cargar operaciones demo
+  const deptosDemo = ['guarda_almacen','control','aduana','recepcion'];
+  const tiposDoc   = ['CONOCIMIENTO EMBARQUE','INTERCHECK','EIR','DUS','GATE IN','GATE OUT','PASE SALIDA','GUIA DESPACHO','BOOKING','DAM'];
+  const operadores = ['Carlos Mendez','Ana Reyes','Jorge Paredes','Patricia Soto','Luis Herrera'];
+  const placas     = ['HJKL-72','BFGR-19','PPLT-33','MRTZ-88','KLMN-45','QRST-01','UVWX-67','YZAB-12','CDEF-55','GHIJ-90'];
+  const tiposOp    = ['INGRESO','SALIDA'];
+
+  const ops = [];
+  for(let i=0;i<60;i++){
+    const d = new Date(now - Math.random()*30*86400000);
+    const depto = deptosDemo[Math.floor(Math.random()*deptosDemo.length)];
+    ops.push({
+      id: 'demo_'+i,
+      tipo: tiposOp[Math.floor(Math.random()*2)],
+      patente: placas[Math.floor(Math.random()*placas.length)],
+      documento: tiposDoc[Math.floor(Math.random()*tiposDoc.length)],
+      folio: 'F-'+Math.floor(Math.random()*9000+1000),
+      depto, deptoNombre: depto.replace('_',' ').toUpperCase(),
+      operadorNombre: operadores[Math.floor(Math.random()*operadores.length)],
+      ts: d.getTime(),
+      empresaId: 'emp_demo2025',
+      syncStatus: 'synced'
+    });
+  }
+  allOps = ops.sort((a,b)=>b.ts-a.ts);
+  deptos = DEPTOS_DEFAULT;
+  entrarPanel();
+}
+
+function doLogout() {
+  session = null;
+  allOps  = [];
+  localStorage.removeItem(K_SESSION_ADMIN);
+  document.getElementById('adminPanel').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginPass').value = '';
+}
+
+function entrarPanel() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('adminPanel').style.display = 'block';
+  document.getElementById('sidebarUser').textContent = session.nombre || session.email;
+  document.getElementById('sidebarEmpresa').textContent = session.empresaNombre || session.empresaId;
+  init();
+}
+
+// ── SESIÓN PERSISTENTE ──
+function checkSession() {
+  const saved = localStorage.getItem(K_SESSION_ADMIN);
+  if (!saved) return;
+  try {
+    session = JSON.parse(saved);
+    const tok = getValidToken();
+    if (!tok) { session = null; return; }
+    entrarPanel();
+  } catch(e) {
+    session = null;
+  }
+}
+
+// ── FIRESTORE HELPERS ──
+async function fsGet(path) {
+  const r = await fetch(`${FS_BASE()}/${path}?key=${FB.apiKey}&pageSize=1000`);
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+function toFsDoc(obj) {
+  const fields = {};
+  for (const [k,v] of Object.entries(obj)) {
+    if (v === null || v === undefined) continue;
+    if (typeof v === 'number')  fields[k] = { integerValue: String(Math.round(v)) };
+    else if (typeof v === 'boolean') fields[k] = { booleanValue: v };
+    else fields[k] = { stringValue: String(v) };
+  }
+  return { fields };
+}
+
+async function fsSet(path, data) {
+  const r = await fetch(`${FS_BASE()}/${path}?key=${FB.apiKey}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(toFsDoc(data))
+  });
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+function parseFs(doc) {
+  if (!doc || !doc.fields) return {};
+  const out = { _id: doc.name?.split('/').pop() };
+  for (const [k, v] of Object.entries(doc.fields)) {
+    if (v.stringValue  !== undefined) out[k] = v.stringValue;
+    else if (v.integerValue !== undefined) out[k] = parseInt(v.integerValue);
+    else if (v.booleanValue !== undefined) out[k] = v.booleanValue;
+    else if (v.doubleValue  !== undefined) out[k] = parseFloat(v.doubleValue);
+  }
+  return out;
+}
+
+async function cargarTodasOps() {
+  if (!session?.empresaId) return [];
+  if (session.isDemo) return allOps; // modo demo: usar datos ya cargados
+  try {
+    const res = await fsGet(`empresas/${session.empresaId}/ops`);
+    allOps = (res.documents || []).map(parseFs).sort((a,b) => (b.ts||0) - (a.ts||0));
+    return allOps;
+  } catch(e) {
+    return allOps;
+  }
+}
+
+// ── CONFIGURACIÓN: EMAIL + TIPOS DE DOCUMENTOS ──────
+async function cargarConfigEmpresa() {
+  if (!session?.empresaId) return;
+  try {
+    const r = await fetch(`${FS_BASE()}/empresas/${session.empresaId}/config/settings?key=${FB.apiKey}`);
+    if (r.ok) {
+      const data = await r.json();
+      const f = data.fields || {};
+      const email = f.emailReportes?.stringValue || '';
+      document.getElementById('cfgEmailReportes').value = email;
+      const tipos = f.tiposDocumentos?.stringValue ? JSON.parse(f.tiposDocumentos.stringValue) : [];
+      window._tiposDocs = tipos;
+      renderTiposDocs();
+    } else {
+      window._tiposDocs = ['INGRESO','EGRESO','MANTENCION','INSPECCION','DESPACHO'];
+      renderTiposDocs();
+    }
+  } catch(e) {
+    window._tiposDocs = ['INGRESO','EGRESO','MANTENCION','INSPECCION','DESPACHO'];
+    renderTiposDocs();
+  }
+}
+
+async function guardarEmailReportes() {
+  if (!session?.empresaId) return;
+  const email = document.getElementById('cfgEmailReportes').value.trim();
+  if (!email) { toast('⚠', 'Ingresa un email'); return; }
+  try {
+    await fetch(`${FS_BASE()}/empresas/${session.empresaId}/config/settings?updateMask.fieldPaths=emailReportes&key=${FB.apiKey}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: { emailReportes: { stringValue: email } } })
+    });
+    document.getElementById('cfgEmailMsg').textContent = '✅ Guardado';
+    setTimeout(() => document.getElementById('cfgEmailMsg').textContent = '', 2000);
+    toast('📧', `Email configurado: ${email}`);
+  } catch(e) {
+    toast('❌', 'Error al guardar');
+  }
+}
+
+function renderTiposDocs() {
+  const list = document.getElementById('tipoDocsList');
+  const tipos = window._tiposDocs || [];
+  if (!tipos.length) { list.innerHTML = '<div style="color:var(--mu);font-size:11px;padding:8px 0;">Sin tipos definidos</div>'; return; }
+  list.innerHTML = tipos.map((t, i) =>
+    `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg3);border-radius:6px;margin-bottom:4px;">
+      <span style="font-family:var(--mono);font-size:11px;color:var(--fg)">${t}</span>
+      <button style="background:none;border:none;color:var(--r);cursor:pointer;font-size:12px;padding:2px 6px;" onclick="eliminarTipoDoc(${i})">✕</button>
+    </div>`
+  ).join('');
+}
+
+async function agregarTipoDoc() {
+  const inp = document.getElementById('cfgNuevoTipo');
+  const val = inp.value.trim().toUpperCase();
+  if (!val) return;
+  if (!window._tiposDocs) window._tiposDocs = [];
+  if (window._tiposDocs.includes(val)) { toast('⚠', 'Ya existe'); return; }
+  window._tiposDocs.push(val);
+  inp.value = '';
+  renderTiposDocs();
+  await guardarTiposDocs();
+  toast('📋', `Tipo "${val}" agregado`);
+}
+
+async function eliminarTipoDoc(idx) {
+  window._tiposDocs.splice(idx, 1);
+  renderTiposDocs();
+  await guardarTiposDocs();
+  toast('🗑', 'Tipo eliminado');
+}
+
+async function guardarTiposDocs() {
+  if (!session?.empresaId) return;
+  try {
+    await fetch(`${FS_BASE()}/empresas/${session.empresaId}/config/settings?updateMask.fieldPaths=tiposDocumentos&key=${FB.apiKey}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: { tiposDocumentos: { stringValue: JSON.stringify(window._tiposDocs) } } })
+    });
+  } catch(e) { console.error(e); }
+}
+
+// ── REPORTES IA ─────────────────────────────────────
+async function cargarReportes() {
+  if (!session?.empresaId) return;
+  const listEl  = document.getElementById('reportesList');
+  const countEl = document.getElementById('reportesCount');
+  listEl.innerHTML = '<div style="text-align:center;color:var(--mu);padding:20px;font-size:13px;">Cargando...</div>';
+  try {
+    const r    = await fsGet(`empresas/${session.empresaId}/reportes`);
+    const docs = (r.documents || []).map(d => {
+      const f = d.fields || {};
+      return {
+        id:       d.name.split('/').pop(),
+        tipo:     f.tipo?.stringValue || '',
+        periodo:  f.periodo?.stringValue || '—',
+        key:      f.key?.stringValue || '',
+        totalOps: Number(f.totalOps?.integerValue || 0),
+        ts:       Number(f.ts?.integerValue || 0),
+        reporte:  f.reporte?.stringValue || '',
+        estado:   f.estado?.stringValue || '',
+        csvB64:   f.csvBase64?.stringValue || '',
+      };
+    }).sort((a, b) => b.ts - a.ts);
+
+    countEl.textContent = `${docs.length} reportes almacenados`;
+
+    if (!docs.length) {
+      listEl.innerHTML = '<div style="text-align:center;color:var(--mu);padding:32px;font-size:13px;">Sin reportes aún. Genera el primero con los botones de arriba.</div>';
+      return;
+    }
+
+    listEl.innerHTML = docs.map(doc => {
+      const esIA   = doc.tipo === 'reporte_mensual_ia';
+      const esExp  = doc.tipo === 'exportacion_semanal';
+      const fecha  = doc.ts ? new Date(doc.ts).toLocaleDateString('es-CL') : '—';
+      const icono  = esIA ? '🤖' : '📊';
+      const label  = esIA ? 'Reporte IA' : 'Exportación CSV';
+      const color  = esIA ? 'var(--b)' : 'var(--g)';
+      const btns   = esIA
+        ? `<button class="btn-sm btn-blue" style="font-size:10px" onclick="verReporteIA('${doc.id}')">Ver reporte</button>`
+        : doc.csvB64
+          ? `<button class="btn-sm btn-green" style="font-size:10px" onclick="descargarCSV('${doc.id}')">Descargar CSV</button>`
+          : '';
+      return `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--brd);gap:12px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:20px">${icono}</span>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--fg)">${label} — ${doc.periodo}</div>
+              <div style="font-size:10px;font-family:var(--mono);color:var(--mu);margin-top:2px">${fecha} &nbsp;·&nbsp; ${doc.totalOps} operaciones</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">${btns}</div>
+        </div>`;
+    }).join('');
+
+    // Guardar docs para uso posterior
+    window._reportesDocs = docs;
+
+  } catch(e) {
+    listEl.innerHTML = `<div style="text-align:center;color:var(--r);padding:20px;font-size:13px;">Error: ${e.message}</div>`;
+  }
+}
+
+async function generarExportacion() {
+  if (!session?.empresaId) return;
+  toast('⏳', 'Generando exportación CSV…');
+  try {
+    const r = await fetch(`/api/exportar?empresa=${session.empresaId}`);
+    const j = await r.json();
+    const ops = j.resultados?.[0]?.ops ?? 0;
+    toast('✅', `CSV generado · ${ops} operaciones`);
+    setTimeout(cargarReportes, 1500);
+  } catch(e) {
+    toast('❌', 'Error al exportar: ' + e.message);
+  }
+}
+
+async function generarReporteIA() {
+  if (!session?.empresaId) return;
+  const btn = document.getElementById('btnReporteIA');
+  btn.textContent = '⏳ Generando…';
+  btn.disabled = true;
+  toast('🤖', 'Claude Sonnet analizando datos…');
+  try {
+    const r = await fetch(`/api/reporte?empresa=${session.empresaId}`);
+    const j = await r.json();
+    if (j.resultados?.[0]?.status === 'sin_datos') {
+      toast('⚠', 'Sin datos del mes pasado para analizar');
+    } else {
+      toast('✅', 'Reporte IA generado');
+      setTimeout(cargarReportes, 1500);
+    }
+  } catch(e) {
+    toast('❌', 'Error: ' + e.message);
+  } finally {
+    btn.textContent = '🤖 Reporte IA del mes pasado';
+    btn.disabled = false;
+  }
+}
+
+function verReporteIA(docId) {
+  const docs = window._reportesDocs || [];
+  const doc  = docs.find(d => d.id === docId);
+  if (!doc?.reporte) { toast('⚠', 'Sin contenido'); return; }
+  document.getElementById('reporteDetalleTitle').textContent = `🤖 Reporte IA — ${doc.periodo}`;
+  const content = document.getElementById('reporteDetalleContent');
+  // Render básico markdown → HTML
+  content.innerHTML = doc.reporte
+    .replace(/^## (.+)$/gm, '<h3 style="color:var(--g);font-size:14px;margin:18px 0 6px;font-weight:800">$1</h3>')
+    .replace(/^- (.+)$/gm, '<li style="margin-left:16px;margin-bottom:4px">$1</li>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n\n/g, '<br><br>');
+  document.getElementById('reporteDetalle').style.display = 'block';
+  document.getElementById('reporteDetalle').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function descargarCSV(docId) {
+  const docs = window._reportesDocs || [];
+  const doc  = docs.find(d => d.id === docId);
+  if (!doc?.csvB64) { toast('⚠', 'CSV no disponible'); return; }
+  const csv  = atob(doc.csvB64);
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `zeropaper_${doc.periodo.replace(/ /g,'_')}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('📊', 'CSV descargado');
+}
+
+// ── CERTIFICADO AMBIENTAL ──
+function abrirCertificado() {
+  const mes = new Date().toISOString().slice(0,7);
+  const empresaId  = session?.empresaId  || 'emp_demo2025';
+  const empresaNom = encodeURIComponent(session?.empresaNombre || 'Demo S.A.');
+  const url = `/certificado?empresa=${empresaId}&nombre=${empresaNom}&mes=${mes}`;
+  window.open(url, '_blank');
+}
+
+// ── NAVEGACIÓN ──
+function showPage(name, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('on'));
+  const pageEl = document.getElementById('p' + name.charAt(0).toUpperCase() + name.slice(1));
+  if (pageEl) pageEl.classList.add('active');
+  if (navEl) navEl.classList.add('on');
+  if (name === 'dashboard')    renderDashboard();
+  if (name === 'aprobaciones') renderAprobaciones();
+  if (name === 'operaciones')  { renderOps(); populateDeptoFilter(); }
+  if (name === 'reportes')     cargarReportes();
+  if (name === 'config')       cargarConfigEmpresa();
+  if (name === 'turnos')       renderTurnos();
+  if (name === 'operadores')   cargarOperadores();
+  if (name === 'deptos')       renderDeptos();
+  if (name === 'config')       cargarConfig();
+}
+
+// ── DASHBOARD ──
+async function renderDashboard() {
+  document.getElementById('dashFecha').textContent = new Date().toLocaleDateString('es-CL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const ops = await cargarTodasOps();
+  const today = new Date().toLocaleDateString('es-CL');
+  const hoy = ops.filter(o => o.fecha === today);
+  const conFoto = ops.filter(o => o.fotoId);
+
+  // Vehículos en planta
+  const planta = calcularEnPlanta(ops);
+
+  const pendientes   = ops.filter(o => (o.estado||'PENDIENTE')==='PENDIENTE');
+  const aprobadas    = ops.filter(o => o.estado==='APROBADO');
+  const tasaAprobPct = ops.length > 0 ? Math.round((aprobadas.length / ops.length) * 100) : 0;
+
+  document.getElementById('dTotal').textContent          = ops.length;
+  document.getElementById('dHoy').textContent            = hoy.length;
+  document.getElementById('dConFoto').textContent         = conFoto.length;
+  document.getElementById('dEnPlanta').textContent        = planta.length;
+  document.getElementById('dPendientes').textContent      = pendientes.length;
+  document.getElementById('dTasaAprobacion').textContent  = tasaAprobPct + '%';
+
+  // Badge en nav de aprobaciones
+  const badge = document.getElementById('pendBadge');
+  if (badge) {
+    badge.textContent = pendientes.length;
+    badge.style.display = pendientes.length > 0 ? 'inline' : 'none';
+  }
+
+  // Gráfico 7 días
+  const chart = document.getElementById('barChart');
+  const dias = [];
+  for (let i=6; i>=0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    dias.push(d.toLocaleDateString('es-CL'));
+  }
+  const maxVal = Math.max(...dias.map(d => ops.filter(o=>o.fecha===d).length), 1);
+  chart.innerHTML = dias.map(d => {
+    const count = ops.filter(o=>o.fecha===d).length;
+    const h = Math.max(4, Math.round((count/maxVal)*100));
+    const label = d.split('/').slice(0,2).join('/');
+    return `<div class="bar-wrap"><div class="bar-val">${count||''}</div><div class="bar" style="height:${h}%"></div><div class="bar-label">${label}</div></div>`;
+  }).join('');
+
+  // Últimas 10
+  const tbody = document.getElementById('dashTable');
+  tbody.innerHTML = ops.slice(0,10).map(o => opRowAdmin(o, true)).join('') ||
+    `<tr class="empty-row"><td colspan="7">Sin operaciones</td></tr>`;
+}
+
+function calcularEnPlanta(ops) {
+  const map = {};
+  const sorted = [...ops].sort((a,b)=>(a.ts||0)-(b.ts||0));
+  for (const op of sorted) {
+    if (!op.plate) continue;
+    const p = op.plate.toUpperCase();
+    if (op.tipo === 'INGRESO') {
+      map[p] = (map[p] || 0) + 1;
+    } else if (op.tipo === 'SALIDA') {
+      map[p] = Math.max(0, (map[p] || 0) - 1);
+    }
+  }
+  return Object.entries(map).filter(([,v]) => v > 0).map(([p]) => p);
+}
+
+// ── OPERACIONES ──
+async function renderOps() {
+  await cargarTodasOps();
+  populateDeptoFilter();
+  filtrarOps();
+}
+
+function populateDeptoFilter() {
+  const deptos_local = JSON.parse(localStorage.getItem(K_DEPTOS) || JSON.stringify(DEPTOS_DEFAULT));
+  const optsAll = '<option value="">Todos los deptos</option>' +
+    deptos_local.map(d => `<option value="${d.id}">${d.icon} ${d.nombre}</option>`).join('');
+  const sel = document.getElementById('opsDepto');
+  if (sel) sel.innerHTML = optsAll;
+  const selA = document.getElementById('aFiltroDepto');
+  if (selA) selA.innerHTML = optsAll;
+  const sel2 = document.getElementById('ndDocDepto');
+  if (sel2) sel2.innerHTML = deptos_local.map(d => `<option value="${d.id}">${d.icon} ${d.nombre}</option>`).join('');
+}
+
+function filtrarOps() {
+  const q      = (document.getElementById('opsSearch')?.value||'').toLowerCase();
+  const tipo   = document.getElementById('opsTipo')?.value   || '';
+  const depto  = document.getElementById('opsDepto')?.value  || '';
+  const estado = document.getElementById('opsEstado')?.value || '';
+  const desde  = document.getElementById('opsDesde')?.value  || '';
+  const hasta  = document.getElementById('opsHasta')?.value  || '';
+
+  let filtered = allOps;
+  if (q)      filtered = filtered.filter(o => (o.plate||'').toLowerCase().includes(q) || (o.folio||'').toLowerCase().includes(q) || (o.docType||'').toLowerCase().includes(q));
+  if (tipo)   filtered = filtered.filter(o => o.tipo === tipo);
+  if (depto)  filtered = filtered.filter(o => o.depto === depto);
+  if (estado) filtered = filtered.filter(o => (o.estado||'PENDIENTE') === estado);
+  if (desde) filtered = filtered.filter(o => {
+    if (!o.fecha) return true;
+    const [d,m,y] = o.fecha.split('/');
+    return `${y}-${m?.padStart(2,'0')}-${d?.padStart(2,'0')}` >= desde;
+  });
+  if (hasta) filtered = filtered.filter(o => {
+    if (!o.fecha) return true;
+    const [d,m,y] = o.fecha.split('/');
+    return `${y}-${m?.padStart(2,'0')}-${d?.padStart(2,'0')}` <= hasta;
+  });
+
+  document.getElementById('opsCount').textContent = `${filtered.length} operaciones`;
+  const tbody = document.getElementById('opsTable');
+  tbody.innerHTML = filtered.length
+    ? filtered.map(o => opRowAdmin(o, false)).join('')
+    : `<tr class="empty-row"><td colspan="10">Sin resultados</td></tr>`;
+}
+
+function estadoBadgeAdmin(est) {
+  const map = {
+    'PENDIENTE':   ['est-pendiente',  '⏳ Pendiente'],
+    'EN_REVISION': ['est-revision',   '👁 Revisión'],
+    'APROBADO':    ['est-aprobado',   '✓ Aprobado'],
+    'RECHAZADO':   ['est-rechazado',  '✗ Rechazado'],
+  };
+  const [cls, txt] = map[est] || ['est-pendiente', '⏳ Pendiente'];
+  return `<span class="est-badge ${cls}">${txt}</span>`;
+}
+
+function opRowAdmin(o, compact) {
+  const isIn = o.tipo === 'INGRESO';
+  const badge = `<span class="badge ${isIn?'badge-in':'badge-out'}">${o.tipo}</span>`;
+  const est   = o.estado || 'PENDIENTE';
+  const fotoCount = o.fotoIds?.length || (o.fotoId ? 1 : 0);
+  const foto  = fotoCount > 0
+    ? `<span style="font-size:15px">📷${fotoCount > 1 ? fotoCount : ''}</span>`
+    : '<span style="color:var(--mu);font-size:12px">—</span>';
+  const opId  = o._id || o.id || '';
+  if (compact) {
+    return `<tr onclick="verDetalle('${opId}')">
+      <td>${badge}</td>
+      <td><strong>${o.plate||'—'}</strong></td>
+      <td style="font-size:11px">${(o.docType||'—').replace(/_/g,' ')}</td>
+      <td style="font-size:11px;color:var(--mu)">${o.deptoNombre||o.depto||'—'}</td>
+      <td style="font-size:11px;color:var(--mu)">${o.operador||'—'}</td>
+      <td style="font-size:11px;color:var(--mu)">${o.fecha||'—'} ${o.hora||''}</td>
+      <td>${foto}</td>
+    </tr>`;
+  }
+  const canActuar = est === 'PENDIENTE' || est === 'EN_REVISION';
+  const acciones = canActuar
+    ? `<div style="display:flex;gap:4px" onclick="event.stopPropagation()">
+        <button class="btn-sm btn-aprobar" title="Aprobar" onclick="aprobarOp('${opId}')">✓</button>
+        <button class="btn-sm btn-rechazar" title="Rechazar" onclick="rechazarOp('${opId}')">✗</button>
+       </div>`
+    : `<span style="font-family:var(--mono);font-size:10px;color:var(--mu)">—</span>`;
+  return `<tr onclick="verDetalle('${opId}')">
+    <td>${estadoBadgeAdmin(est)}</td>
+    <td>${badge}</td>
+    <td><strong>${o.plate||'—'}</strong></td>
+    <td style="font-size:11px">${(o.docType||'—').replace(/_/g,' ')}</td>
+    <td style="font-size:11px;color:var(--mu)">${o.folio||'—'}</td>
+    <td style="font-size:11px;color:var(--mu)">${o.deptoNombre||o.depto||'—'}</td>
+    <td style="font-size:11px;color:var(--mu)">${o.operador||'—'}</td>
+    <td style="font-size:11px;color:var(--mu)">${o.fecha||'—'}</td>
+    <td style="font-size:11px;color:var(--mu)">${o.hora||'—'}</td>
+    <td>${foto}</td>
+    <td>${acciones}</td>
+  </tr>`;
+}
+
+function verDetalle(id) {
+  const op = allOps.find(o => (o._id||o.id) === id);
+  if (!op) return;
+  const isIn = op.tipo === 'INGRESO';
+  const color = isIn ? 'var(--g)' : 'var(--o)';
+  const est = op.estado || 'PENDIENTE';
+  const canActuar = est === 'PENDIENTE' || est === 'EN_REVISION';
+
+  // Parse logs traceability
+  let logsHtml = '';
+  try {
+    const logs = op.logsJson ? JSON.parse(op.logsJson) : (Array.isArray(op.logs) ? op.logs : []);
+    if (logs.length) {
+      logsHtml = `<div style="margin-top:16px">
+        <div style="font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:2px;margin-bottom:8px">TRAZABILIDAD</div>
+        <div class="log-trail">
+          ${logs.map(l => {
+            const dotCls = l.accion==='APROBADO' ? 'ld-a' : l.accion==='RECHAZADO' ? 'ld-r' : l.accion==='CREADO' ? 'ld-c' : 'ld-v';
+            return `<div class="log-entry">
+              <div class="log-dot ${dotCls}"></div>
+              <div>
+                <div style="font-size:12px;font-weight:600">${l.accion}</div>
+                <div style="font-size:11px;color:var(--mu)">${l.usuario||'—'} · ${l.ts ? new Date(l.ts).toLocaleString('es-CL') : '—'}</div>
+                ${l.comentario ? `<div style="font-size:11px;color:#f87171;margin-top:2px">⚠ ${l.comentario}</div>` : ''}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    }
+  } catch(e) {}
+
+  document.getElementById('detContent').innerHTML = `
+    <div class="detail-grid">
+      ${[
+        ['ESTADO',      estadoBadgeAdmin(est)],
+        ['TIPO',        `<span style="color:${color};font-weight:700">${op.tipo}</span>`],
+        ['PATENTE',     op.plate||'—'],
+        ['DOCUMENTO',   (op.docType||'—').replace(/_/g,' ')],
+        ['FOLIO',       op.folio||'—'],
+        ['DEPARTAMENTO',op.deptoNombre||op.depto||'—'],
+        ['FECHA',       op.fecha||'—'],
+        ['HORA',        op.hora||'—'],
+        ['OPERADOR',    op.operador||'—'],
+        ['OBS',         op.obs||'—'],
+        ['SYNC',        op.syncStatus==='synced'?'✅ Sincronizado':'⏳ Pendiente'],
+      ].map(([l,v]) => `<div class="detail-item"><div class="detail-lbl">${l}</div><div class="detail-val">${v}</div></div>`).join('')}
+    </div>
+    ${logsHtml}
+    ${canActuar ? `<div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn-sm btn-aprobar" style="flex:1;padding:10px;font-size:13px" onclick="aprobarOp('${id}');document.getElementById('detModal').style.display='none'">✓ Aprobar</button>
+      <button class="btn-sm btn-rechazar" style="flex:1;padding:10px;font-size:13px" onclick="document.getElementById('detModal').style.display='none';rechazarOp('${id}')">✗ Rechazar</button>
+    </div>` : ''}`;
+  document.getElementById('detModal').style.display = 'flex';
+}
+
+async function recargarOps() {
+  allOps = [];
+  await renderOps();
+  toast('↻', 'Datos recargados');
+}
+
+async function exportarCSV() {
+  if (!allOps.length) { toast('⚠', 'Sin datos'); return; }
+  const header = 'ID,Tipo,Patente,Documento,Folio,Departamento,Operador,Fecha,Hora,Sync\n';
+  const rows = allOps.map(o =>
+    [o._id||o.id||'',o.tipo||'',o.plate||'',o.docType||'',o.folio||'',o.deptoNombre||'',o.operador||'',o.fecha||'',o.hora||'',o.syncStatus||''].join(',')
+  ).join('\n');
+  const blob = new Blob([header+rows], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ZeroPaper_${session?.empresaId||'export'}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('📊', `${allOps.length} registros exportados`);
+}
+
+// ── EXPORTACIÓN POR DEPARTAMENTO ──
+const CSV_HEADERS = 'ID,Estado,Tipo,Patente,Documento,Folio,Departamento,Operador,Fecha,Hora,Observacion,Sync\n';
+
+function opToCSVRow(o) {
+  const esc = v => (String(v||'—')).replace(/,/g,';').replace(/\n/g,' ');
+  return [
+    esc(o._id||o.id), esc(o.estado||'PENDIENTE'), esc(o.tipo), esc(o.plate), esc((o.docType||'').replace(/_/g,' ')),
+    esc(o.folio), esc(o.deptoNombre||o.depto), esc(o.operador||o.operadorNombre),
+    esc(o.fecha), esc(o.hora), esc(o.obs), esc(o.syncStatus==='synced'?'Sincronizado':'Pendiente')
+  ].join(',');
+}
+
+function descargarCSV(contenido, nombreArchivo) {
+  const bom = '\uFEFF'; // BOM para que Excel abra UTF-8 correctamente
+  const blob = new Blob([bom + contenido], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = nombreArchivo;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function descargarJSON(contenido, nombreArchivo) {
+  const blob = new Blob([JSON.stringify(contenido, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = nombreArchivo;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function showExportDeptoModal() {
+  if (!allOps.length) { toast('⚠', 'Carga operaciones primero'); return; }
+  const deptosLocal = JSON.parse(localStorage.getItem(K_DEPTOS) || JSON.stringify(DEPTOS_DEFAULT));
+  // Obtener deptos únicos de las ops
+  const deptosEnOps = [...new Set(allOps.map(o => o.depto).filter(Boolean))];
+  const fecha = new Date().toISOString().slice(0,10);
+  const lista = document.getElementById('exportDeptoList');
+  lista.innerHTML = deptosEnOps.map(deptoId => {
+    const dInfo = deptosLocal.find(d => d.id === deptoId) || {nombre: deptoId, icon:'📁'};
+    const count = allOps.filter(o => o.depto === deptoId).length;
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg3);border-radius:10px;border:1px solid var(--brd)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:22px">${dInfo.icon}</span>
+          <div>
+            <div style="font-weight:700;font-size:14px;color:#fff">${dInfo.nombre||deptoId}</div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--mu)">${count} registros</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm btn-green" onclick="exportarDepto('${deptoId}','csv')">📊 CSV</button>
+          <button class="btn-sm btn-blue" onclick="exportarDepto('${deptoId}','json')">🔄 JSON</button>
+        </div>
+      </div>`;
+  }).join('') || '<div style="color:var(--mu);font-size:13px;padding:16px;text-align:center">No hay operaciones con departamento asignado</div>';
+  document.getElementById('exportDeptoModal').style.display = 'flex';
+}
+
+function exportarDepto(deptoId, formato) {
+  const ops = allOps.filter(o => o.depto === deptoId);
+  if (!ops.length) { toast('⚠', 'Sin registros en este departamento'); return; }
+  const deptosLocal = JSON.parse(localStorage.getItem(K_DEPTOS) || JSON.stringify(DEPTOS_DEFAULT));
+  const dInfo = deptosLocal.find(d => d.id === deptoId) || {nombre: deptoId};
+  const nombreBase = `ZeroPaper_${(dInfo.nombre||deptoId).replace(/ /g,'_')}_${new Date().toISOString().slice(0,10)}`;
+  const empresa = session?.empresaId || 'export';
+
+  if (formato === 'csv') {
+    const rows = ops.map(opToCSVRow).join('\n');
+    descargarCSV(CSV_HEADERS + rows, `${empresa}_${nombreBase}.csv`);
+    toast('📊', `${ops.length} registros → ${dInfo.nombre}`);
+  } else if (formato === 'json') {
+    const payload = {
+      exportado: new Date().toISOString(),
+      empresa: session?.empresaNombre || empresa,
+      departamento: dInfo.nombre || deptoId,
+      total: ops.length,
+      registros: ops.map(o => ({
+        id: o._id||o.id,
+        tipo: o.tipo,
+        patente: o.plate,
+        documento: (o.docType||'').replace(/_/g,' '),
+        folio: o.folio,
+        departamento: o.deptoNombre||o.depto,
+        operador: o.operador||o.operadorNombre,
+        fecha: o.fecha,
+        hora: o.hora,
+        observacion: o.obs,
+        sincronizado: o.syncStatus === 'synced'
+      }))
+    };
+    descargarJSON(payload, `${empresa}_${nombreBase}.json`);
+    toast('🔄', `JSON exportado → ${dInfo.nombre}`);
+  }
+}
+
+function exportarTodosDeptos() {
+  const deptosEnOps = [...new Set(allOps.map(o => o.depto).filter(Boolean))];
+  if (!deptosEnOps.length) { toast('⚠', 'Sin datos'); return; }
+  deptosEnOps.forEach((deptoId, i) => {
+    // Descarga con delay para no saturar el navegador
+    setTimeout(() => exportarDepto(deptoId, 'csv'), i * 400);
+  });
+  toast('📦', `Descargando ${deptosEnOps.length} archivos CSV...`);
+}
+
+function exportarJSON() {
+  if (!allOps.length) { toast('⚠', 'Sin datos'); return; }
+  const payload = {
+    exportado: new Date().toISOString(),
+    sistema: 'ZeroPaper',
+    version: '2.0',
+    empresa: session?.empresaNombre || session?.empresaId || 'export',
+    total: allOps.length,
+    departamentos: [...new Set(allOps.map(o=>o.depto).filter(Boolean))].map(deptoId => ({
+      id: deptoId,
+      registros: allOps
+        .filter(o => o.depto === deptoId)
+        .map(o => ({
+          id: o._id||o.id,
+          tipo: o.tipo,
+          patente: o.plate,
+          documento: (o.docType||'').replace(/_/g,' '),
+          folio: o.folio,
+          operador: o.operador||o.operadorNombre,
+          fecha: o.fecha,
+          hora: o.hora,
+          observacion: o.obs,
+          sincronizado: o.syncStatus === 'synced'
+        }))
+    }))
+  };
+  descargarJSON(payload, `ZeroPaper_${session?.empresaId||'export'}_ERP_${new Date().toISOString().slice(0,10)}.json`);
+  toast('🔄', `JSON/ERP: ${allOps.length} registros en ${payload.departamentos.length} departamentos`);
+}
+
+// ── APROBACIONES ──
+let rechazoOpId = null;
+
+async function renderAprobaciones() {
+  await cargarTodasOps();
+  populateDeptoFilter();
+
+  const estado = document.getElementById('aFiltroEstado')?.value ?? 'PENDIENTE';
+  const depto  = document.getElementById('aFiltroDepto')?.value  || '';
+
+  let ops = allOps;
+  if (estado) ops = ops.filter(o => (o.estado||'PENDIENTE') === estado);
+  if (depto)  ops = ops.filter(o => o.depto === depto);
+
+  // Update stat counters
+  document.getElementById('aPendN').textContent  = allOps.filter(o => (o.estado||'PENDIENTE') === 'PENDIENTE').length;
+  document.getElementById('aRevN').textContent   = allOps.filter(o => o.estado === 'EN_REVISION').length;
+  document.getElementById('aAprobN').textContent = allOps.filter(o => o.estado === 'APROBADO').length;
+  document.getElementById('aRechN').textContent  = allOps.filter(o => o.estado === 'RECHAZADO').length;
+  document.getElementById('aCount').textContent  = `${ops.length} operación${ops.length!==1?'es':''}`;
+
+  const lista = document.getElementById('aprobacionesList');
+  if (!ops.length) {
+    lista.innerHTML = `<div style="text-align:center;padding:60px;color:var(--mu);font-family:var(--mono);font-size:12px">
+      ${estado === 'PENDIENTE' ? '✅ Sin operaciones pendientes de revisión' : 'Sin registros para este filtro'}
+    </div>`;
+    return;
+  }
+
+  lista.innerHTML = ops.map(o => {
+    const opId = o._id || o.id || '';
+    const est  = o.estado || 'PENDIENTE';
+    const canActuar = est === 'PENDIENTE' || est === 'EN_REVISION';
+    const isIn = o.tipo === 'INGRESO';
+
+    // Get last log entry for motivo rechazo / aprobador
+    let ultimoLog = null;
+    try {
+      const logs = o.logsJson ? JSON.parse(o.logsJson) : (Array.isArray(o.logs) ? o.logs : []);
+      if (logs.length) ultimoLog = logs[logs.length - 1];
+    } catch(e) {}
+
+    return `<div class="aprob-card" onclick="verDetalle('${opId}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="badge ${isIn?'badge-in':'badge-out'}">${o.tipo}</span>
+          ${estadoBadgeAdmin(est)}
+          <strong style="font-size:15px">${o.plate||'—'}</strong>
+        </div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--mu);text-align:right">
+          ${o.fecha||'—'} ${o.hora||''}<br>
+          ${o.operador||'—'}
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--mu);margin-bottom:10px">
+        <span>${(o.docType||'—').replace(/_/g,' ')}</span>
+        ${o.folio ? ` · Folio: <strong>${o.folio}</strong>` : ''}
+        ${o.deptoNombre||o.depto ? ` · ${o.deptoNombre||o.depto}` : ''}
+        ${o.obs ? `<br><span style="color:var(--fg)">${o.obs}</span>` : ''}
+      </div>
+      ${ultimoLog?.comentario ? `<div style="font-size:11px;color:#f87171;background:rgba(239,68,68,0.1);padding:6px 10px;border-radius:6px;margin-bottom:8px">⚠ ${ultimoLog.comentario}</div>` : ''}
+      ${canActuar
+        ? `<div class="aprob-actions" onclick="event.stopPropagation()">
+            <button class="btn-sm btn-aprobar" onclick="aprobarOp('${opId}')">✓ Aprobar</button>
+            <button class="btn-sm btn-rechazar" onclick="rechazarOp('${opId}')">✗ Rechazar</button>
+            <button class="btn-sm btn-gray" onclick="verDetalle('${opId}')">👁 Ver detalle</button>
+           </div>`
+        : `<div style="font-size:11px;color:var(--mu);font-family:var(--mono)">
+            ${est === 'APROBADO' ? '✓ Aprobado' : '✗ Rechazado'} por ${ultimoLog?.usuario||'—'} · ${ultimoLog?.ts ? new Date(ultimoLog.ts).toLocaleString('es-CL') : '—'}
+           </div>`
+      }
+    </div>`;
+  }).join('');
+}
+
+function filtrarAprobaciones(estado) {
+  const sel = document.getElementById('aFiltroEstado');
+  if (sel) sel.value = estado;
+  renderAprobaciones();
+}
+
+async function aprobarOp(id) {
+  const op = allOps.find(o => (o._id||o.id) === id);
+  if (!op) return;
+  const opId = op._id || op.id;
+
+  // Update in-memory
+  op.estado = 'APROBADO';
+  let logs = [];
+  try { logs = op.logsJson ? JSON.parse(op.logsJson) : (Array.isArray(op.logs) ? op.logs : []); } catch(e) {}
+  logs.push({ accion: 'APROBADO', usuario: session?.nombre || session?.email || 'Admin', ts: Date.now(), comentario: '' });
+  op.logsJson = JSON.stringify(logs);
+
+  // Sync to Firestore
+  try {
+    await fsSet(`empresas/${session.empresaId}/ops/${opId}`, {
+      estado: 'APROBADO',
+      logsJson: op.logsJson,
+      aprobadoPor: session?.nombre || session?.email || 'Admin',
+      aprobadoTs: Date.now()
+    });
+  } catch(e) { /* offline — local only */ }
+
+  toast('✅', `Aprobada: ${op.plate||opId}`);
+  _reRenderActive();
+}
+
+function rechazarOp(id) {
+  rechazoOpId = id;
+  document.getElementById('rechazoComentario').value = '';
+  document.getElementById('rechazoModal').style.display = 'flex';
+}
+
+async function confirmarRechazo() {
+  const comentario = document.getElementById('rechazoComentario').value.trim();
+  if (!comentario) { toast('⚠', 'Ingresa el motivo del rechazo'); return; }
+
+  const op = allOps.find(o => (o._id||o.id) === rechazoOpId);
+  if (!op) return;
+  const opId = op._id || op.id;
+
+  // Update in-memory
+  op.estado = 'RECHAZADO';
+  op.motivoRechazo = comentario;
+  let logs = [];
+  try { logs = op.logsJson ? JSON.parse(op.logsJson) : (Array.isArray(op.logs) ? op.logs : []); } catch(e) {}
+  logs.push({ accion: 'RECHAZADO', usuario: session?.nombre || session?.email || 'Admin', ts: Date.now(), comentario });
+  op.logsJson = JSON.stringify(logs);
+
+  // Sync to Firestore
+  try {
+    await fsSet(`empresas/${session.empresaId}/ops/${opId}`, {
+      estado: 'RECHAZADO',
+      logsJson: op.logsJson,
+      motivoRechazo: comentario,
+      rechazadoPor: session?.nombre || session?.email || 'Admin',
+      rechazadoTs: Date.now()
+    });
+  } catch(e) { /* offline — local only */ }
+
+  document.getElementById('rechazoModal').style.display = 'none';
+  rechazoOpId = null;
+  toast('✗', `Rechazada: ${op.plate||opId}`);
+  _reRenderActive();
+}
+
+function _reRenderActive() {
+  const activePage = document.querySelector('.page.active')?.id;
+  if (activePage === 'pAprobaciones') renderAprobaciones();
+  else if (activePage === 'pOperaciones') filtrarOps();
+  else if (activePage === 'pDashboard') renderDashboard();
+}
+
+// ── TURNOS ──
+async function renderTurnos() {
+  const container = document.getElementById('turnosContainer');
+  container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--mu);font-family:var(--mono);font-size:11px">Cargando...</div>';
+  if (!session?.empresaId) return;
+  try {
+    const res = await fsGet(`empresas/${session.empresaId}/turnos`);
+    const turnos = (res.documents || []).map(parseFs).sort((a,b) => (b.ts||0) - (a.ts||0));
+    if (!turnos.length) {
+      container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--mu);font-family:var(--mono);font-size:11px">No hay turnos cerrados registrados</div>';
+      return;
+    }
+    container.innerHTML = turnos.map(t => {
+      const durMin = t.duracionMin || 0;
+      const h = Math.floor(durMin / 60), m = durMin % 60;
+      return `<div class="turno-card">
+        <div class="turno-header">
+          <div>
+            <div class="turno-op">${t.operador || '—'}</div>
+            <div class="turno-fecha">${t.fechaInicio||'—'}  →  ${t.fechaFin||'—'}  ·  ${h}h ${m}m</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--mu)">Ingresos: ${t.ingresos||0} · Salidas: ${t.salidas||0} · Fotos: ${t.conFoto||0}</div>
+          </div>
+        </div>
+        ${t.nota ? `<div class="turno-body">${escapeHtml(t.nota)}</div>` : ''}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--r);font-family:var(--mono);font-size:11px">Error al cargar turnos: ${e.message}</div>`;
+  }
+}
+
+// ── OPERADORES ──
+async function cargarOperadores() {
+  const tbody = document.getElementById('operadoresTable');
+  tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Cargando...</td></tr>';
+  if (!session?.empresaId) return;
+
+  // Código empresa
+  try {
+    const empRes = await fsGet(`empresas/${session.empresaId}/perfil/datos`);
+    const empData = parseFs(empRes);
+    document.getElementById('empresaCodigo').textContent = empData.codigo || '— — — —';
+  } catch(e) {}
+
+  // Usuarios
+  try {
+    const res = await fsGet(`empresas/${session.empresaId}/operadores`);
+    const ops = (res.documents || []).map(parseFs);
+
+    document.getElementById('opsCountOp').textContent = `${ops.length} operador${ops.length !== 1 ? 'es' : ''}`;
+
+    if (!ops.length) {
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Sin operadores registrados aún</td></tr>';
+      return;
+    }
+
+    // Para cada operador contar sus ops
+    tbody.innerHTML = ops.map(op => {
+      const initials = (op.nombre||op.email||'?').slice(0,2).toUpperCase();
+      const opOps = allOps.filter(o => o.uid === op._id || o.operadorUid === op._id);
+      const rolBadge = op.rol === 'admin'
+        ? '<span class="badge badge-admin">admin</span>'
+        : '<span class="badge badge-op">operador</span>';
+      return `<tr>
+        <td style="display:flex;align-items:center;gap:10px">
+          <div class="op-avatar">${initials}</div>
+          <span>${op.nombre || '—'}</span>
+        </td>
+        <td style="font-size:11px;color:var(--mu)">${op.email || '—'}</td>
+        <td>${rolBadge}</td>
+        <td>${opOps.length}</td>
+        <td style="font-size:11px;color:var(--mu)">${op.ultimoTurno || '—'}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">Error al cargar operadores</td></tr>`;
+  }
+}
+
+function copiarCodigo() {
+  const code = document.getElementById('empresaCodigo').textContent.replace(/\s/g,'');
+  navigator.clipboard?.writeText(code).catch(()=>{});
+  toast('✅', `Código ${code} copiado`);
+}
+
+// ── DEPARTAMENTOS ──
+function renderDeptos() {
+  deptos = JSON.parse(localStorage.getItem(K_DEPTOS) || JSON.stringify(DEPTOS_DEFAULT));
+  const grid = document.getElementById('deptosGrid');
+  grid.innerHTML = deptos.map(d => `
+    <div class="depto-card">
+      <div class="depto-head">
+        <div class="depto-icon">${d.icon}</div>
+        <div>
+          <div class="depto-name">${d.nombre}</div>
+          <div class="depto-count">${d.docs.length} tipos de documento · ${d.desc||''}</div>
+        </div>
+      </div>
+      <div>${d.docs.map(doc => `<span class="doc-tag">${doc.replace(/_/g,' ')}</span>`).join('')}</div>
+      <div style="margin-top:10px">
+        <button onclick="eliminarDepto('${d.id}')" class="btn-sm btn-red">🗑 Eliminar</button>
+      </div>
+    </div>`).join('');
+}
+
+function showNewDeptoModal() { document.getElementById('newDeptoModal').style.display = 'flex'; }
+function showNewDocModal() {
+  populateDeptoFilter();
+  document.getElementById('newDocModal').style.display = 'flex';
+}
+
+function crearDepto() {
+  const nombre  = document.getElementById('ndNombre').value.trim();
+  const icon    = document.getElementById('ndIcon').value.trim() || '🏗';
+  const desc    = document.getElementById('ndDesc').value.trim();
+  const docsRaw = document.getElementById('ndDocs').value.trim();
+  if (!nombre) { toast('⚠', 'Ingresa un nombre'); return; }
+  const docs = docsRaw ? docsRaw.split(',').map(d=>d.trim().toUpperCase().replace(/ /g,'_')) : [];
+  const id = nombre.toLowerCase().replace(/ /g,'_') + '_' + Date.now();
+  deptos = JSON.parse(localStorage.getItem(K_DEPTOS) || JSON.stringify(DEPTOS_DEFAULT));
+  deptos.push({ id, nombre, icon, desc, docs });
+  localStorage.setItem(K_DEPTOS, JSON.stringify(deptos));
+  sincDeptos();
+  renderDeptos();
+  document.getElementById('newDeptoModal').style.display = 'none';
+  ['ndNombre','ndIcon','ndDesc','ndDocs'].forEach(i => document.getElementById(i).value = '');
+  toast('✅', `Departamento "${nombre}" creado`);
+}
+
+function crearDoc() {
+  const deptoId = document.getElementById('ndDocDepto').value;
+  const nombre  = document.getElementById('ndDocNombre').value.trim().toUpperCase().replace(/ /g,'_');
+  if (!nombre) { toast('⚠', 'Ingresa nombre'); return; }
+  deptos = JSON.parse(localStorage.getItem(K_DEPTOS) || JSON.stringify(DEPTOS_DEFAULT));
+  const d = deptos.find(d=>d.id===deptoId);
+  if (d && !d.docs.includes(nombre)) d.docs.push(nombre);
+  localStorage.setItem(K_DEPTOS, JSON.stringify(deptos));
+  renderDeptos();
+  document.getElementById('newDocModal').style.display = 'none';
+  document.getElementById('ndDocNombre').value = '';
+  toast('✅', `Documento "${nombre}" agregado`);
+}
+
+function eliminarDepto(id) {
+  if (!confirm('¿Eliminar este departamento?')) return;
+  deptos = JSON.parse(localStorage.getItem(K_DEPTOS) || JSON.stringify(DEPTOS_DEFAULT));
+  deptos = deptos.filter(d=>d.id!==id);
+  localStorage.setItem(K_DEPTOS, JSON.stringify(deptos));
+  sincDeptos();
+  renderDeptos();
+  toast('🗑', 'Departamento eliminado');
+}
+
+// Sincronizar deptos al Firestore para que los operadores los vean automáticamente
+async function sincDeptos() {
+  if (!session?.empresaId) return;
+  try {
+    await fsSet(`empresas/${session.empresaId}/config/deptos`, {
+      deptosJson: JSON.stringify(deptos),
+      updatedAt:  Date.now()
+    });
+  } catch(e) { /* offline */ }
+}
+
+// ── CONFIG ──
+function cargarConfig() {
+  document.getElementById('cfgEmpresaId').textContent  = session?.empresaId  || '—';
+  document.getElementById('cfgEmail').textContent      = session?.email       || '—';
+  document.getElementById('cfgRol').textContent        = session?.rol         || '—';
+  const portalUrl = session?.empresaId
+    ? `${location.origin}/seguimiento?e=${session.empresaId}`
+    : '—';
+  document.getElementById('portalLinkBox').textContent = portalUrl;
+}
+
+function copiarPortalLink() {
+  const url = document.getElementById('portalLinkBox').textContent;
+  if (url === '—') return;
+  navigator.clipboard?.writeText(url).catch(()=>{});
+  toast('🔗', 'Link copiado');
+}
+
+// ── UTILS ──
+function escapeHtml(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── INIT ──
+async function init() {
+  if (session && session.isDemo) {
+    await renderDashboard();
+  } else {
+    deptos = JSON.parse(localStorage.getItem(K_DEPTOS) || JSON.stringify(DEPTOS_DEFAULT));
+    await renderDashboard();
+  }
+
+  // Auto-refresh dashboard cada 2 minutos cuando está visible
+  setInterval(() => {
+    if (document.visibilityState !== 'hidden' && document.querySelector('#pDashboard.active')) {
+      renderDashboard();
+    }
+  }, 120000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && document.querySelector('#pDashboard.active')) {
+      renderDashboard();
+    }
+  }, { passive: true });
+}
+
+// ── TOAST ──
+function toast(icon, msg) {
+  document.getElementById('tIco').textContent = icon + ' ';
+  document.getElementById('tMsg').textContent = msg;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── KEYBOARD ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['detModal','newDeptoModal','newDocModal'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+  }
+});
+
+// ── BOOT ──
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('loginEmail').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('loginPass').focus();
+  });
+  checkSession();
+});
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
+</script>
+
+<!-- ZeroPaper™ Soporte IA Widget -->
+<div id="zp-support-btn" onclick="window.open('/soporte','_blank')" title="Soporte Técnico IA"
+  style="position:fixed;bottom:24px;right:24px;z-index:9999;width:52px;height:52px;border-radius:50%;
+  background:#1B4332;color:white;font-size:22px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 4px 20px rgba(27,67,50,0.35);transition:transform .2s,box-shadow .2s"
+  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(27,67,50,0.5)'"
+  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(27,67,50,0.35)'">💬</div>
+<div style="position:fixed;bottom:82px;right:18px;z-index:9998;background:#1B4332;color:white;
+  font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;white-space:nowrap;
+  pointer-events:none;opacity:0;transition:opacity .3s" id="zp-support-tooltip">Soporte IA</div>
+<script>
+(function(){
+  const btn = document.getElementById('zp-support-btn');
+  const tip = document.getElementById('zp-support-tooltip');
+  setTimeout(()=>{ tip.style.opacity='1'; setTimeout(()=>tip.style.opacity='0', 3000); }, 2000);
+  btn.addEventListener('mouseover',()=>tip.style.opacity='1');
+  btn.addEventListener('mouseout',()=>tip.style.opacity='0');
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="ZeroPaper™ — Solución Enterprise de Transformación Digital y ESG para Operación Portuaria. Digitaliza, trazabiliza y reporta sin papel.">
+<meta name="theme-color" content="#0B1F14">
+<title>ZeroPaper™ — Solución Enterprise Portuaria · Variante B</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:      #0B1F14;
+  --bg2:     #0F2A1A;
+  --bg3:     #142E1E;
+  --surface: #1A3A24;
+  --border:  rgba(64,145,108,.18);
+  --forest:  #1B4332;
+  --esm:     #40916C;
+  --esm2:    #52B788;
+  --esm3:    #74C69D;
+  --mint:    #D8F3DC;
+  --mint2:   rgba(216,243,220,.08);
+  --white:   #FFFFFF;
+  --gray:    rgba(216,243,220,.55);
+  --gray2:   rgba(216,243,220,.30);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--mint); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+
+/* ── NOISE TEXTURE ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+  opacity: .4;
+}
+
+/* ── LAYOUT ── */
+.container { max-width: 1200px; margin: 0 auto; padding: 0 40px; position: relative; z-index: 1; }
+@media(max-width:768px){ .container { padding: 0 20px; } }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(11,31,20,.92); backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 60px; max-width: 1200px; margin: 0 auto; padding: 0 40px;
+}
+.logo { display: flex; align-items: baseline; gap: 1px; text-decoration: none; }
+.logo-z { font-size: 18px; font-weight: 900; color: var(--white); letter-spacing: -0.5px; }
+.logo-p { font-size: 18px; font-weight: 900; color: var(--esm2); letter-spacing: -0.5px; }
+.logo-tm { font-size: 10px; font-weight: 700; color: var(--esm); margin-left: 1px; }
+.logo-sub { font-size: 11px; font-weight: 500; color: var(--gray2); margin-left: 10px; letter-spacing: .5px; }
+.nav-links { display: flex; align-items: center; gap: 28px; }
+.nav-links a { color: var(--gray); text-decoration: none; font-size: 13px; font-weight: 500; transition: color .2s; }
+.nav-links a:hover { color: var(--mint); }
+.nav-cta {
+  background: var(--esm); color: var(--bg) !important; font-weight: 700;
+  padding: 8px 20px; border-radius: 8px; font-size: 13px; letter-spacing: .3px;
+  transition: all .2s;
+}
+.nav-cta:hover { background: var(--esm2) !important; }
+@media(max-width:768px){ .nav-links a:not(.nav-cta){ display: none; } .nav-inner { padding: 0 20px; } .logo-sub { display: none; } }
+
+/* ── REVEAL ── */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity .65s ease, transform .65s ease; }
+.reveal.vis { opacity: 1; transform: none; }
+.d1 { transition-delay: .1s; } .d2 { transition-delay: .2s; } .d3 { transition-delay: .3s; } .d4 { transition-delay: .4s; }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh; display: flex; align-items: center;
+  padding: 100px 0 60px; position: relative; overflow: hidden;
+}
+.hero-orb {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  filter: blur(80px);
+}
+.orb1 { width: 600px; height: 600px; background: radial-gradient(circle, rgba(64,145,108,.14) 0%, transparent 70%); top: -100px; right: -100px; }
+.orb2 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(27,67,50,.5) 0%, transparent 70%); bottom: 0; left: -80px; }
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border); border-radius: 100px;
+  padding: 6px 16px; font-size: 11px; font-weight: 600;
+  color: var(--esm3); letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 28px; background: var(--mint2);
+}
+.dot-live { width: 7px; height: 7px; border-radius: 50%; background: var(--esm2); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{ opacity: 1; transform: scale(1); } 50%{ opacity: .6; transform: scale(.85); } }
+
+.hero h1 {
+  font-size: clamp(44px, 7vw, 88px);
+  font-weight: 900; line-height: .95;
+  letter-spacing: -2px; color: var(--white);
+  margin-bottom: 14px;
+}
+.hero h1 em { font-style: normal; color: var(--esm2); }
+.hero-sub {
+  font-size: clamp(20px, 3vw, 32px); font-weight: 300;
+  color: var(--esm3); letter-spacing: -.5px; margin-bottom: 24px; line-height: 1.2;
+}
+.hero-desc { font-size: 16px; line-height: 1.75; color: var(--gray); max-width: 540px; margin-bottom: 36px; }
+
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 52px; }
+.btn-main {
+  background: var(--esm); color: var(--bg); font-weight: 800;
+  padding: 15px 32px; border-radius: 10px; text-decoration: none;
+  font-size: 13px; letter-spacing: .5px; transition: all .2s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-main:hover { background: var(--esm2); transform: translateY(-2px); box-shadow: 0 10px 36px rgba(64,145,108,.3); }
+.btn-ghost {
+  border: 1.5px solid var(--border); color: var(--mint); font-weight: 700;
+  padding: 15px 32px; border-radius: 10px; text-decoration: none;
+  font-size: 13px; letter-spacing: .5px; transition: all .2s;
+}
+.btn-ghost:hover { border-color: var(--esm); color: var(--esm2); }
+
+.hero-stats { display: flex; gap: 40px; flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 32px; }
+.stat-n { font-size: 36px; font-weight: 900; color: var(--white); letter-spacing: -1px; line-height: 1; }
+.stat-n span { color: var(--esm2); }
+.stat-l { font-size: 10px; font-weight: 600; color: var(--gray2); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 5px; }
+
+/* ── SECTION BASE ── */
+section { padding: 96px 0; }
+.sec-tag {
+  display: inline-flex; align-items: center; gap: 8px; margin-bottom: 16px;
+  font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--esm3);
+}
+.sec-tag::before { content: ''; width: 24px; height: 2px; background: var(--esm); border-radius: 1px; }
+.sec-title { font-size: clamp(32px, 5vw, 54px); font-weight: 900; line-height: 1; letter-spacing: -1.5px; color: var(--white); margin-bottom: 16px; }
+.sec-title em { font-style: normal; color: var(--esm2); }
+.sec-desc { font-size: 16px; line-height: 1.75; color: var(--gray); max-width: 560px; margin-bottom: 56px; }
+
+/* ── TICKER ── */
+.ticker { background: var(--esm); overflow: hidden; padding: 10px 0; position: relative; z-index: 1; }
+.ticker-inner { display: inline-block; white-space: nowrap; animation: ticker 38s linear infinite; }
+.ticker-inner span { margin: 0 36px; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--bg); }
+.ticker-sep { color: rgba(11,31,20,.3) !important; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ── PROBLEMA ── */
+.prob-bg { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.prob-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+@media(max-width:768px){ .prob-grid { grid-template-columns: 1fr; } }
+.prob-card {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 20px;
+  padding: 32px; position: relative; overflow: hidden;
+  transition: border-color .25s, transform .25s;
+}
+.prob-card:hover { border-color: rgba(64,145,108,.4); transform: translateY(-4px); }
+.prob-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.prob-card.c1::before { background: #EF4444; }
+.prob-card.c2::before { background: #F59E0B; }
+.prob-card.c3::before { background: var(--esm2); }
+.prob-icon { font-size: 36px; margin-bottom: 18px; display: block; }
+.prob-title { font-size: 18px; font-weight: 800; color: var(--white); margin-bottom: 12px; letter-spacing: -.3px; }
+.prob-text { font-size: 14px; line-height: 1.7; color: var(--gray); margin-bottom: 20px; }
+.prob-metric { font-size: 28px; font-weight: 900; color: var(--esm2); letter-spacing: -1px; }
+.prob-metric-l { font-size: 11px; color: var(--gray2); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+/* ── SOLUCIÓN ── */
+.sol-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+@media(max-width:900px){ .sol-grid { grid-template-columns: 1fr; } }
+.sol-card {
+  border: 1px solid var(--border); border-radius: 20px; padding: 36px;
+  position: relative; overflow: hidden;
+  transition: border-color .25s, transform .25s;
+  background: var(--bg3);
+}
+.sol-card.featured { border-color: var(--esm); background: linear-gradient(135deg, rgba(64,145,108,.12), rgba(64,145,108,.04)); }
+.sol-card:hover { border-color: var(--esm); transform: translateY(-4px); }
+.sol-icon-wrap { width: 56px; height: 56px; border-radius: 14px; background: rgba(64,145,108,.15); display: flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 20px; }
+.sol-badge {
+  display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; padding: 4px 12px; border-radius: 100px;
+  background: rgba(64,145,108,.12); color: var(--esm3);
+  border: 1px solid rgba(64,145,108,.2); margin-bottom: 14px;
+}
+.sol-title { font-size: 22px; font-weight: 800; color: var(--white); margin-bottom: 12px; letter-spacing: -.5px; }
+.sol-text { font-size: 14px; line-height: 1.7; color: var(--gray); margin-bottom: 20px; }
+.sol-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.sol-list li { font-size: 13px; color: var(--gray); display: flex; gap: 8px; align-items: flex-start; }
+.sol-list li::before { content: '→'; color: var(--esm2); flex-shrink: 0; font-weight: 700; }
+.sol-strip {
+  margin-top: 40px; display: grid; grid-template-columns: repeat(4, 1fr);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  overflow: hidden;
+}
+.sol-kpi { padding: 24px; text-align: center; border-right: 1px solid var(--border); }
+.sol-kpi:last-child { border-right: none; }
+.sol-kpi-n { font-size: 32px; font-weight: 900; color: var(--esm2); letter-spacing: -1px; }
+.sol-kpi-l { font-size: 10px; font-weight: 600; color: var(--gray2); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+@media(max-width:600px){ .sol-strip { grid-template-columns: 1fr 1fr; } .sol-kpi { border-right: none; border-bottom: 1px solid var(--border); } }
+
+/* ── CALCULADORA ── */
+.calc-bg { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.calc-box {
+  display: grid; grid-template-columns: 1fr 1fr; background: var(--bg3);
+  border: 1px solid var(--border); border-radius: 24px; overflow: hidden;
+}
+@media(max-width:900px){ .calc-box { grid-template-columns: 1fr; } }
+.calc-inputs { padding: 48px; border-right: 1px solid var(--border); }
+@media(max-width:900px){ .calc-inputs { border-right: none; border-bottom: 1px solid var(--border); padding: 32px; } }
+.calc-outputs { padding: 48px; }
+@media(max-width:900px){ .calc-outputs { padding: 32px; } }
+.calc-panel-title { font-size: 14px; font-weight: 700; color: var(--esm3); letter-spacing: .5px; margin-bottom: 28px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+
+.slider-group { margin-bottom: 24px; }
+.slider-label { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.slider-label span { font-size: 13px; color: var(--gray); font-weight: 500; }
+.slider-label strong { font-size: 20px; font-weight: 800; color: var(--white); letter-spacing: -.5px; }
+
+input[type=range] {
+  -webkit-appearance: none; width: 100%; height: 3px;
+  background: var(--surface); border-radius: 2px; outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+  background: var(--esm2); cursor: pointer; box-shadow: 0 0 0 4px rgba(82,183,136,.2);
+}
+.slider-range { display: flex; justify-content: space-between; margin-top: 4px; }
+.slider-range span { font-size: 10px; color: var(--gray2); }
+
+.out-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.out-card {
+  border: 1px solid var(--border); border-radius: 16px; padding: 20px; text-align: center;
+  background: var(--surface); transition: border-color .2s;
+}
+.out-card:hover { border-color: var(--esm); }
+.out-card.featured { border-color: var(--esm); background: linear-gradient(135deg, rgba(64,145,108,.15), rgba(64,145,108,.04)); grid-column: span 2; }
+.out-card.esg { grid-column: span 2; background: rgba(64,145,108,.08); border-color: rgba(64,145,108,.25); }
+.out-emoji { font-size: 24px; margin-bottom: 8px; display: block; }
+.out-val { font-size: 24px; font-weight: 900; color: var(--white); letter-spacing: -1px; margin-bottom: 4px; }
+.out-card.featured .out-val { font-size: 32px; color: var(--esm2); }
+.out-card.esg .out-val { color: var(--esm3); }
+.out-label { font-size: 10px; font-weight: 600; color: var(--gray2); letter-spacing: 1px; text-transform: uppercase; }
+.out-sub { font-size: 11px; color: var(--gray2); margin-top: 3px; }
+
+.calc-cta { margin-top: 24px; display: flex; flex-direction: column; gap: 8px; }
+
+/* ── ROLES ── */
+.roles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+@media(max-width:900px){ .roles-grid { grid-template-columns: 1fr; } }
+.role-card {
+  border: 1px solid var(--border); border-radius: 20px; overflow: hidden;
+  transition: border-color .25s, transform .25s;
+  background: var(--bg3);
+}
+.role-card:hover { border-color: var(--esm); transform: translateY(-4px); }
+.role-card.featured { border-color: var(--esm); }
+.role-top { height: 3px; }
+.rt-op { background: var(--esm2); }
+.rt-ad { background: var(--esm); }
+.rt-im { background: var(--esm3); }
+.role-body { padding: 32px; }
+.role-icon { font-size: 40px; margin-bottom: 16px; display: block; }
+.role-badge {
+  display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; padding: 3px 10px; border-radius: 100px;
+  background: rgba(64,145,108,.1); color: var(--esm3); border: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.role-name { font-size: 26px; font-weight: 900; color: var(--white); letter-spacing: -1px; margin-bottom: 12px; }
+.role-desc { font-size: 13px; line-height: 1.7; color: var(--gray); margin-bottom: 20px; }
+.role-list { list-style: none; display: flex; flex-direction: column; gap: 7px; margin-bottom: 24px; }
+.role-list li { font-size: 13px; color: var(--gray); display: flex; gap: 8px; }
+.role-list li::before { content: '✓'; color: var(--esm2); font-weight: 700; flex-shrink: 0; }
+.role-link {
+  display: block; text-align: center; border: 1.5px solid var(--border);
+  color: var(--mint); padding: 12px; border-radius: 10px; text-decoration: none;
+  font-size: 13px; font-weight: 700; transition: all .2s;
+}
+.role-link:hover { border-color: var(--esm); color: var(--esm2); }
+.role-card.featured .role-link { background: var(--esm); border-color: var(--esm); color: var(--bg); }
+.role-card.featured .role-link:hover { background: var(--esm2); border-color: var(--esm2); }
+
+/* ── CONTACTO ── */
+.contact-bg { background: var(--bg2); border-top: 1px solid var(--border); }
+.contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+@media(max-width:900px){ .contact-grid { grid-template-columns: 1fr; gap: 40px; } }
+.contact-trust { display: flex; flex-direction: column; gap: 20px; margin-top: 36px; }
+.trust-item { display: flex; align-items: flex-start; gap: 14px; }
+.trust-icon {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(64,145,108,.15); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 16px; margin-top: 2px;
+}
+.trust-title { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 2px; }
+.trust-sub { font-size: 12px; color: var(--gray2); line-height: 1.5; }
+
+.form-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 24px; padding: 40px; }
+.form-title { font-size: 22px; font-weight: 800; color: var(--white); letter-spacing: -.5px; margin-bottom: 4px; }
+.form-sub { font-size: 13px; color: var(--gray2); margin-bottom: 28px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:600px){ .form-row { grid-template-columns: 1fr; } }
+.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.form-label { font-size: 11px; font-weight: 600; color: var(--esm3); letter-spacing: 1px; text-transform: uppercase; }
+.form-input {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 16px; font-size: 13px; color: var(--mint); font-family: 'Inter', sans-serif;
+  outline: none; transition: border-color .2s; width: 100%;
+}
+.form-input::placeholder { color: var(--gray2); }
+.form-input:focus { border-color: var(--esm); }
+.form-input option { background: var(--bg3); color: var(--mint); }
+textarea.form-input { resize: none; }
+.btn-submit {
+  width: 100%; background: var(--esm); color: var(--bg); font-weight: 800;
+  padding: 16px; border-radius: 10px; border: none; font-size: 14px;
+  letter-spacing: .5px; cursor: pointer; transition: all .2s; font-family: 'Inter', sans-serif;
+  margin-top: 8px;
+}
+.btn-submit:hover { background: var(--esm2); transform: translateY(-1px); box-shadow: 0 8px 28px rgba(64,145,108,.3); }
+.form-note { text-align: center; font-size: 11px; color: var(--gray2); margin-top: 12px; }
+.form-success { display: none; text-align: center; background: rgba(64,145,108,.1); border: 1px solid rgba(64,145,108,.3); border-radius: 10px; padding: 16px; font-size: 14px; font-weight: 600; color: var(--esm2); margin-top: 10px; }
+
+/* ── FOOTER ── */
+footer { background: var(--bg); border-top: 1px solid var(--border); padding: 48px 0 32px; position: relative; z-index: 1; }
+.foot-inner { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 48px; margin-bottom: 40px; }
+@media(max-width:768px){ .foot-inner { grid-template-columns: 1fr; gap: 28px; } }
+.foot-brand-name { display: flex; align-items: baseline; gap: 1px; margin-bottom: 10px; }
+.foot-brand-name span:first-child { font-size: 18px; font-weight: 900; color: var(--white); }
+.foot-brand-name span:nth-child(2) { font-size: 18px; font-weight: 900; color: var(--esm2); }
+.foot-brand-name span:nth-child(3) { font-size: 10px; font-weight: 700; color: var(--esm); }
+.foot-desc { font-size: 13px; color: var(--gray2); line-height: 1.7; max-width: 280px; margin-bottom: 16px; }
+.foot-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.foot-tag { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 4px 10px; border-radius: 6px; background: var(--surface); color: var(--gray2); border: 1px solid var(--border); }
+.foot-col-title { font-size: 11px; font-weight: 700; color: var(--esm3); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+.foot-links { display: flex; flex-direction: column; gap: 10px; }
+.foot-links a { font-size: 13px; color: var(--gray2); text-decoration: none; transition: color .2s; }
+.foot-links a:hover { color: var(--mint); }
+.foot-bottom { border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.foot-copy { font-size: 11px; color: var(--gray2); }
+.foot-version { font-size: 11px; color: var(--gray2); font-family: monospace; }
+
+/* ── A/B SWITCHER (floating) ── */
+.ab-switcher {
+  position: fixed; bottom: 24px; right: 24px; z-index: 200;
+  background: var(--surface); border: 1px solid var(--esm);
+  border-radius: 12px; padding: 10px 14px; display: flex; flex-direction: column;
+  gap: 6px; box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+.ab-label { font-size: 9px; font-weight: 700; color: var(--esm3); letter-spacing: 2px; text-transform: uppercase; text-align: center; }
+.ab-links { display: flex; gap: 6px; }
+.ab-links a {
+  font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 6px;
+  text-decoration: none; transition: all .2s;
+}
+.ab-links a.current { background: var(--esm); color: var(--bg); }
+.ab-links a.other { border: 1px solid var(--border); color: var(--gray); }
+.ab-links a.other:hover { border-color: var(--esm3); color: var(--mint); }
+</style>
+</head>
+<body>
+
+<!-- A/B switcher -->
+<div class="ab-switcher">
+  <div class="ab-label">Comparar diseño</div>
+  <div class="ab-links">
+    <a href="/" class="other">A · Clara</a>
+    <a href="/v2" class="current">B · Oscura</a>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="/v2" class="logo">
+      <span class="logo-z">Zero</span><span class="logo-p">Paper</span><span class="logo-tm">™</span>
+      <span class="logo-sub">Enterprise ESG</span>
+    </a>
+    <div class="nav-links">
+      <a href="#prob">Problemática</a>
+      <a href="#sol">Solución</a>
+      <a href="#calc">Calculadora</a>
+      <a href="#roles">Roles</a>
+      <a href="#contacto" class="nav-cta">Agendar Demo →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-orb orb1"></div>
+  <div class="hero-orb orb2"></div>
+  <div class="container">
+    <div class="reveal">
+      <div class="hero-tag">
+        <span class="dot-live"></span>
+        Solución Enterprise ESG · Puertos Chile
+      </div>
+    </div>
+
+    <h1 class="reveal d1">
+      Eficiencia Portuaria<br>
+      <em>de Siguiente Nivel:</em><br>
+      Sin Papeles,<br>Sin Emisiones.
+    </h1>
+
+    <div class="hero-sub reveal d2">
+      Transformación Digital y ESG para Operación Portuaria
+    </div>
+
+    <p class="hero-desc reveal d2">
+      ZeroPaper™ digitaliza, trazabiliza y reporta cada operación en tiempo real — eliminando el papel, reduciendo errores y acelerando el cumplimiento ESG de su organización.
+    </p>
+
+    <div class="hero-btns reveal d3">
+      <a href="#contacto" class="btn-main">Agendar Demo Corporativa →</a>
+      <a href="#calc" class="btn-ghost">Calcular Impacto de Ahorro</a>
+    </div>
+
+    <div class="hero-stats reveal d4">
+      <div>
+        <div class="stat-n"><span>100</span>%</div>
+        <div class="stat-l">Digital · Sin Papel</div>
+      </div>
+      <div>
+        <div class="stat-n">24/7</div>
+        <div class="stat-l">Operación Continua</div>
+      </div>
+      <div>
+        <div class="stat-n">&lt;1d</div>
+        <div class="stat-l">Implementación</div>
+      </div>
+      <div>
+        <div class="stat-n">ESG</div>
+        <div class="stat-l">Reporte Automático</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span>Transformación Digital Portuaria</span><span class="ticker-sep">·</span>
+    <span>Cero Formularios Físicos</span><span class="ticker-sep">·</span>
+    <span>Trazabilidad Total de Carga</span><span class="ticker-sep">·</span>
+    <span>Reportes ESG Automáticos</span><span class="ticker-sep">·</span>
+    <span>Integración ERP / SAP</span><span class="ticker-sep">·</span>
+    <span>Offline-First PWA</span><span class="ticker-sep">·</span>
+    <span>Cumplimiento IRAM · ISO 9001</span><span class="ticker-sep">·</span>
+    <span>Transformación Digital Portuaria</span><span class="ticker-sep">·</span>
+    <span>Cero Formularios Físicos</span><span class="ticker-sep">·</span>
+    <span>Trazabilidad Total de Carga</span><span class="ticker-sep">·</span>
+    <span>Reportes ESG Automáticos</span><span class="ticker-sep">·</span>
+    <span>Integración ERP / SAP</span><span class="ticker-sep">·</span>
+    <span>Offline-First PWA</span><span class="ticker-sep">·</span>
+    <span>Cumplimiento IRAM · ISO 9001</span><span class="ticker-sep">·</span>
+  </div>
+</div>
+
+<!-- ═══ PROBLEMÁTICA ═══ -->
+<section id="prob" class="prob-bg">
+  <div class="container">
+    <div class="reveal sec-tag">El Problema</div>
+    <h2 class="sec-title reveal d1">La Operación Portuaria<br><em>Sigue en el Siglo XX</em></h2>
+    <p class="sec-desc reveal d2">Formularios en papel, hojas de cálculo y comunicación por teléfono generan ineficiencia, errores y riesgo de cumplimiento que afectan la rentabilidad de todo el puerto.</p>
+
+    <div class="prob-grid">
+      <div class="prob-card c1 reveal d1">
+        <span class="prob-icon">⏱️</span>
+        <div class="prob-title">Lentitud Operacional</div>
+        <p class="prob-text">Cada registro tarda entre 3 y 8 minutos en papel. Con 200 operaciones diarias son más de <strong>16 horas-hombre perdidas</strong> cada día solo en registro.</p>
+        <div class="prob-metric">−73%</div>
+        <div class="prob-metric-l">tiempo de registro con ZeroPaper</div>
+      </div>
+      <div class="prob-card c2 reveal d2">
+        <span class="prob-icon">❌</span>
+        <div class="prob-title">Errores e Ilegibilidad</div>
+        <p class="prob-text">El 18% de los formularios físicos contienen errores, datos ilegibles o información incompleta. Eso genera disputas, re-trabajos y riesgo de multas regulatorias.</p>
+        <div class="prob-metric">≈0%</div>
+        <div class="prob-metric-l">errores de digitación con validación en app</div>
+      </div>
+      <div class="prob-card c3 reveal d3">
+        <span class="prob-icon">🌱</span>
+        <div class="prob-title">Huella de Carbono</div>
+        <p class="prob-text">Un puerto mediano consume más de <strong>50.000 hojas/año</strong> en registro operativo — equivalente a 5 árboles talados, sin contar tintas ni almacenamiento físico.</p>
+        <div class="prob-metric">−100%</div>
+        <div class="prob-metric-l">papel operativo eliminado desde día 1</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SOLUCIÓN ═══ -->
+<section id="sol">
+  <div class="container">
+    <div class="reveal sec-tag">La Solución</div>
+    <h2 class="sec-title reveal d1">Tres Pilares de<br><em>Transformación Real</em></h2>
+    <p class="sec-desc reveal d2">ZeroPaper no es solo una app de registro — es una plataforma de inteligencia operativa diseñada para la realidad portuaria chilena.</p>
+
+    <div class="sol-grid">
+      <div class="sol-card reveal d1">
+        <div class="sol-icon-wrap">⚡</div>
+        <div class="sol-badge">Agilidad Operacional</div>
+        <div class="sol-title">Registro en 45 Segundos</div>
+        <p class="sol-text">Operadores registran ingresos, egresos y almacenamiento desde cualquier dispositivo — incluso sin internet. Sincronización automática al recuperar señal.</p>
+        <ul class="sol-list">
+          <li>PWA offline-first instalable</li>
+          <li>Validación en tiempo real</li>
+          <li>QR por vehículo automático</li>
+          <li>Fotos adjuntas con evidencia</li>
+        </ul>
+      </div>
+      <div class="sol-card featured reveal d2">
+        <div class="sol-icon-wrap">🔍</div>
+        <div class="sol-badge">Trazabilidad Total</div>
+        <div class="sol-title">Cada Operación, Auditada</div>
+        <p class="sol-text">Dashboard en tiempo real para supervisores. Historial inmutable de cada movimiento, con workflow de aprobación y log de cambios completo.</p>
+        <ul class="sol-list">
+          <li>Workflow de aprobación integrado</li>
+          <li>Log de auditoría inmutable</li>
+          <li>Seguimiento externo importadores</li>
+          <li>Exportación CSV / JSON / ERP</li>
+        </ul>
+      </div>
+      <div class="sol-card reveal d3">
+        <div class="sol-icon-wrap">🌿</div>
+        <div class="sol-badge">Cumplimiento ESG</div>
+        <div class="sol-title">Reporte de Impacto Automático</div>
+        <p class="sol-text">Calcula y reporta la reducción de emisiones, papel eliminado y árboles equivalentes preservados — listo para informes de sostenibilidad y licitaciones.</p>
+        <ul class="sol-list">
+          <li>Métricas de CO₂ evitado</li>
+          <li>Informe ESG exportable</li>
+          <li>Compatible IRAM · ISO 9001</li>
+          <li>Evidencia para auditorías</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sol-strip reveal" style="margin-top:32px">
+      <div class="sol-kpi">
+        <div class="sol-kpi-n">+5</div>
+        <div class="sol-kpi-l">Deptos configurables</div>
+      </div>
+      <div class="sol-kpi">
+        <div class="sol-kpi-n">∞</div>
+        <div class="sol-kpi-l">Operarios por empresa</div>
+      </div>
+      <div class="sol-kpi">
+        <div class="sol-kpi-n">1d</div>
+        <div class="sol-kpi-l">Implementación</div>
+      </div>
+      <div class="sol-kpi">
+        <div class="sol-kpi-n">99.9%</div>
+        <div class="sol-kpi-l">Uptime Firebase</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CALCULADORA ═══ -->
+<section id="calc" class="calc-bg">
+  <div class="container">
+    <div class="reveal sec-tag">Calculadora de Impacto</div>
+    <h2 class="sec-title reveal d1">¿Cuánto le Cuesta<br><em>el Papel a su Puerto?</em></h2>
+    <p class="sec-desc reveal d2">Ajuste los parámetros de su operación y vea el impacto económico y ambiental de eliminar el papel.</p>
+
+    <div class="calc-box reveal">
+      <div class="calc-inputs">
+        <div class="calc-panel-title">Parámetros de su Operación</div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Documentos registrados por día</span>
+            <strong id="lbl-docs">100</strong>
+          </div>
+          <input type="range" id="sl-docs" min="20" max="500" value="100" step="10" oninput="calcular()">
+          <div class="slider-range"><span>20</span><span>500</span></div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Costo por hoja impresa (CLP)</span>
+            <strong id="lbl-papel">$25</strong>
+          </div>
+          <input type="range" id="sl-papel" min="10" max="80" value="25" step="5" oninput="calcular()">
+          <div class="slider-range"><span>$10</span><span>$80</span></div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Tiempo búsqueda/gestión por doc (min)</span>
+            <strong id="lbl-tiempo">4 min</strong>
+          </div>
+          <input type="range" id="sl-tiempo" min="1" max="15" value="4" step="1" oninput="calcular()">
+          <div class="slider-range"><span>1 min</span><span>15 min</span></div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label">
+            <span>Costo hora-operario (CLP)</span>
+            <strong id="lbl-salario">$4.500</strong>
+          </div>
+          <input type="range" id="sl-salario" min="2000" max="12000" value="4500" step="500" oninput="calcular()">
+          <div class="slider-range"><span>$2.000</span><span>$12.000</span></div>
+        </div>
+      </div>
+
+      <div class="calc-outputs">
+        <div class="calc-panel-title">Impacto Anual Estimado</div>
+        <div class="out-grid">
+          <div class="out-card">
+            <span class="out-emoji">📄</span>
+            <div class="out-val" id="out-materiales">$912.500</div>
+            <div class="out-label">Ahorro Materiales</div>
+            <div class="out-sub">papel, impresión, almacenaje</div>
+          </div>
+          <div class="out-card">
+            <span class="out-emoji">⏰</span>
+            <div class="out-val" id="out-horas">243 hrs</div>
+            <div class="out-label">Tiempo Recuperado</div>
+            <div class="out-sub">horas-hombre/año</div>
+          </div>
+          <div class="out-card featured">
+            <span class="out-emoji">💰</span>
+            <div class="out-val" id="out-total">$2.004.500</div>
+            <div class="out-label">Ahorro Total / Año</div>
+            <div class="out-sub">materiales + tiempo valorizado</div>
+          </div>
+          <div class="out-card esg">
+            <span class="out-emoji">🌳</span>
+            <div style="display:flex;align-items:baseline;justify-content:center;gap:6px">
+              <div class="out-val" id="out-arboles">4</div>
+              <span style="font-size:18px;font-weight:700;color:var(--esm3)">árboles</span>
+            </div>
+            <div class="out-label">Equivalente preservado / año</div>
+            <div class="out-sub">10.000 hojas = 1 árbol</div>
+          </div>
+        </div>
+        <div class="calc-cta">
+          <a href="#contacto" class="btn-main" style="justify-content:center">Solicitar Análisis Personalizado →</a>
+          <div style="font-size:11px;color:var(--gray2);text-align:center">Estimación referencial. El análisis corporativo incluye datos reales de su operación.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ROLES ═══ -->
+<section id="roles">
+  <div class="container">
+    <div class="reveal sec-tag">Perfiles de Acceso</div>
+    <h2 class="sec-title reveal d1">Una Plataforma,<br><em>Cada Rol en su Lugar</em></h2>
+    <p class="sec-desc reveal d2">Cada actor de la cadena logística tiene su panel con los datos y acciones exactas que necesita — nada más, nada menos.</p>
+
+    <div class="roles-grid">
+      <div class="role-card reveal d1">
+        <div class="role-top rt-op"></div>
+        <div class="role-body">
+          <span class="role-icon">👷</span>
+          <div class="role-badge">Turno · Campo</div>
+          <div class="role-name">Operador</div>
+          <p class="role-desc">Registra operaciones en campo desde celular o tablet. Funciona sin conexión — los datos se sincronizan solos al recuperar señal.</p>
+          <ul class="role-list">
+            <li>Registro ingreso / egreso / almacén</li>
+            <li>Control de patentes y documentos</li>
+            <li>Offline-first, sin internet</li>
+            <li>Fotos adjuntas de evidencia</li>
+            <li>QR por vehículo al ingreso</li>
+          </ul>
+          <a href="/app" class="role-link">Acceder como Operador →</a>
+        </div>
+      </div>
+
+      <div class="role-card featured reveal d2">
+        <div class="role-top rt-ad"></div>
+        <div class="role-body">
+          <span class="role-icon">🧑‍💼</span>
+          <div class="role-badge">Supervisión · Reportes</div>
+          <div class="role-name">Administrador</div>
+          <p class="role-desc">Visión completa de todas las operaciones en tiempo real. Aprueba, rechaza, exporta y gestiona el equipo desde cualquier lugar.</p>
+          <ul class="role-list">
+            <li>Dashboard en tiempo real</li>
+            <li>Workflow de aprobación integrado</li>
+            <li>Reportes y exportación CSV/JSON</li>
+            <li>Gestión de deptos y operadores</li>
+            <li>Alertas de anomalías automáticas</li>
+          </ul>
+          <a href="/admin" class="role-link">Panel Administrador →</a>
+        </div>
+      </div>
+
+      <div class="role-card reveal d3">
+        <div class="role-top rt-im"></div>
+        <div class="role-body">
+          <span class="role-icon">🏢</span>
+          <div class="role-badge">Seguimiento · Cliente</div>
+          <div class="role-name">Importador</div>
+          <p class="role-desc">Rastrea el estado de su carga en tiempo real sin intermediarios. Acceso directo y transparente desde cualquier dispositivo.</p>
+          <ul class="role-list">
+            <li>Estado de carga en tiempo real</li>
+            <li>Historial completo de movimientos</li>
+            <li>Sin crear cuenta ni instalar app</li>
+            <li>Link de seguimiento por QR</li>
+            <li>Evidencia fotográfica de recepción</li>
+          </ul>
+          <a href="/seguimiento" class="role-link">Portal de Seguimiento →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CONTACTO ═══ -->
+<section id="contacto" class="contact-bg">
+  <div class="container">
+    <div class="contact-grid">
+      <!-- Left -->
+      <div class="reveal">
+        <div class="sec-tag">Próximo Paso</div>
+        <h2 class="sec-title">Conversemos sobre<br><em>su Operación</em></h2>
+        <p style="font-size:15px;line-height:1.75;color:var(--gray);max-width:440px">
+          ZeroPaper™ se adapta a la estructura real de su puerto — cantidad de departamentos, tipos de documentos, flujos de aprobación y requerimientos de integración. Sin plantillas rígidas.
+        </p>
+        <div class="contact-trust">
+          <div class="trust-item">
+            <div class="trust-icon">✓</div>
+            <div>
+              <div class="trust-title">Demo personalizada en 48 hrs</div>
+              <div class="trust-sub">Con los datos reales de su operación portuaria</div>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-icon">✓</div>
+            <div>
+              <div class="trust-title">Implementación asistida</div>
+              <div class="trust-sub">Configuramos los departamentos y documentos de su empresa</div>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-icon">✓</div>
+            <div>
+              <div class="trust-title">Soporte técnico en español</div>
+              <div class="trust-sub">Equipo local disponible para su equipo operativo</div>
+            </div>
+          </div>
+          <div class="trust-item">
+            <div class="trust-icon">🌿</div>
+            <div>
+              <div class="trust-title">Reporte ESG incluido</div>
+              <div class="trust-sub">Métricas de impacto ambiental desde el primer mes</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: form -->
+      <div class="reveal d2">
+        <div class="form-box">
+          <div class="form-title">Agendar Demo Corporativa</div>
+          <div class="form-sub">Sin compromiso. Respuesta en menos de 24 hrs hábiles.</div>
+
+          <form id="form-contacto" onsubmit="enviarConsulta(event)">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Nombre</label>
+                <input type="text" id="fc-nombre" class="form-input" placeholder="Juan Pérez" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Cargo</label>
+                <input type="text" id="fc-cargo" class="form-input" placeholder="Gerente Operaciones">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Empresa / Puerto</label>
+              <input type="text" id="fc-empresa" class="form-input" placeholder="Puerto Ejemplo S.A." required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Correo Corporativo</label>
+              <input type="email" id="fc-email" class="form-input" placeholder="juan@empresa.cl" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Volumen operacional estimado</label>
+              <select id="fc-volumen" class="form-input">
+                <option value="">Seleccionar...</option>
+                <option>Menos de 50 operaciones/día</option>
+                <option>50 – 150 operaciones/día</option>
+                <option>150 – 300 operaciones/día</option>
+                <option>Más de 300 operaciones/día</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mensaje (opcional)</label>
+              <textarea id="fc-mensaje" class="form-input" rows="3" placeholder="¿Consulta específica sobre integración, ESG o módulos?"></textarea>
+            </div>
+            <button type="submit" id="btn-submit" class="btn-submit">Solicitar Demo Corporativa →</button>
+            <div id="form-success" class="form-success">✓ ¡Mensaje recibido! Le contactaremos en menos de 24 hrs hábiles.</div>
+            <div class="form-note">Sus datos son confidenciales y no serán compartidos con terceros.</div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-inner">
+      <div>
+        <div class="foot-brand-name">
+          <span>Zero</span><span>Paper</span><span>™</span>
+        </div>
+        <p class="foot-desc">Solución Enterprise de Transformación Digital y ESG para Operación Portuaria. Hecho en Chile 🇨🇱</p>
+        <div class="foot-tags">
+          <span class="foot-tag">ESG Ready</span>
+          <span class="foot-tag">Offline PWA</span>
+          <span class="foot-tag">Firebase</span>
+          <span class="foot-tag">v2.0 Enterprise</span>
+        </div>
+      </div>
+      <div>
+        <div class="foot-col-title">Accesos</div>
+        <div class="foot-links">
+          <a href="/app">→ Operador / App</a>
+          <a href="/admin">→ Panel Administrador</a>
+          <a href="/seguimiento">→ Seguimiento Importador</a>
+        </div>
+      </div>
+      <div>
+        <div class="foot-col-title">Información</div>
+        <div class="foot-links">
+          <a href="#calc">Calculadora de Impacto</a>
+          <a href="#sol">Solución ESG</a>
+          <a href="#contacto">Agendar Demo</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span class="foot-copy">© 2025 ZeroPaper™ · Todos los derechos reservados</span>
+      <span class="foot-version">v2.0 · Firebase · PWA · Variante B</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── REVEAL ──────────────────────────────────────────
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('vis'); obs.unobserve(e.target); } });
+}, { threshold: 0.08, rootMargin: '0px 0px -30px 0px' });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// ── CALCULADORA ──────────────────────────────────────
+function fmt(n) { return '$' + Math.round(n).toLocaleString('es-CL'); }
+
+function calcular() {
+  const d = parseInt(document.getElementById('sl-docs').value)    || 100;
+  const p = parseInt(document.getElementById('sl-papel').value)   || 25;
+  const t = parseInt(document.getElementById('sl-tiempo').value)  || 4;
+  const s = parseInt(document.getElementById('sl-salario').value) || 4500;
+
+  document.getElementById('lbl-docs').textContent    = d;
+  document.getElementById('lbl-papel').textContent   = '$' + p;
+  document.getElementById('lbl-tiempo').textContent  = t + ' min';
+  document.getElementById('lbl-salario').textContent = '$' + s.toLocaleString('es-CL');
+
+  const ahorroMateriales = d * p * 365;
+  const horasRecuperadas = (d * t / 60) * 365;
+  const ahorroTotal      = (horasRecuperadas * s) + ahorroMateriales;
+  const arboles          = Math.max(1, Math.round((d * 365) / 10000));
+
+  document.getElementById('out-materiales').textContent = fmt(ahorroMateriales);
+  document.getElementById('out-horas').textContent       = Math.round(horasRecuperadas) + ' hrs';
+  document.getElementById('out-total').textContent       = fmt(ahorroTotal);
+  document.getElementById('out-arboles').textContent     = arboles;
+}
+calcular();
+
+// ── FORM ────────────────────────────────────────────
+async function enviarConsulta(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-submit');
+  const suc = document.getElementById('form-success');
+
+  const nombre  = document.getElementById('fc-nombre').value.trim();
+  const empresa = document.getElementById('fc-empresa').value.trim();
+  const email   = document.getElementById('fc-email').value.trim();
+  const cargo   = document.getElementById('fc-cargo').value.trim();
+  const volumen = document.getElementById('fc-volumen').value;
+  const mensaje = document.getElementById('fc-mensaje').value.trim();
+
+  if (!nombre || !empresa || !email) return;
+
+  btn.disabled = true; btn.textContent = 'Enviando...';
+
+  try {
+    const API = 'https://firestore.googleapis.com/v1/projects/zeropaper-prod/databases/(default)/documents';
+    const KEY = 'AIzaSyCli7F4hLi-XEmmekGZpO2KQ1SO612I85Y';
+    await fetch(`${API}/leads?key=${KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: {
+        nombre:  { stringValue: nombre },
+        empresa: { stringValue: empresa },
+        email:   { stringValue: email },
+        cargo:   { stringValue: cargo || '' },
+        volumen: { stringValue: volumen || '' },
+        mensaje: { stringValue: mensaje || '' },
+        ts:      { integerValue: String(Date.now()) },
+        origen:  { stringValue: 'landing-v2-dark' }
+      }})
+    });
+  } catch(err) { console.warn(err); }
+
+  suc.style.display = 'block';
+  btn.textContent   = 'Solicitud enviada ✓';
+  btn.style.background = 'var(--esm3)';
+
+  setTimeout(() => {
+    document.getElementById('form-contacto').reset();
+    btn.disabled = false;
+    btn.textContent = 'Solicitar Demo Corporativa →';
+    btn.style.background = '';
+    suc.style.display = 'none';
+  }, 5000);
+}
+</script>
+</body>
+</html>

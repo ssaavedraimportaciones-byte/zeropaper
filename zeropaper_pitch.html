@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZeroPaper™ — Presentación Ejecutiva</title>
+<meta name="description" content="ZeroPaper™ — Control digital de documentos operativos. Presentación para gerencia.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#090F1A;--bg2:#0D1525;--bg3:#111B2E;
+  --fg:#F1F3F8;--mu:#8A94A8;--brd:rgba(255,255,255,.07);
+  --forest:#2D6A4F;--esm:#40916C;--mint:#D8F3DC;
+  --accent:#6EE7B7;--gold:#F59E0B;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;scroll-snap-type:y proximity;}
+body{font-family:'Inter',sans-serif;color:var(--fg);background:var(--bg);-webkit-font-smoothing:antialiased;}
+
+/* Sections */
+.slide{min-height:100vh;display:flex;align-items:center;padding:80px 40px;position:relative;overflow:hidden;scroll-snap-align:start;}
+@media(max-width:768px){.slide{padding:60px 20px;}}
+
+/* Nav */
+.pitch-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:16px 40px;background:rgba(9,15,26,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--brd);}
+.pitch-nav-brand{font-weight:900;font-size:18px;color:var(--accent);letter-spacing:-.5px;}
+.pitch-nav-right{display:flex;gap:16px;align-items:center;}
+.pitch-nav-link{font-size:12px;color:var(--mu);font-weight:600;text-decoration:none;transition:color .15s;letter-spacing:.5px;text-transform:uppercase;}
+.pitch-nav-link:hover{color:var(--accent);}
+.pitch-nav-cta{font-size:12px;background:var(--forest);color:#fff;padding:8px 18px;border-radius:8px;font-weight:700;text-decoration:none;transition:opacity .15s;}
+.pitch-nav-cta:hover{opacity:.85;}
+
+/* Side progress dots */
+.progress-dots{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:12px;}
+.pdot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.1);transition:all .3s;cursor:pointer;}
+.pdot.active{background:var(--accent);border-color:var(--accent);box-shadow:0 0 12px rgba(110,231,183,.3);}
+@media(max-width:768px){.progress-dots{display:none;}}
+
+/* Reveal */
+.r{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease;}
+.r.on{opacity:1;transform:none;}
+.r.d1{transition-delay:.1s}.r.d2{transition-delay:.2s}.r.d3{transition-delay:.3s}.r.d4{transition-delay:.4s}.r.d5{transition-delay:.5s}
+
+/* Metric big */
+.metric{text-align:center;}
+.metric-num{font-size:clamp(48px,8vw,80px);font-weight:900;line-height:1;letter-spacing:-2px;background:linear-gradient(135deg,var(--accent),var(--mint));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.metric-label{font-size:14px;color:var(--mu);margin-top:8px;font-weight:600;}
+.metric-sub{font-size:11px;color:rgba(138,148,168,.6);margin-top:4px;}
+
+/* Cards */
+.pitch-card{background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:28px;transition:border-color .2s;}
+.pitch-card:hover{border-color:rgba(110,231,183,.2);}
+
+/* Timeline */
+.tl-item{display:flex;gap:20px;position:relative;}
+.tl-dot{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;flex-shrink:0;position:relative;z-index:1;}
+.tl-line{position:absolute;top:40px;left:19px;bottom:-24px;width:2px;background:var(--brd);}
+
+/* Glow */
+.glow{position:absolute;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;}
+.glow-green{background:rgba(45,106,79,.15);}
+.glow-blue{background:rgba(59,130,246,.08);}
+
+/* Print */
+@media print{
+  .pitch-nav,.progress-dots{display:none !important;}
+  .slide{min-height:auto;page-break-inside:avoid;padding:40px 20px;}
+  body{background:#fff;color:#111;}
+  .metric-num{-webkit-text-fill-color:#2D6A4F;background:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<div class="pitch-nav">
+  <div class="pitch-nav-brand">ZeroPaper™</div>
+  <div class="pitch-nav-right">
+    <a href="#problema" class="pitch-nav-link">Problema</a>
+    <a href="#solucion" class="pitch-nav-link">Solución</a>
+    <a href="#roi" class="pitch-nav-link">ROI</a>
+    <a href="#demo" class="pitch-nav-link">Demo</a>
+    <a href="#piloto" class="pitch-nav-cta">Iniciar piloto →</a>
+  </div>
+</div>
+
+<!-- Progress dots -->
+<div class="progress-dots" id="dots"></div>
+
+
+<!-- ═══════ SLIDE 1: HERO ═══════ -->
+<section class="slide" id="hero" data-dot>
+  <div class="glow glow-green" style="width:500px;height:500px;top:-100px;right:-100px;"></div>
+  <div style="max-width:900px;position:relative;z-index:1;">
+    <div class="r" style="display:inline-flex;align-items:center;gap:8px;background:rgba(110,231,183,.1);border:1px solid rgba(110,231,183,.2);border-radius:100px;padding:6px 16px;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:32px;">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;"></span>
+      Presentación ejecutiva
+    </div>
+    <h1 class="r d1" style="font-family:'Playfair Display',serif;font-size:clamp(36px,6vw,72px);font-weight:900;line-height:1.05;margin-bottom:24px;letter-spacing:-1px;">
+      El papel no va a<br>desaparecer. Pero el<br><span style="color:var(--accent);">desorden sí puede.</span>
+    </h1>
+    <p class="r d2" style="font-size:clamp(16px,2vw,20px);color:var(--mu);line-height:1.7;max-width:580px;margin-bottom:40px;">
+      ZeroPaper™ convierte los documentos físicos de tu operación en activos digitales trazables — sin eliminar el papel, sin cambiar tus procesos.
+    </p>
+    <div class="r d3" style="display:flex;gap:16px;flex-wrap:wrap;">
+      <a href="#problema" style="display:inline-flex;align-items:center;gap:8px;background:var(--forest);color:#fff;font-weight:700;padding:14px 28px;border-radius:12px;text-decoration:none;font-size:15px;transition:opacity .15s;">Ver la oportunidad ↓</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════ SLIDE 2: EL COSTO DEL DESORDEN ═══════ -->
+<section class="slide" id="problema" data-dot style="background:var(--bg2);">
+  <div class="glow glow-blue" style="width:400px;height:400px;bottom:-100px;left:-80px;"></div>
+  <div style="max-width:1000px;width:100%;position:relative;z-index:1;">
+    <div class="r" style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;">El costo de no hacer nada</div>
+    <h2 class="r d1" style="font-size:clamp(28px,4vw,44px);font-weight:900;line-height:1.1;margin-bottom:48px;">
+      Tu operación pierde tiempo, datos y dinero<br><span style="color:var(--mu);">por documentos que nadie controla.</span>
+    </h2>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px;margin-bottom:48px;">
+      <div class="r d1 metric">
+        <div class="metric-num">37%</div>
+        <div class="metric-label">Tiempo en búsquedas</div>
+        <div class="metric-sub">del tiempo del supervisor</div>
+      </div>
+      <div class="r d2 metric">
+        <div class="metric-num" style="background:linear-gradient(135deg,#F59E0B,#EF4444);-webkit-background-clip:text;">$24K</div>
+        <div class="metric-label">Costo oculto anual</div>
+        <div class="metric-sub">en horas perdidas (50 docs/día)</div>
+      </div>
+      <div class="r d3 metric">
+        <div class="metric-num">0%</div>
+        <div class="metric-label">Trazabilidad actual</div>
+        <div class="metric-sub">de documentos archivados</div>
+      </div>
+      <div class="r d4 metric">
+        <div class="metric-num" style="background:linear-gradient(135deg,#EF4444,#F59E0B);-webkit-background-clip:text;">∞</div>
+        <div class="metric-label">Riesgo de pérdida</div>
+        <div class="metric-sub">sin respaldo ni historial</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;">
+      <div class="r d2 pitch-card">
+        <div style="font-size:24px;margin-bottom:12px;">🔍</div>
+        <div style="font-weight:800;font-size:14px;margin-bottom:6px;">Documentos perdidos</div>
+        <div style="font-size:13px;color:var(--mu);line-height:1.6;">"¿Quién tiene la guía de esa carga?" Media hora buscando en carpetas físicas.</div>
+      </div>
+      <div class="r d3 pitch-card">
+        <div style="font-size:24px;margin-bottom:12px;">🔒</div>
+        <div style="font-weight:800;font-size:14px;margin-bottom:6px;">Dependencia de personas</div>
+        <div style="font-size:13px;color:var(--mu);line-height:1.6;">Si Jorge sale de vacaciones, nadie sabe dónde están los documentos de su turno.</div>
+      </div>
+      <div class="r d4 pitch-card">
+        <div style="font-size:24px;margin-bottom:12px;">📋</div>
+        <div style="font-weight:800;font-size:14px;margin-bottom:6px;">Auditoría sin respuestas</div>
+        <div style="font-size:13px;color:var(--mu);line-height:1.6;">¿Quién firmó esto? ¿Cuándo? ¿Qué versión es? Sin respuestas rápidas.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════ SLIDE 3: SOLUCIÓN ═══════ -->
+<section class="slide" id="solucion" data-dot>
+  <div class="glow glow-green" style="width:500px;height:500px;top:50%;left:-150px;transform:translateY(-50%);"></div>
+  <div style="max-width:1000px;width:100%;position:relative;z-index:1;">
+    <div class="r" style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;">La solución</div>
+    <h2 class="r d1" style="font-size:clamp(28px,4vw,44px);font-weight:900;line-height:1.1;margin-bottom:16px;">
+      Un registro digital para cada<br>documento físico.
+    </h2>
+    <p class="r d2" style="font-size:16px;color:var(--mu);line-height:1.7;max-width:540px;margin-bottom:48px;">
+      ZeroPaper no elimina el papel. Crea un gemelo digital: foto, estado, responsable, ubicación, historial completo — accesible desde cualquier dispositivo.
+    </p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+      <div class="r d2 pitch-card" style="border-left:3px solid var(--accent);">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Paso 1</div>
+        <div style="font-size:28px;margin-bottom:10px;">📷</div>
+        <div style="font-weight:800;font-size:16px;margin-bottom:8px;">Captura en terreno</div>
+        <div style="font-size:13px;color:var(--mu);line-height:1.7;">
+          El operador registra desde el celular: foto del documento, tipo, folio, departamento. 30 segundos. Funciona sin internet.
+        </div>
+      </div>
+      <div class="r d3 pitch-card" style="border-left:3px solid var(--esm);">
+        <div style="font-size:11px;font-weight:700;color:var(--esm);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Paso 2</div>
+        <div style="font-size:28px;margin-bottom:10px;">📂</div>
+        <div style="font-weight:800;font-size:16px;margin-bottom:8px;">Centralización automática</div>
+        <div style="font-size:13px;color:var(--mu);line-height:1.7;">
+          Todo llega al panel admin en tiempo real. Filtrable por fecha, turno, operador, estado, departamento. Nada se pierde.
+        </div>
+      </div>
+      <div class="r d4 pitch-card" style="border-left:3px solid var(--gold);">
+        <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Paso 3</div>
+        <div style="font-size:28px;margin-bottom:10px;">📊</div>
+        <div style="font-weight:800;font-size:16px;margin-bottom:8px;">Control y trazabilidad</div>
+        <div style="font-size:13px;color:var(--mu);line-height:1.7;">
+          Historial completo, aprobaciones digitales, exportación a Excel/ERP. Auditoría lista en minutos. Reportes automáticos con IA.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════ SLIDE 4: ROI ═══════ -->
+<section class="slide" id="roi" data-dot style="background:var(--bg2);">
+  <div style="max-width:1000px;width:100%;position:relative;z-index:1;">
+    <div class="r" style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;">Retorno de inversión</div>
+    <h2 class="r d1" style="font-size:clamp(28px,4vw,44px);font-weight:900;line-height:1.1;margin-bottom:48px;">
+      Resultados en el primer mes.
+    </h2>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:48px;">
+      <div class="r d1 pitch-card" style="text-align:center;padding:32px;">
+        <div style="font-size:48px;font-weight:900;color:var(--accent);line-height:1;">70%</div>
+        <div style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin:8px 0 4px;">Menos tiempo</div>
+        <div style="font-size:12px;color:var(--mu);">buscando documentos</div>
+      </div>
+      <div class="r d2 pitch-card" style="text-align:center;padding:32px;">
+        <div style="font-size:48px;font-weight:900;color:var(--accent);line-height:1;">100%</div>
+        <div style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin:8px 0 4px;">Trazabilidad</div>
+        <div style="font-size:12px;color:var(--mu);">de cada documento registrado</div>
+      </div>
+      <div class="r d3 pitch-card" style="text-align:center;padding:32px;">
+        <div style="font-size:48px;font-weight:900;color:var(--accent);line-height:1;">48h</div>
+        <div style="font-size:12px;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin:8px 0 4px;">Puesta en marcha</div>
+        <div style="font-size:12px;color:var(--mu);">del primer al último operador</div>
+      </div>
+      <div class="r d4 pitch-card" style="text-align:center;padding:32px;">
+        <div style="font-size:48px;font-weight:900;color:var(--gold);line-height:1;">$0</div>
+        <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:1px;text-transform:uppercase;margin:8px 0 4px;">Inversión inicial</div>
+        <div style="font-size:12px;color:var(--mu);">piloto 30 días sin costo</div>
+      </div>
+    </div>
+
+    <!-- ROI breakdown -->
+    <div class="r d3 pitch-card" style="padding:32px;">
+      <div style="font-weight:800;font-size:16px;margin-bottom:20px;">Proyección de ahorro anual <span style="font-size:12px;color:var(--mu);font-weight:500">(operación de 50 docs/día)</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;">
+        <div>
+          <div style="font-size:11px;color:var(--mu);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Horas recuperadas</div>
+          <div style="font-size:28px;font-weight:900;">2,280<span style="font-size:14px;color:var(--mu);font-weight:500;margin-left:4px;">hrs/año</span></div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--mu);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Ahorro en horas-hombre</div>
+          <div style="font-size:28px;font-weight:900;color:var(--accent);">$18,240<span style="font-size:14px;color:var(--mu);font-weight:500;margin-left:4px;">USD</span></div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--mu);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Reducción de errores</div>
+          <div style="font-size:28px;font-weight:900;">95%<span style="font-size:14px;color:var(--mu);font-weight:500;margin-left:4px;">menos</span></div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--mu);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Impacto ambiental</div>
+          <div style="font-size:28px;font-weight:900;color:var(--gold);">-40%<span style="font-size:14px;color:var(--mu);font-weight:500;margin-left:4px;">papel</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════ SLIDE 5: IMPLEMENTACIÓN ═══════ -->
+<section class="slide" id="impl" data-dot>
+  <div style="max-width:900px;width:100%;position:relative;z-index:1;">
+    <div class="r" style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;">Implementación</div>
+    <h2 class="r d1" style="font-size:clamp(28px,4vw,44px);font-weight:900;line-height:1.1;margin-bottom:48px;">
+      Sin riesgos. Sin inversión.<br><span style="color:var(--mu);">Solo un piloto de 30 días.</span>
+    </h2>
+
+    <div style="display:flex;flex-direction:column;gap:32px;">
+      <div class="r d1 tl-item">
+        <div>
+          <div class="tl-dot" style="background:var(--forest);color:#fff;">D1</div>
+          <div class="tl-line"></div>
+        </div>
+        <div>
+          <div style="font-weight:800;font-size:16px;margin-bottom:4px;">Día 1 — Configuración</div>
+          <div style="font-size:14px;color:var(--mu);line-height:1.7;">Alta de empresa, formularios personalizados, usuarios. Sin intervención de TI.</div>
+        </div>
+      </div>
+      <div class="r d2 tl-item">
+        <div>
+          <div class="tl-dot" style="background:var(--esm);color:#fff;">D2</div>
+          <div class="tl-line"></div>
+        </div>
+        <div>
+          <div style="font-weight:800;font-size:16px;margin-bottom:4px;">Día 2 — Primer turno real</div>
+          <div style="font-size:14px;color:var(--mu);line-height:1.7;">Los operadores registran en paralelo al proceso actual. Capacitación: 15 minutos.</div>
+        </div>
+      </div>
+      <div class="r d3 tl-item">
+        <div>
+          <div class="tl-dot" style="background:var(--gold);color:#fff;">S2</div>
+          <div class="tl-line"></div>
+        </div>
+        <div>
+          <div style="font-weight:800;font-size:16px;margin-bottom:4px;">Semana 2 — Primeros datos</div>
+          <div style="font-size:14px;color:var(--mu);line-height:1.7;">Ya puedes filtrar, exportar y auditar. El panel admin muestra métricas reales.</div>
+        </div>
+      </div>
+      <div class="r d4 tl-item">
+        <div>
+          <div class="tl-dot" style="background:var(--accent);color:var(--bg);">M1</div>
+        </div>
+        <div>
+          <div style="font-weight:800;font-size:16px;margin-bottom:4px;">Mes 1 — Decisión informada</div>
+          <div style="font-size:14px;color:var(--mu);line-height:1.7;">Reporte IA ejecutivo con datos reales. Certificado de impacto ambiental. Tú decides si escalas.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════ SLIDE 6: DEMO VIVA ═══════ -->
+<section class="slide" id="demo" data-dot style="background:var(--bg2);">
+  <div style="max-width:1000px;width:100%;position:relative;z-index:1;">
+    <div class="r" style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;">Sistema live</div>
+    <h2 class="r d1" style="font-size:clamp(28px,4vw,44px);font-weight:900;line-height:1.1;margin-bottom:16px;">
+      Pruébalo ahora mismo.
+    </h2>
+    <p class="r d2" style="font-size:16px;color:var(--mu);margin-bottom:40px;max-width:460px;">El sistema está funcionando en producción. Estas son las vías de acceso.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;">
+      <a href="/app" target="_blank" class="r d1 pitch-card" style="text-decoration:none;color:var(--fg);display:block;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:40px;height:40px;background:var(--forest);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">📱</div>
+          <div>
+            <div style="font-weight:800;font-size:14px;">App Operador</div>
+            <div style="font-size:11px;color:var(--mu);font-family:monospace;">/app</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--mu);line-height:1.6;">Registro de documentos en terreno. Funciona offline. PWA instalable.</div>
+        <div style="margin-top:12px;font-size:11px;color:var(--accent);font-weight:700;">Demo: acceso libre →</div>
+      </a>
+
+      <a href="/admin" target="_blank" class="r d2 pitch-card" style="text-decoration:none;color:var(--fg);display:block;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:40px;height:40px;background:var(--esm);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🖥</div>
+          <div>
+            <div style="font-weight:800;font-size:14px;">Panel Administrador</div>
+            <div style="font-size:11px;color:var(--mu);font-family:monospace;">/admin</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--mu);line-height:1.6;">Dashboard, aprobaciones, exportaciones, reportes IA, configuración.</div>
+        <div style="margin-top:12px;padding:8px 12px;background:var(--bg3);border-radius:8px;font-family:monospace;font-size:11px;">
+          <span style="color:var(--mu);">user:</span> <span style="color:var(--accent);">admin</span>
+          &nbsp;&nbsp;<span style="color:var(--mu);">pass:</span> <span style="color:var(--accent);">zeropaper2025</span>
+        </div>
+      </a>
+
+      <a href="/soporte" target="_blank" class="r d3 pitch-card" style="text-decoration:none;color:var(--fg);display:block;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:40px;height:40px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🤖</div>
+          <div>
+            <div style="font-weight:800;font-size:14px;">Soporte IA</div>
+            <div style="font-size:11px;color:var(--mu);font-family:monospace;">/soporte</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--mu);line-height:1.6;">Asistente técnico con Claude Sonnet. Resuelve dudas operativas 24/7.</div>
+        <div style="margin-top:12px;font-size:11px;color:var(--accent);font-weight:700;">Probar chat IA →</div>
+      </a>
+
+      <a href="/certificado?empresa=demo&nombre=Empresa+Demo&mes=2026-03" target="_blank" class="r d4 pitch-card" style="text-decoration:none;color:var(--fg);display:block;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:40px;height:40px;background:rgba(110,231,183,.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🏅</div>
+          <div>
+            <div style="font-weight:800;font-size:14px;">Certificado Ambiental</div>
+            <div style="font-size:11px;color:var(--mu);font-family:monospace;">/certificado</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--mu);line-height:1.6;">Certificado mensual de impacto. Ideal para reportes ESG y licitaciones.</div>
+        <div style="margin-top:12px;font-size:11px;color:var(--accent);font-weight:700;">Ver ejemplo →</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════ SLIDE 7: CTA FINAL ═══════ -->
+<section class="slide" id="piloto" data-dot style="text-align:center;justify-content:center;">
+  <div class="glow glow-green" style="width:600px;height:600px;top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+  <div style="position:relative;z-index:1;max-width:600px;margin:0 auto;">
+    <div class="r" style="font-size:56px;margin-bottom:24px;">🚀</div>
+    <h2 class="r d1" style="font-family:'Playfair Display',serif;font-size:clamp(32px,5vw,52px);font-weight:900;line-height:1.1;margin-bottom:16px;">
+      ¿Listo para controlar<br>tu operación?
+    </h2>
+    <p class="r d2" style="font-size:17px;color:var(--mu);line-height:1.7;margin-bottom:40px;">
+      30 días gratis. Sin contrato. Sin instalar nada.<br>
+      Solo resultados desde el primer turno.
+    </p>
+    <div class="r d3" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <a href="https://zeropaper-swart.vercel.app/#piloto" target="_blank"
+         style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--bg);font-weight:800;padding:16px 36px;border-radius:14px;text-decoration:none;font-size:16px;transition:opacity .15s;box-shadow:0 4px 24px rgba(110,231,183,.3);">
+        Iniciar piloto gratuito →
+      </a>
+      <a href="/admin" target="_blank"
+         style="display:inline-flex;align-items:center;gap:8px;border:1px solid var(--brd);color:var(--mu);font-weight:600;padding:16px 28px;border-radius:14px;text-decoration:none;font-size:15px;transition:all .15s;">
+        Ver demo admin
+      </a>
+    </div>
+
+    <div class="r d4" style="margin-top:48px;padding-top:32px;border-top:1px solid var(--brd);font-size:12px;color:var(--mu);line-height:2;">
+      <strong style="color:var(--fg);">ZeroPaper™</strong> — Control de documentos operativos<br>
+      zeropaper-swart.vercel.app · zeropaper-prod · Powered by Firebase + Claude Sonnet IA
+    </div>
+  </div>
+</section>
+
+
+<script>
+// ── REVEAL ─────────────────────────────────────────
+const ro = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('on'); ro.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.r').forEach(el => ro.observe(el));
+
+// ── PROGRESS DOTS ──────────────────────────────────
+const slides = document.querySelectorAll('[data-dot]');
+const dotsC  = document.getElementById('dots');
+slides.forEach((s, i) => {
+  const d = document.createElement('div');
+  d.classList.add('pdot');
+  d.onclick = () => s.scrollIntoView({ behavior:'smooth' });
+  dotsC.appendChild(d);
+});
+const dotEls = dotsC.querySelectorAll('.pdot');
+const dotObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      const idx = [...slides].indexOf(e.target);
+      dotEls.forEach((d,i) => d.classList.toggle('active', i===idx));
+    }
+  });
+}, { threshold: 0.5 });
+slides.forEach(s => dotObs.observe(s));
+</script>
+</body>
+</html>

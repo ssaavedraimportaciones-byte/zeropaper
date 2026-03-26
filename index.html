@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="ZeroPaper™ — Control digital de documentos físicos. Trazabilidad, orden y acceso inmediato sin cambiar tu operación.">
+<meta name="theme-color" content="#1B4332">
+<meta property="og:title" content="ZeroPaper™ — El papel no va a desaparecer. Pero el desorden, sí.">
+<meta property="og:description" content="Registra, gestiona y rastrea documentos físicos desde cualquier dispositivo. Sin cambios drásticos. Sin promesas irreales.">
+<title>ZeroPaper™ — Control de Documentos Operativos</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<script>
+window.tailwind = { config: {
+  theme: {
+    extend: {
+      colors: {
+        forest:  { DEFAULT:'#1B4332', hover:'#2D6A4F', dark:'#0D2B1F' },
+        esm:     { DEFAULT:'#40916C', light:'#52B788' },
+        mint:    { DEFAULT:'#D8F3DC', light:'#F0FAF4', dark:'#B7E4C7' },
+        slate2:  { DEFAULT:'#334155', light:'#475569', lighter:'#64748B' },
+        ink:     { DEFAULT:'#0F172A', soft:'#1E293B' }
+      },
+      fontFamily:{ inter:['Inter','sans-serif'] },
+      boxShadow:{
+        'card':'0 2px 12px rgba(15,23,42,0.07), 0 1px 3px rgba(15,23,42,0.05)',
+        'card-hover':'0 8px 32px rgba(27,67,50,0.13), 0 2px 8px rgba(27,67,50,0.07)',
+        'cta':'0 4px 24px rgba(27,67,50,0.28)',
+      }
+    }
+  }
+}}
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;color:#0F172A;}
+
+/* Reveal */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .5s ease,transform .5s ease;}
+.reveal.on{opacity:1;transform:none;}
+.d1{transition-delay:.06s}.d2{transition-delay:.12s}.d3{transition-delay:.18s}.d4{transition-delay:.24s}.d5{transition-delay:.30s}
+
+/* Range */
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;border-radius:3px;background:#D8F3DC;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#1B4332;cursor:pointer;box-shadow:0 2px 6px rgba(27,67,50,.3);}
+
+/* Nav */
+.nav-link{color:#64748B;font-size:14px;font-weight:500;transition:color .15s;}
+.nav-link:hover{color:#1B4332;}
+
+/* Step connector */
+.step-line{position:absolute;top:28px;left:calc(50% + 28px);right:calc(-50% + 28px);height:2px;background:linear-gradient(90deg,#D8F3DC,#B7E4C7);z-index:0;}
+
+/* Badge */
+.badge{display:inline-flex;align-items:center;gap:6px;background:#F0FAF4;border:1px solid #B7E4C7;color:#2D6A4F;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:5px 12px;border-radius:100px;}
+
+/* Problem card hover */
+.prob-card{transition:transform .2s,box-shadow .2s;}
+.prob-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(27,67,50,.10);}
+
+/* Ticker */
+.ticker-wrap{display:inline-block;animation:tick 40s linear infinite;white-space:nowrap;}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+</style>
+</head>
+<body class="bg-white">
+
+<!-- ══════════════════════════════════════
+     NAV
+══════════════════════════════════════ -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100">
+  <div class="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2.5">
+      <div class="w-8 h-8 bg-forest rounded-lg flex items-center justify-center">
+        <span class="text-white text-sm font-black">Z</span>
+      </div>
+      <span class="font-black text-forest text-lg tracking-tight">ZeroPaper™</span>
+    </a>
+    <nav class="hidden md:flex items-center gap-7">
+      <a href="#problema" class="nav-link">El problema</a>
+      <a href="#como" class="nav-link">Cómo funciona</a>
+      <a href="#calcula" class="nav-link">Calcula tu impacto</a>
+      <a href="#piloto" class="nav-link">Piloto</a>
+    </nav>
+    <a href="#piloto"
+       class="hidden md:inline-flex items-center gap-2 bg-forest text-white text-sm font-700 px-5 py-2.5 rounded-xl hover:bg-forest-hover transition-colors shadow-cta">
+      Iniciar piloto →
+    </a>
+    <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+  <!-- Mobile menu -->
+  <div id="mobileMenu" class="hidden md:hidden border-t border-slate-100 bg-white px-5 py-4 flex flex-col gap-3">
+    <a href="#problema" class="nav-link py-2 border-b border-slate-50">El problema</a>
+    <a href="#como"     class="nav-link py-2 border-b border-slate-50">Cómo funciona</a>
+    <a href="#calcula"  class="nav-link py-2 border-b border-slate-50">Calcula tu impacto</a>
+    <a href="#piloto"   class="nav-link py-2">Piloto</a>
+    <a href="#piloto"   class="mt-2 bg-forest text-white text-sm font-700 px-5 py-3 rounded-xl text-center">Iniciar piloto →</a>
+  </div>
+</header>
+
+
+<!-- ══════════════════════════════════════
+     HERO
+══════════════════════════════════════ -->
+<section class="pt-32 pb-20 px-5 bg-white relative overflow-hidden">
+  <!-- Fondo sutil -->
+  <div class="absolute inset-0 bg-gradient-to-br from-mint-light via-white to-white pointer-events-none"></div>
+  <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-mint-light rounded-full opacity-30 -translate-y-1/2 translate-x-1/3 pointer-events-none blur-3xl"></div>
+
+  <div class="max-w-6xl mx-auto relative">
+    <div class="max-w-[720px]">
+      <!-- Badge -->
+      <div class="reveal d1 badge mb-6">
+        <span class="w-1.5 h-1.5 rounded-full bg-esm inline-block"></span>
+        Control de documentos operativos
+      </div>
+
+      <!-- Headline -->
+      <h1 class="reveal d2 text-[44px] sm:text-[54px] lg:text-[62px] font-black leading-[1.02] tracking-tight mb-6">
+        No necesitas<br>
+        eliminar el papel.<br>
+        <span class="text-forest">Necesitas controlarlo.</span>
+      </h1>
+
+      <!-- Sub -->
+      <p class="reveal d3 text-lg sm:text-xl text-slate-500 leading-relaxed mb-10 max-w-[540px]">
+        ZeroPaper digitaliza el registro y control de tus documentos físicos.
+        Trazabilidad completa, acceso inmediato y menos dependencia de personas —
+        sin cambiar cómo trabaja tu operación.
+      </p>
+
+      <!-- CTA -->
+      <div class="reveal d4 flex flex-col sm:flex-row gap-3 mb-14">
+        <a href="#piloto"
+           class="inline-flex items-center justify-center gap-2 bg-forest text-white font-800 text-base px-8 py-4 rounded-xl hover:bg-forest-hover transition-all shadow-cta">
+          Probar en mi operación →
+        </a>
+        <a href="#como"
+           class="inline-flex items-center justify-center gap-2 border border-slate-200 text-slate-600 font-600 text-base px-8 py-4 rounded-xl hover:bg-slate-50 transition-all">
+          Ver cómo funciona
+        </a>
+      </div>
+
+      <!-- Proof bar -->
+      <div class="reveal d5 flex flex-wrap gap-x-8 gap-y-3 text-sm text-slate-500">
+        <div class="flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4" stroke="#40916C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Sin instalación de software
+        </div>
+        <div class="flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4" stroke="#40916C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Piloto en 48 horas
+        </div>
+        <div class="flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4" stroke="#40916C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Compatible con tus procesos actuales
+        </div>
+        <div class="flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4" stroke="#40916C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Funciona offline
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     TICKER
+══════════════════════════════════════ -->
+<div class="py-4 bg-forest overflow-hidden">
+  <div class="ticker-wrap text-mint/60 text-xs font-600 tracking-widest uppercase">
+    <span class="px-8">Control documental</span><span class="text-mint/30 px-2">·</span>
+    <span class="px-8">Trazabilidad operativa</span><span class="text-mint/30 px-2">·</span>
+    <span class="px-8">Acceso inmediato</span><span class="text-mint/30 px-2">·</span>
+    <span class="px-8">Sin papel perdido</span><span class="text-mint/30 px-2">·</span>
+    <span class="px-8">Historial completo</span><span class="text-mint/30 px-2">·</span>
+    <span class="px-8">Registro en tiempo real</span><span class="text-mint/30 px-2">·</span>
+    <span class="px-8">Aprobaciones digitales</span><span class="text-mint/30 px-2">·</span>
+    <span class="px-8">Control documental</span><span class="text-mint/30 px-2">·</span>
+    <span class="px-8">Trazabilidad operativa</span><span class="text-mint/30 px-2">·</span>
+    <span class="px-8">Acceso inmediato</span><span class="text-mint/30 px-2">·</span>
+    <span class="px-8">Sin papel perdido</span><span class="text-mint/30 px-2">·</span>
+    <span class="px-8">Historial completo</span><span class="text-mint/30 px-2">·</span>
+    <span class="px-8">Registro en tiempo real</span><span class="text-mint/30 px-2">·</span>
+    <span class="px-8">Aprobaciones digitales</span><span class="text-mint/30 px-2">·</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     EL PROBLEMA REAL
+══════════════════════════════════════ -->
+<section id="problema" class="py-24 px-5 bg-white">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="reveal badge mb-4 mx-auto w-fit">El costo oculto del desorden</div>
+      <h2 class="reveal d1 text-3xl sm:text-4xl font-black text-ink leading-tight mb-4">
+        No es el papel el problema.<br>Es que nadie sabe dónde está.
+      </h2>
+      <p class="reveal d2 text-slate-500 text-lg max-w-[480px] mx-auto leading-relaxed">
+        Estas situaciones pasan todos los días en operaciones como la tuya.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+      <!-- Card 1 -->
+      <div class="prob-card reveal d1 bg-white border border-slate-100 rounded-2xl p-6 shadow-card">
+        <div class="w-11 h-11 bg-red-50 rounded-xl flex items-center justify-content-center mb-4 text-2xl flex items-center justify-center">🔍</div>
+        <h3 class="font-800 text-base text-ink mb-2">Documentos perdidos</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">
+          "¿Dónde quedó la guía de esa carga?" Nadie sabe. Alguien lo tiene, alguien más lo archivó. Media hora perdida buscando.
+        </p>
+        <div class="mt-4 pt-4 border-t border-slate-50 text-xs font-700 text-red-500">⏱ +30 min por incidente</div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="prob-card reveal d2 bg-white border border-slate-100 rounded-2xl p-6 shadow-card">
+        <div class="w-11 h-11 bg-amber-50 rounded-xl flex items-center justify-center mb-4 text-2xl">🔒</div>
+        <h3 class="font-800 text-base text-ink mb-2">Dependencia de personas</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">
+          Si Jorge no está, nadie sabe dónde están los documentos de este turno. La operación espera a que Jorge aparezca.
+        </p>
+        <div class="mt-4 pt-4 border-t border-slate-50 text-xs font-700 text-amber-600">🚫 Riesgo operativo constante</div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="prob-card reveal d3 bg-white border border-slate-100 rounded-2xl p-6 shadow-card">
+        <div class="w-11 h-11 bg-blue-50 rounded-xl flex items-center justify-center mb-4 text-2xl">📋</div>
+        <h3 class="font-800 text-base text-ink mb-2">Sin trazabilidad</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">
+          Auditoría, reclamo o fiscalización: ¿cuándo se firmó esto?, ¿quién lo aprobó?, ¿qué versión es la válida? Sin respuestas claras.
+        </p>
+        <div class="mt-4 pt-4 border-t border-slate-50 text-xs font-700 text-blue-600">📁 Sin historial verificable</div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="prob-card reveal d4 bg-white border border-slate-100 rounded-2xl p-6 shadow-card">
+        <div class="w-11 h-11 bg-purple-50 rounded-xl flex items-center justify-center mb-4 text-2xl">📊</div>
+        <h3 class="font-800 text-base text-ink mb-2">Cero visibilidad en tiempo real</h3>
+        <p class="text-sm text-slate-500 leading-relaxed">
+          El jefe en oficina no sabe qué pasa en terreno hasta que alguien llama o manda una foto por WhatsApp.
+        </p>
+        <div class="mt-4 pt-4 border-t border-slate-50 text-xs font-700 text-purple-600">👁 Gestión a ciegas</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     EL PAPEL SIGUE. EL DESORDEN NO.
+══════════════════════════════════════ -->
+<section class="py-20 px-5 bg-forest">
+  <div class="max-w-5xl mx-auto">
+    <div class="grid md:grid-cols-2 gap-12 items-center">
+      <div>
+        <div class="reveal badge mb-6" style="background:rgba(216,243,220,.12);border-color:rgba(216,243,220,.2);color:#D8F3DC;">
+          Realidad operativa
+        </div>
+        <h2 class="reveal d1 text-3xl sm:text-4xl font-black text-white leading-tight mb-6">
+          Aunque el papel siga existiendo, el desorden no tiene por qué.
+        </h2>
+        <p class="reveal d2 text-mint/70 text-base leading-relaxed mb-6">
+          Aduana, timbrajes, contratos firmados, guías de despacho. Entendemos que hay documentos físicos que no pueden desaparecer y no te pediremos que lo hagan.
+        </p>
+        <p class="reveal d3 text-mint/70 text-base leading-relaxed">
+          Lo que sí puedes cambiar es el control. Que cada documento tenga un registro digital: quién lo creó, cuándo, en qué estado está, dónde se encuentra físicamente. Eso cambia todo.
+        </p>
+      </div>
+      <div class="reveal d2 grid grid-cols-2 gap-4">
+        <div class="bg-white/08 border border-white/10 rounded-2xl p-5">
+          <div class="text-3xl mb-3">📄</div>
+          <div class="text-white font-800 text-sm mb-1">Documento físico</div>
+          <div class="text-mint/60 text-xs leading-relaxed">Sigue existiendo. Sigue firmándose. Sigue archivándose.</div>
+        </div>
+        <div class="bg-esm/20 border border-esm/30 rounded-2xl p-5">
+          <div class="text-3xl mb-3">📱</div>
+          <div class="text-white font-800 text-sm mb-1">Registro digital paralelo</div>
+          <div class="text-mint/60 text-xs leading-relaxed">Foto, estado, responsable, timestamp. Todo trazado.</div>
+        </div>
+        <div class="bg-white/08 border border-white/10 rounded-2xl p-5">
+          <div class="text-3xl mb-3">🔍</div>
+          <div class="text-white font-800 text-sm mb-1">Acceso inmediato</div>
+          <div class="text-mint/60 text-xs leading-relaxed">Desde cualquier dispositivo, en cualquier momento.</div>
+        </div>
+        <div class="bg-esm/20 border border-esm/30 rounded-2xl p-5">
+          <div class="text-3xl mb-3">✅</div>
+          <div class="text-white font-800 text-sm mb-1">Aprobación remota</div>
+          <div class="text-mint/60 text-xs leading-relaxed">El jefe aprueba desde donde esté. Sin esperar.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     CÓMO FUNCIONA
+══════════════════════════════════════ -->
+<section id="como" class="py-24 px-5 bg-slate-50">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="reveal badge mb-4 mx-auto w-fit">Implementación real</div>
+      <h2 class="reveal d1 text-3xl sm:text-4xl font-black text-ink leading-tight mb-4">
+        Cómo funciona en tu operación
+      </h2>
+      <p class="reveal d2 text-slate-500 text-base max-w-[440px] mx-auto">
+        Tres pasos. Sin cambios drásticos. Desde el primer día ya tienes control.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8 relative">
+      <!-- Líneas conectoras -->
+      <div class="hidden md:block absolute top-[52px] left-[33%] right-[33%] h-[2px] bg-gradient-to-r from-mint-dark to-mint-dark z-0"></div>
+
+      <!-- Paso 1 -->
+      <div class="reveal d1 relative z-10">
+        <div class="bg-white border border-slate-100 rounded-2xl p-8 shadow-card h-full">
+          <div class="w-14 h-14 bg-forest rounded-2xl flex items-center justify-center text-white font-black text-xl mb-6 shadow-cta">1</div>
+          <div class="text-2xl mb-4">📷</div>
+          <h3 class="font-800 text-lg text-ink mb-3">Captura</h3>
+          <p class="text-slate-500 text-sm leading-relaxed">
+            El operador registra el documento en terreno: foto, tipo, folio, departamento. Desde el celular, en 30 segundos. Sin papel extra.
+          </p>
+          <div class="mt-6 bg-mint-light rounded-xl p-4">
+            <div class="text-xs font-700 text-forest mb-1">Funciona offline</div>
+            <div class="text-xs text-slate-500">Registra sin señal. Sincroniza cuando hay conexión.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 2 -->
+      <div class="reveal d2 relative z-10">
+        <div class="bg-white border border-slate-100 rounded-2xl p-8 shadow-card h-full">
+          <div class="w-14 h-14 bg-forest rounded-2xl flex items-center justify-center text-white font-black text-xl mb-6 shadow-cta">2</div>
+          <div class="text-2xl mb-4">📂</div>
+          <h3 class="font-800 text-lg text-ink mb-3">Centralización</h3>
+          <p class="text-slate-500 text-sm leading-relaxed">
+            Todo va a un panel central. Filtrable por fecha, turno, operador, estado, departamento. El jefe ve el estado de todo en tiempo real.
+          </p>
+          <div class="mt-6 bg-mint-light rounded-xl p-4">
+            <div class="text-xs font-700 text-forest mb-1">Acceso por roles</div>
+            <div class="text-xs text-slate-500">Operador, supervisor, jefe. Cada uno ve lo que necesita.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 3 -->
+      <div class="reveal d3 relative z-10">
+        <div class="bg-white border border-slate-100 rounded-2xl p-8 shadow-card h-full">
+          <div class="w-14 h-14 bg-forest rounded-2xl flex items-center justify-center text-white font-black text-xl mb-6 shadow-cta">3</div>
+          <div class="text-2xl mb-4">📊</div>
+          <h3 class="font-800 text-lg text-ink mb-3">Control total</h3>
+          <p class="text-slate-500 text-sm leading-relaxed">
+            Historial completo, aprobaciones digitales, exportación a Excel o ERP. Auditoría lista en minutos. Nunca más "no sé dónde está".
+          </p>
+          <div class="mt-6 bg-mint-light rounded-xl p-4">
+            <div class="text-xs font-700 text-forest mb-1">Trazabilidad total</div>
+            <div class="text-xs text-slate-500">Cada documento con su historial, firma y timestamp.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     SIN RIESGOS
+══════════════════════════════════════ -->
+<section class="py-24 px-5 bg-white">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid md:grid-cols-2 gap-16 items-start">
+      <div>
+        <div class="reveal badge mb-6 w-fit">Adopción sin fricciones</div>
+        <h2 class="reveal d1 text-3xl sm:text-4xl font-black text-ink leading-tight mb-6">
+          Se adapta a tu operación. No al revés.
+        </h2>
+        <p class="reveal d2 text-slate-500 text-base leading-relaxed mb-10">
+          No pedimos que cambies tus procesos de un día para otro. ZeroPaper se implementa en paralelo y va ganando terreno a medida que tu equipo lo adopta.
+        </p>
+
+        <!-- Objeciones -->
+        <div class="space-y-4">
+          <div class="reveal d2 flex gap-4">
+            <div class="w-9 h-9 bg-mint rounded-xl flex items-center justify-center flex-shrink-0 text-base">✅</div>
+            <div>
+              <div class="font-700 text-sm text-ink mb-1">Sin instalación compleja</div>
+              <div class="text-sm text-slate-500">Funciona en el navegador del celular. Nada que descargar ni configurar.</div>
+            </div>
+          </div>
+          <div class="reveal d3 flex gap-4">
+            <div class="w-9 h-9 bg-mint rounded-xl flex items-center justify-center flex-shrink-0 text-base">✅</div>
+            <div>
+              <div class="font-700 text-sm text-ink mb-1">Piloto en 48 horas</div>
+              <div class="text-sm text-slate-500">Configuramos tu empresa, tus formularios y tus usuarios. Listo para operar en dos días.</div>
+            </div>
+          </div>
+          <div class="reveal d4 flex gap-4">
+            <div class="w-9 h-9 bg-mint rounded-xl flex items-center justify-center flex-shrink-0 text-base">✅</div>
+            <div>
+              <div class="font-700 text-sm text-ink mb-1">Capacitación en 15 minutos</div>
+              <div class="text-sm text-slate-500">La interfaz es tan simple que el operador aprende mientras registra el primer documento.</div>
+            </div>
+          </div>
+          <div class="reveal d5 flex gap-4">
+            <div class="w-9 h-9 bg-mint rounded-xl flex items-center justify-center flex-shrink-0 text-base">✅</div>
+            <div>
+              <div class="font-700 text-sm text-ink mb-1">Exporta a Excel, SAP o tu ERP</div>
+              <div class="text-sm text-slate-500">No reemplaza tus sistemas actuales. Se integra con ellos.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline piloto -->
+      <div class="reveal d2">
+        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-8">
+          <div class="text-sm font-700 text-slate-500 uppercase tracking-widest mb-6">Roadmap de piloto típico</div>
+          <div class="space-y-0">
+
+            <div class="flex gap-4">
+              <div class="flex flex-col items-center">
+                <div class="w-9 h-9 bg-forest rounded-full flex items-center justify-center text-white text-xs font-800 flex-shrink-0">D1</div>
+                <div class="w-0.5 bg-slate-200 flex-1 my-1.5"></div>
+              </div>
+              <div class="pb-6">
+                <div class="font-700 text-sm text-ink">Día 1 — Configuración</div>
+                <div class="text-xs text-slate-500 mt-1">Alta de empresa, formularios y usuarios. Sin IT requerido.</div>
+              </div>
+            </div>
+
+            <div class="flex gap-4">
+              <div class="flex flex-col items-center">
+                <div class="w-9 h-9 bg-esm rounded-full flex items-center justify-center text-white text-xs font-800 flex-shrink-0">D2</div>
+                <div class="w-0.5 bg-slate-200 flex-1 my-1.5"></div>
+              </div>
+              <div class="pb-6">
+                <div class="font-700 text-sm text-ink">Día 2 — Primer turno real</div>
+                <div class="text-xs text-slate-500 mt-1">Operadores registran en paralelo al proceso actual.</div>
+              </div>
+            </div>
+
+            <div class="flex gap-4">
+              <div class="flex flex-col items-center">
+                <div class="w-9 h-9 bg-esm/60 rounded-full flex items-center justify-center text-white text-xs font-800 flex-shrink-0">S2</div>
+                <div class="w-0.5 bg-slate-200 flex-1 my-1.5"></div>
+              </div>
+              <div class="pb-6">
+                <div class="font-700 text-sm text-ink">Semana 2 — Primeros datos</div>
+                <div class="text-xs text-slate-500 mt-1">Ya tienes historial. Ya puedes filtrar, exportar, auditar.</div>
+              </div>
+            </div>
+
+            <div class="flex gap-4">
+              <div class="flex flex-col items-center">
+                <div class="w-9 h-9 bg-mint-dark rounded-full flex items-center justify-center text-forest text-xs font-800 flex-shrink-0">M1</div>
+              </div>
+              <div>
+                <div class="font-700 text-sm text-ink">Mes 1 — Control total</div>
+                <div class="text-xs text-slate-500 mt-1">Certificado de impacto, métricas de ahorro, decisión de escalar.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     MÉTRICAS DE IMPACTO
+══════════════════════════════════════ -->
+<section class="py-20 px-5 bg-slate-50">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-14">
+      <div class="reveal badge mb-4 mx-auto w-fit">Impacto medible</div>
+      <h2 class="reveal d1 text-3xl font-black text-ink mb-3">Resultados en el primer mes</h2>
+      <p class="reveal d2 text-slate-500 text-base">Lo que reportan operaciones similares a la tuya</p>
+    </div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="reveal d1 bg-white border border-slate-100 rounded-2xl p-6 text-center shadow-card">
+        <div class="text-4xl font-black text-forest mb-1">70%</div>
+        <div class="text-xs font-700 text-esm uppercase tracking-wide mb-2">Menos tiempo</div>
+        <div class="text-xs text-slate-500">buscando documentos físicos</div>
+      </div>
+      <div class="reveal d2 bg-white border border-slate-100 rounded-2xl p-6 text-center shadow-card">
+        <div class="text-4xl font-black text-forest mb-1">100%</div>
+        <div class="text-xs font-700 text-esm uppercase tracking-wide mb-2">Trazabilidad</div>
+        <div class="text-xs text-slate-500">de documentos registrados con historial</div>
+      </div>
+      <div class="reveal d3 bg-white border border-slate-100 rounded-2xl p-6 text-center shadow-card">
+        <div class="text-4xl font-black text-forest mb-1">48h</div>
+        <div class="text-xs font-700 text-esm uppercase tracking-wide mb-2">Para operar</div>
+        <div class="text-xs text-slate-500">desde el primer contacto hasta el primer registro</div>
+      </div>
+      <div class="reveal d4 bg-white border border-slate-100 rounded-2xl p-6 text-center shadow-card">
+        <div class="text-4xl font-black text-forest mb-1">0</div>
+        <div class="text-xs font-700 text-esm uppercase tracking-wide mb-2">Instalaciones</div>
+        <div class="text-xs text-slate-500">requeridas. Solo un navegador web.</div>
+      </div>
+    </div>
+
+    <!-- Impacto ecológico (secundario) -->
+    <div class="reveal mt-8 bg-forest/05 border border-forest/10 rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <div class="text-3xl">🌿</div>
+      <div>
+        <div class="font-700 text-sm text-forest mb-1">Consecuencia: menor uso de papel</div>
+        <div class="text-sm text-slate-600 leading-relaxed">
+          Como resultado natural de una operación más eficiente, las empresas que usan ZeroPaper reducen su consumo de papel entre un 40% y 70% en los primeros tres meses. No porque lo eliminamos — sino porque el control hace que se use menos.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     CALCULADORA
+══════════════════════════════════════ -->
+<section id="calcula" class="py-24 px-5 bg-white">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid md:grid-cols-2 gap-12 items-start">
+      <div>
+        <div class="reveal badge mb-6 w-fit">Calculadora de impacto</div>
+        <h2 class="reveal d1 text-3xl sm:text-4xl font-black text-ink leading-tight mb-4">
+          ¿Cuánto pierde tu operación hoy?
+        </h2>
+        <p class="reveal d2 text-slate-500 text-base leading-relaxed mb-10">
+          Estima el tiempo y costo que se escapa por falta de control documental.
+        </p>
+
+        <div class="space-y-8">
+          <div class="reveal d2">
+            <div class="flex justify-between items-baseline mb-3">
+              <label class="text-sm font-700 text-ink">Documentos por día</label>
+              <span class="text-2xl font-900 text-forest" id="lDocs">50</span>
+            </div>
+            <input type="range" id="sDocs" min="5" max="500" value="50" step="5" oninput="calcular()">
+            <div class="flex justify-between text-xs text-slate-400 mt-1"><span>5</span><span>500</span></div>
+          </div>
+
+          <div class="reveal d3">
+            <div class="flex justify-between items-baseline mb-3">
+              <label class="text-sm font-700 text-ink">Tiempo promedio buscando un doc.</label>
+              <span class="text-2xl font-900 text-forest" id="lMin">15 <span class="text-base font-600">min</span></span>
+            </div>
+            <input type="range" id="sMin" min="2" max="60" value="15" step="1" oninput="calcular()">
+            <div class="flex justify-between text-xs text-slate-400 mt-1"><span>2 min</span><span>60 min</span></div>
+          </div>
+
+          <div class="reveal d4">
+            <div class="flex justify-between items-baseline mb-3">
+              <label class="text-sm font-700 text-ink">Operadores involucrados</label>
+              <span class="text-2xl font-900 text-forest" id="lOps">10</span>
+            </div>
+            <input type="range" id="sOps" min="2" max="100" value="10" step="1" oninput="calcular()">
+            <div class="flex justify-between text-xs text-slate-400 mt-1"><span>2</span><span>100</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resultado calculadora -->
+      <div class="reveal d2 sticky top-24">
+        <div class="bg-forest rounded-2xl p-8 text-white shadow-cta">
+          <div class="text-xs font-700 text-mint/60 uppercase tracking-widest mb-6">Pérdida estimada anual</div>
+
+          <div class="space-y-5">
+            <div class="flex items-end justify-between pb-5 border-b border-white/10">
+              <div>
+                <div class="text-mint/70 text-sm mb-1">Horas perdidas en búsquedas</div>
+                <div class="text-4xl font-900" id="rHoras">—</div>
+              </div>
+              <div class="text-mint/50 text-sm">hrs/año</div>
+            </div>
+            <div class="flex items-end justify-between pb-5 border-b border-white/10">
+              <div>
+                <div class="text-mint/70 text-sm mb-1">Costo laboral estimado</div>
+                <div class="text-4xl font-900" id="rCosto">—</div>
+              </div>
+              <div class="text-mint/50 text-sm">USD/año</div>
+            </div>
+            <div class="flex items-end justify-between">
+              <div>
+                <div class="text-mint/70 text-sm mb-1">Docs sin control hoy</div>
+                <div class="text-4xl font-900" id="rDocs">—</div>
+              </div>
+              <div class="text-mint/50 text-sm">al año</div>
+            </div>
+          </div>
+
+          <div class="mt-8 bg-white/10 rounded-xl p-4 text-sm text-mint/70">
+            💡 Con ZeroPaper, el tiempo de búsqueda se reduce un 70% desde el primer mes.
+          </div>
+
+          <a href="#piloto"
+             class="mt-6 flex items-center justify-center gap-2 bg-white text-forest font-800 text-sm px-6 py-3.5 rounded-xl hover:bg-mint-light transition-colors w-full">
+            Iniciar piloto gratis →
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     CONTACTO / PILOTO
+══════════════════════════════════════ -->
+<section id="piloto" class="py-24 px-5 bg-slate-50">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid md:grid-cols-2 gap-16 items-start">
+      <div>
+        <div class="reveal badge mb-6 w-fit">Sin compromiso</div>
+        <h2 class="reveal d1 text-3xl sm:text-4xl font-black text-ink leading-tight mb-4">
+          Pruébalo en tu operación. 30 días gratis.
+        </h2>
+        <p class="reveal d2 text-slate-500 text-base leading-relaxed mb-10">
+          Sin contrato. Sin tarjeta. Sin promesas de "transformación digital". Solo una herramienta que funciona desde el primer día.
+        </p>
+        <div class="reveal d3 space-y-4 text-sm text-slate-600">
+          <div class="flex gap-3 items-start">
+            <span class="text-forest font-800 mt-0.5">→</span>
+            <span>Configuramos tu cuenta con tus formularios reales en 24 horas.</span>
+          </div>
+          <div class="flex gap-3 items-start">
+            <span class="text-forest font-800 mt-0.5">→</span>
+            <span>Capacitación de tu equipo incluida (15 min es suficiente).</span>
+          </div>
+          <div class="flex gap-3 items-start">
+            <span class="text-forest font-800 mt-0.5">→</span>
+            <span>Al mes 1, te mostramos los datos. Tú decides si escalas.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulario -->
+      <div class="reveal d2 bg-white border border-slate-100 rounded-2xl p-8 shadow-card">
+        <div class="text-lg font-800 text-ink mb-6">Cuéntanos sobre tu operación</div>
+        <form id="contactForm" class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-700 text-slate-500 uppercase tracking-wide mb-1.5">Nombre</label>
+              <input id="fNombre" type="text" placeholder="Tu nombre"
+                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-forest transition-colors bg-slate-50 focus:bg-white">
+            </div>
+            <div>
+              <label class="block text-xs font-700 text-slate-500 uppercase tracking-wide mb-1.5">Empresa</label>
+              <input id="fEmpresa" type="text" placeholder="Nombre empresa"
+                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-forest transition-colors bg-slate-50 focus:bg-white">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-700 text-slate-500 uppercase tracking-wide mb-1.5">Email corporativo</label>
+            <input id="fEmail" type="email" placeholder="tu@empresa.cl"
+              class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-forest transition-colors bg-slate-50 focus:bg-white">
+          </div>
+          <div>
+            <label class="block text-xs font-700 text-slate-500 uppercase tracking-wide mb-1.5">Tipo de operación</label>
+            <select id="fCargo"
+              class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-forest transition-colors bg-slate-50 focus:bg-white text-slate-600">
+              <option value="">Selecciona…</option>
+              <option>Puerto / Logística portuaria</option>
+              <option>Transporte y flota</option>
+              <option>Manufactura / Planta</option>
+              <option>Administración operativa</option>
+              <option>Minería / Construcción</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-700 text-slate-500 uppercase tracking-wide mb-1.5">¿Cuántos documentos manejan por día?</label>
+            <select id="fVolumen"
+              class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-forest transition-colors bg-slate-50 focus:bg-white text-slate-600">
+              <option value="">Selecciona…</option>
+              <option>Menos de 20</option>
+              <option>20 – 100</option>
+              <option>100 – 500</option>
+              <option>Más de 500</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-700 text-slate-500 uppercase tracking-wide mb-1.5">¿Cuál es el principal problema hoy?</label>
+            <textarea id="fMensaje" rows="3" placeholder="Ej: documentos perdidos, falta de trazabilidad, dependencia de personas…"
+              class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-forest transition-colors bg-slate-50 focus:bg-white resize-none"></textarea>
+          </div>
+          <button type="submit"
+            class="w-full bg-forest text-white font-800 text-sm px-6 py-4 rounded-xl hover:bg-forest-hover transition-all shadow-cta flex items-center justify-center gap-2">
+            <span id="btnLabel">Solicitar piloto gratuito →</span>
+          </button>
+        </form>
+        <div id="formSuccess" class="hidden text-center py-8">
+          <div class="text-4xl mb-3">🎉</div>
+          <div class="font-800 text-ink text-base mb-2">¡Recibido!</div>
+          <div class="text-sm text-slate-500">Te contactamos en menos de 24 horas para configurar tu piloto.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     FOOTER
+══════════════════════════════════════ -->
+<footer class="py-12 px-5 bg-forest text-white">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+    <div>
+      <div class="flex items-center gap-2.5 mb-2">
+        <div class="w-7 h-7 bg-white/15 rounded-lg flex items-center justify-center">
+          <span class="text-white text-xs font-black">Z</span>
+        </div>
+        <span class="font-black text-lg">ZeroPaper™</span>
+      </div>
+      <div class="text-mint/50 text-xs">Control documental para operaciones industriales</div>
+    </div>
+    <div class="flex items-center gap-6 text-sm text-mint/60">
+      <a href="/app"    class="hover:text-white transition-colors">App operador</a>
+      <a href="/admin"  class="hover:text-white transition-colors">Panel admin</a>
+      <a href="/soporte" class="hover:text-white transition-colors">Soporte IA</a>
+    </div>
+    <div class="text-xs text-mint/40">
+      © 2025 ZeroPaper™ · zeropaper-prod · Firebase
+    </div>
+  </div>
+</footer>
+
+
+<!-- ══════════════════════════════════════
+     SCRIPTS
+══════════════════════════════════════ -->
+<script>
+// ── MOBILE MENU ─────────────────────────────────────
+document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+  document.getElementById('mobileMenu').classList.toggle('hidden');
+});
+document.querySelectorAll('#mobileMenu a').forEach(a => {
+  a.addEventListener('click', () => document.getElementById('mobileMenu').classList.add('hidden'));
+});
+
+// ── REVEAL ON SCROLL ────────────────────────────────
+const ro = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); ro.unobserve(e.target); } });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => ro.observe(el));
+
+// ── CALCULADORA ─────────────────────────────────────
+function fmt(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000)    return n.toLocaleString('es-CL');
+  return String(Math.round(n));
+}
+function calcular() {
+  const docs  = parseInt(document.getElementById('sDocs').value);
+  const min   = parseInt(document.getElementById('sMin').value);
+  const ops   = parseInt(document.getElementById('sOps').value);
+
+  document.getElementById('lDocs').textContent = docs;
+  document.getElementById('lMin').innerHTML   = min + ' <span class="text-base font-600">min</span>';
+  document.getElementById('lOps').textContent = ops;
+
+  const horasAnuales = (docs * min / 60) * 365;
+  const salarioHora  = 8; // USD estimado
+  const costoAnual   = horasAnuales * salarioHora;
+  const docsAnuales  = docs * 365;
+
+  document.getElementById('rHoras').textContent = fmt(Math.round(horasAnuales));
+  document.getElementById('rCosto').textContent = fmt(Math.round(costoAnual));
+  document.getElementById('rDocs').textContent  = fmt(docsAnuales);
+}
+calcular();
+
+// ── FORMULARIO ───────────────────────────────────────
+const FB = {
+  projectId: 'zeropaper-prod',
+  apiKey:    'AIzaSyCli7F4hLi-XEmmekGZpO2KQ1SO612I85Y'
+};
+document.getElementById('contactForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('btnLabel');
+  btn.textContent = 'Enviando…';
+
+  const campos = {
+    nombre:   { stringValue: document.getElementById('fNombre').value.trim() },
+    empresa:  { stringValue: document.getElementById('fEmpresa').value.trim() },
+    email:    { stringValue: document.getElementById('fEmail').value.trim() },
+    cargo:    { stringValue: document.getElementById('fCargo').value },
+    volumen:  { stringValue: document.getElementById('fVolumen').value },
+    mensaje:  { stringValue: document.getElementById('fMensaje').value.trim() },
+    ts:       { stringValue: new Date().toISOString() },
+    origen:   { stringValue: 'landing-v4-control' }
+  };
+
+  if (!campos.nombre.stringValue || !campos.email.stringValue) {
+    btn.textContent = 'Solicitar piloto gratuito →';
+    alert('Por favor completa nombre y email.');
+    return;
+  }
+
+  try {
+    await fetch(
+      `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents/leads?key=${FB.apiKey}`,
+      { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ fields: campos }) }
+    );
+    document.getElementById('contactForm').classList.add('hidden');
+    document.getElementById('formSuccess').classList.remove('hidden');
+  } catch(err) {
+    btn.textContent = 'Solicitar piloto gratuito →';
+    alert('Error al enviar. Escríbenos directamente.');
+  }
+});
+</script>
+
+<!-- ZeroPaper™ Soporte IA Widget -->
+<div id="zp-support-btn" onclick="window.open('/soporte','_blank')" title="Soporte Técnico IA"
+  style="position:fixed;bottom:24px;right:24px;z-index:9999;width:52px;height:52px;border-radius:50%;
+  background:#1B4332;color:white;font-size:22px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 4px 20px rgba(27,67,50,0.35);transition:transform .2s,box-shadow .2s"
+  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(27,67,50,0.5)'"
+  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(27,67,50,0.35)'">💬</div>
+<div style="position:fixed;bottom:82px;right:18px;z-index:9998;background:#1B4332;color:white;
+  font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;white-space:nowrap;
+  pointer-events:none;opacity:0;transition:opacity .3s" id="zp-support-tooltip">Soporte IA</div>
+<script>
+(function(){
+  const btn = document.getElementById('zp-support-btn');
+  const tip = document.getElementById('zp-support-tooltip');
+  setTimeout(()=>{ tip.style.opacity='1'; setTimeout(()=>tip.style.opacity='0', 3000); }, 2000);
+  btn.addEventListener('mouseover',()=>tip.style.opacity='1');
+  btn.addEventListener('mouseout',()=>tip.style.opacity='0');
+})();
+</script>
+
+</body>
+</html>
