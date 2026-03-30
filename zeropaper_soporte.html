@@ -357,9 +357,13 @@ async function sendMessage() {
         try {
           const parsed = JSON.parse(data);
           if (parsed.error) throw new Error(parsed.error);
+          if (parsed.status) {
+            // Tool execution status (searching, creating ticket, etc.)
+            bubble.innerHTML = `<em style="color:var(--slate2);font-size:13px">${parsed.status}</em>`;
+            scrollDown();
+          }
           if (parsed.text) {
             fullText += parsed.text;
-            // Live update while streaming
             bubble.textContent = fullText + '▌';
             scrollDown();
           }
@@ -374,11 +378,16 @@ async function sendMessage() {
     finalizeAI(bubble, fullText);
 
   } catch (err) {
-    const errorText = err.message.includes('API key')
-      ? '⚠️ El servicio de IA no está configurado aún. Por favor contacta al administrador del sistema.'
-      : `❌ Error al conectar con el asistente: ${err.message}. Intenta nuevamente.`;
-
-    bubble.innerHTML = `<p style="color:#dc2626">${errorText}</p>`;
+    const msg = err.message || '';
+    let errorText;
+    if (msg.includes('créditos') || msg.includes('billing') || msg.includes('credit')) {
+      errorText = '⚠️ El servicio de IA requiere recarga de créditos. Contacta al administrador: console.anthropic.com/settings/billing';
+    } else if (msg.includes('API key') || msg.includes('configurada')) {
+      errorText = '⚠️ El servicio de IA no está configurado. Contacta al administrador del sistema.';
+    } else {
+      errorText = `❌ ${msg || 'Error al conectar con el asistente. Intenta nuevamente.'}`;
+    }
+    bubble.innerHTML = `<p style="color:#dc2626;font-size:13px">${errorText}</p>`;
     scrollDown();
   } finally {
     isLoading    = false;

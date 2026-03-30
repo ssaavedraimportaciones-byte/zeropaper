@@ -1,145 +1,208 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-const SYSTEM_PROMPT = `Eres el asistente de soporte técnico de ZeroPaper™ — un sistema de control operativo portuario sin papel, desarrollado para empresas de logística y puertos en Chile.
+const FB = {
+  projectId: 'zeropaper-prod',
+  apiKey:    'AIzaSyCli7F4hLi-XEmmekGZpO2KQ1SO612I85Y'
+};
+const FS_URL = `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
 
-Tu rol es ayudar a los usuarios a resolver dudas y problemas en tiempo real, de forma clara, directa y en español.
+// ── HERRAMIENTAS ─────────────────────────────────────────────────
+const TOOLS = [
+  {
+    name: 'buscar_operacion',
+    description: 'Busca operaciones registradas en el sistema ZeroPaper por patente de vehículo o número de folio/documento. Úsala SIEMPRE que el usuario mencione una patente o folio específico para verificar si la operación existe.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        patente: {
+          type: 'string',
+          description: 'Patente del vehículo (ej: BBCD12, ABC123). Convierte a mayúsculas.'
+        },
+        folio: {
+          type: 'string',
+          description: 'Número de folio o documento a buscar'
+        }
+      },
+      required: []
+    }
+  },
+  {
+    name: 'crear_ticket',
+    description: 'Crea un ticket de soporte técnico automáticamente. Úsala SIN preguntar cuando: el usuario ya intentó la solución y no funcionó, hay error técnico que no puedes resolver, el problema involucra datos perdidos, o el sistema no está disponible.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        problema: {
+          type: 'string',
+          description: 'Descripción detallada del problema reportado'
+        },
+        prioridad: {
+          type: 'string',
+          enum: ['alta', 'media', 'baja'],
+          description: 'alta=sistema caído o datos perdidos, media=función no disponible, baja=consulta o duda'
+        },
+        categoria: {
+          type: 'string',
+          enum: ['login', 'sincronizacion', 'operaciones', 'app', 'admin', 'reportes', 'otro'],
+          description: 'Categoría del problema'
+        }
+      },
+      required: ['problema', 'prioridad', 'categoria']
+    }
+  }
+];
 
-## CONOCIMIENTO DEL PRODUCTO
+const SYSTEM_PROMPT = `Eres ZP Asistente, el soporte técnico inteligente de ZeroPaper™ — sistema de control operativo portuario sin papel.
 
-### Qué es ZeroPaper™
-Sistema digital para registrar y controlar operaciones portuarias (ingresos, egresos, almacenamiento de carga). Funciona como PWA (app web instalable) que opera sin internet y sincroniza en la nube (Firebase) cuando recupera conexión.
+## CAPACIDADES ESPECIALES
+Tienes acceso en tiempo real al sistema:
+- **buscar_operacion**: busca operaciones por patente o folio en Firestore
+- **crear_ticket**: crea tickets de soporte técnico automáticamente
 
-### URLs del sistema
-- Landing / info: https://zeropaper-swart.vercel.app
+## CUÁNDO USAR HERRAMIENTAS (sin preguntar)
+- Usuario menciona patente o folio → usa buscar_operacion INMEDIATAMENTE
+- Problema no resuelto en 2 intentos → usa crear_ticket
+- Error técnico que no puedes resolver → usa crear_ticket
+- Datos perdidos o sistema caído → usar crear_ticket (prioridad: alta)
+
+## CONOCIMIENTO DEL SISTEMA
+
+### URLs
 - App operador: https://zeropaper-swart.vercel.app/app
 - Panel admin: https://zeropaper-swart.vercel.app/admin
-- Seguimiento importador: https://zeropaper-swart.vercel.app/seguimiento
+- Seguimiento carga: https://zeropaper-swart.vercel.app/seguimiento
+- Certificado ambiental: https://zeropaper-swart.vercel.app/certificado
 
-### Credenciales demo admin
-- Usuario: admin
-- Contraseña: zeropaper2025
+### Roles
+**Operador (/app)**: Registra ingresos/egresos/almacén. Funciona offline. Fotos y QR automático en INGRESO.
+**Administrador (/admin)**: Dashboard, aprobaciones, exportar CSV, configurar departamentos y tipos de documentos. Primera vez: click en "⚙ Primera vez? Configurar acceso admin"
+**Importador (/seguimiento)**: Rastrea su carga sin cuenta, via QR o patente.
 
-### ROLES
+### Problemas frecuentes y soluciones
+- **No puedo iniciar sesión**: Ctrl+Shift+R para limpiar caché. Verificar sin espacios en email. Admin: usar botón "Primera vez" para crear cuenta.
+- **No sincroniza**: Verificar internet. Cerrar y abrir app. Si persiste → crear_ticket
+- **Instalar PWA**: Chrome/Android: menú 3 puntos → "Instalar". Safari/iPhone: compartir → "Agregar a pantalla inicio"
+- **Folio duplicado**: Verificar en /admin si ya existe. Si es error, admin puede anular.
+- **QR no funciona**: URL correcta: /seguimiento. Alternativamente ingresar patente manual.
+- **No veo operaciones**: Admin ve todo en tiempo real. Operadores ven solo cuando sincroniza.
+- **Exportar CSV**: /admin → Operaciones → Exportar CSV. Compatible Excel/SAP/ERP.
 
-**Operador** (/app)
-- Registra ingresos, egresos y operaciones de almacén
-- Funciona offline — guarda local y sincroniza al recuperar señal
-- Puede adjuntar fotos y generar QR por operación
-- Campos: patente, tipo operación, folio/documento, departamento, observación
+## ESTILO DE RESPUESTA
+- Siempre en español
+- Directo y concreto, máximo 3 párrafos
+- Si creaste un ticket: menciona el número (ej: "Ticket TKT-ABC123 creado. El equipo técnico lo atenderá.")
+- Si encontraste operación: muestra los datos relevantes
+- Si el usuario está frustrado: reconoce primero, luego da solución`;
 
-**Administrador** (/admin)
-- Ve todas las operaciones en tiempo real
-- Aprueba o rechaza operaciones con comentarios
-- Gestiona departamentos y tipos de documentos
-- Exporta reportes en CSV
-- Dashboard con métricas por departamento
+// ── EJECUTAR HERRAMIENTAS ────────────────────────────────────────
+async function executeTool(name, input) {
+  if (name === 'buscar_operacion') return buscarOperacion(input);
+  if (name === 'crear_ticket')     return crearTicket(input);
+  return { error: 'Herramienta desconocida' };
+}
 
-**Importador** (/seguimiento)
-- Rastrea su carga sin crear cuenta
-- Ve historial de movimientos con fechas y operadores
-- Accede via link directo o QR generado en ingreso
+async function buscarOperacion({ patente, folio }) {
+  const searchField = patente ? 'patente' : folio ? 'folio' : null;
+  const searchValue = patente
+    ? patente.toUpperCase().replace(/\s/g, '')
+    : folio?.trim();
 
-### FUNCIONES PRINCIPALES
+  if (!searchField) return { error: 'Debes especificar patente o folio' };
 
-**Registro de operación (operador):**
-1. Abrir /app e iniciar sesión
-2. Pulsar "Nueva Operación"
-3. Seleccionar tipo (INGRESO / EGRESO / ALMACÉN)
-4. Ingresar patente del vehículo
-5. Seleccionar departamento
-6. Adjuntar folio/documento (opcional)
-7. Agregar fotos si es necesario
-8. Confirmar — genera QR automático en INGRESO
+  try {
+    const query = {
+      structuredQuery: {
+        from: [{ collectionId: 'ops', allDescendants: true }],
+        where: {
+          fieldFilter: {
+            field:  { fieldPath: searchField },
+            op:     'EQUAL',
+            value:  { stringValue: searchValue }
+          }
+        },
+        limit: 5
+      }
+    };
 
-**Modo offline:**
-- La app guarda los registros localmente en el dispositivo
-- Aparece ícono de nube con "pendiente de sync"
-- Al recuperar internet, sincroniza automáticamente
-- No se pierde ningún registro
+    const res  = await fetch(`${FS_URL}:runQuery?key=${FB.apiKey}`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(query)
+    });
+    const docs = await res.json();
 
-**Aprobación admin:**
-- En /admin ir a "Aprobaciones"
-- Ver operaciones con estado PENDIENTE
-- Hacer clic en operación → Ver detalle → Aprobar o Rechazar
-- Ingresar comentario de rechazo si aplica
-- El operador recibe notificación en su app
+    const ops = (Array.isArray(docs) ? docs : [])
+      .filter(d => d.document?.fields)
+      .map(d => {
+        const f = d.document.fields;
+        const ts = f.ts?.integerValue
+          ? new Date(parseInt(f.ts.integerValue)).toLocaleString('es-CL')
+          : (f.fecha?.stringValue || '—');
+        return {
+          patente:   f.patente?.stringValue  || '—',
+          tipo:      f.tipo?.stringValue     || '—',
+          depto:     f.depto?.stringValue    || '—',
+          folio:     f.folio?.stringValue    || '—',
+          operador:  f.operadorNombre?.stringValue || '—',
+          estado:    f.estado?.stringValue   || '—',
+          fecha:     ts
+        };
+      });
 
-**Exportar reportes:**
-- En /admin ir a "Operaciones"
-- Filtrar por fecha, departamento, operador
-- Clic en "Exportar CSV"
-- Archivo compatible con Excel, SAP, ERP
+    if (!ops.length) return {
+      encontrado: false,
+      mensaje: `No se encontraron operaciones con ${searchField}: "${searchValue}"`
+    };
+    return { encontrado: true, total: ops.length, operaciones: ops };
 
-**Configurar departamentos:**
-- En /admin ir a "Configuración"
-- Agregar o eliminar departamentos
-- Los cambios se sincronizan a todos los operadores en tiempo real
+  } catch (e) {
+    return { error: 'Error al buscar operación: ' + e.message };
+  }
+}
 
-**Crear operador:**
-- En /admin ir a "Equipo"
-- Clic en "Nuevo Operador"
-- Ingresar email y contraseña
-- El operador puede iniciar sesión de inmediato
+async function crearTicket({ problema, prioridad, categoria }) {
+  try {
+    const ticketId = 'TKT-' + Date.now().toString(36).toUpperCase();
 
-### PROBLEMAS COMUNES Y SOLUCIONES
+    await fetch(`${FS_URL}/tickets_soporte/${ticketId}?key=${FB.apiKey}`, {
+      method:  'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fields: {
+          ticketId:  { stringValue: ticketId },
+          problema:  { stringValue: problema },
+          prioridad: { stringValue: prioridad },
+          categoria: { stringValue: categoria },
+          estado:    { stringValue: 'abierto' },
+          creadoEn:  { integerValue: String(Date.now()) },
+          origen:    { stringValue: 'chat_soporte' }
+        }
+      })
+    });
 
-**P: No puedo iniciar sesión**
-R: Verifica que el email no tenga espacios extra. Si olvidaste la contraseña, el admin puede restablecerla desde el panel. Prueba limpiar caché del navegador (Ctrl+Shift+R).
+    return {
+      exito:    true,
+      ticketId,
+      mensaje:  `Ticket ${ticketId} creado. El equipo técnico lo atenderá a la brevedad.`
+    };
+  } catch (e) {
+    return { error: 'No se pudo crear el ticket: ' + e.message };
+  }
+}
 
-**P: Los datos no se sincronizan**
-R: Verifica conexión a internet. Si hay señal y no sincroniza, cierra y abre la app. Si persiste, ve a Configuración → Forzar Sincronización.
-
-**P: La app no me deja instalar**
-R: En Chrome/Android: menú (3 puntos) → "Instalar aplicación". En Safari/iPhone: botón compartir → "Agregar a pantalla inicio". En algunos dispositivos corporativos puede estar bloqueado.
-
-**P: Se perdieron registros**
-R: Los registros en modo offline se guardan localmente. Si el dispositivo fue borrado antes de sincronizar, esos registros no se pueden recuperar. Siempre sincroniza antes de cerrar la app.
-
-**P: Error "folio duplicado"**
-R: El sistema detectó que ese número de folio ya fue registrado. Verifica en /admin si la operación ya existe. Si es error, el admin puede anularla y crear una nueva.
-
-**P: El QR no funciona**
-R: El QR lleva al seguimiento de ese vehículo. Si no abre, verifica que la URL sea https://zeropaper-swart.vercel.app/seguimiento. También puede ingresar la patente manualmente en /seguimiento.
-
-**P: No veo las operaciones del otro turno**
-R: Las operaciones son visibles para todos los operadores de la misma empresa. Si no aparecen, posiblemente no están sincronizadas aún. El admin sí ve todo en tiempo real.
-
-**P: Cómo cambio mi contraseña**
-R: Por ahora el admin debe cambiarla desde el panel de equipo. Próximamente habrá opción de auto-cambio.
-
-**P: El admin no recibe alertas de anomalías**
-R: Las alertas aparecen en el dashboard. Verifica que el navegador tenga la pestaña abierta y activa. El sistema actualiza cada 2 minutos o al volver a la pestaña.
-
-### LÍMITES DE LO QUE PUEDES HACER
-- No puedes acceder ni modificar datos reales de clientes
-- No puedes crear cuentas ni resetear contraseñas directamente
-- Para problemas técnicos graves, escala indicando: dispositivo, navegador, versión del OS, descripción del error
-- No des información de precios ni contratos — deriva al equipo comercial
-
-## INSTRUCCIONES DE RESPUESTA
-- Responde siempre en español
-- Sé directo y concreto — no des respuestas largas innecesarias
-- Si es un problema técnico, da pasos numerados
-- Si no sabes algo, dilo claramente y sugiere contactar al administrador del sistema
-- Tono: profesional pero cercano, como un colega técnico que sabe del tema
-- Máximo 3-4 párrafos por respuesta salvo que se pidan pasos detallados
-- Si el usuario está frustrado, reconócelo antes de dar la solución`;
-
-export const config = {
-  runtime: 'edge',
-};
+// ── EDGE FUNCTION ────────────────────────────────────────────────
+export const config = { runtime: 'edge', maxDuration: 60 };
 
 export default async function handler(req) {
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       headers: {
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin':  '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
-      },
+      }
     });
   }
-
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
   }
@@ -164,43 +227,94 @@ export default async function handler(req) {
     return new Response(JSON.stringify({ error: 'Mensajes requeridos' }), { status: 400 });
   }
 
-  const client = new Anthropic({ apiKey });
-
-  // Streaming response
+  const client  = new Anthropic({ apiKey });
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
     async start(controller) {
-      try {
-        const anthropicStream = await client.messages.stream({
-          model: 'claude-sonnet-4-5',
-          max_tokens: 2048,
-          system: SYSTEM_PROMPT,
-          messages: messages.slice(-10), // Keep last 10 messages for context
-        });
+      const send = (data) =>
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
 
-        for await (const chunk of anthropicStream) {
-          if (chunk.type === 'content_block_delta' && chunk.delta?.type === 'text_delta') {
-            const data = `data: ${JSON.stringify({ text: chunk.delta.text })}\n\n`;
-            controller.enqueue(encoder.encode(data));
+      try {
+        let currentMessages = messages.slice(-10);
+
+        // Tool use loop: up to 4 rounds
+        for (let round = 0; round < 4; round++) {
+          const anthropicStream = client.messages.stream({
+            model:      'claude-opus-4-6',
+            max_tokens: 2048,
+            system:     SYSTEM_PROMPT,
+            tools:      TOOLS,
+            messages:   currentMessages,
+          });
+
+          // Stream text deltas live
+          for await (const event of anthropicStream) {
+            if (
+              event.type === 'content_block_delta' &&
+              event.delta?.type === 'text_delta'
+            ) {
+              send({ text: event.delta.text });
+            }
           }
+
+          const finalMsg = await anthropicStream.finalMessage();
+
+          if (finalMsg.stop_reason !== 'tool_use') break; // done
+
+          // Execute each tool call
+          const toolResults = [];
+          for (const block of finalMsg.content) {
+            if (block.type !== 'tool_use') continue;
+
+            const label = block.name === 'buscar_operacion'
+              ? '🔍 Buscando en el sistema...'
+              : '📋 Creando ticket de soporte...';
+            send({ status: label });
+
+            const result = await executeTool(block.name, block.input);
+            toolResults.push({
+              type:        'tool_result',
+              tool_use_id: block.id,
+              content:     JSON.stringify(result)
+            });
+          }
+
+          currentMessages = [
+            ...currentMessages,
+            { role: 'assistant', content: finalMsg.content },
+            { role: 'user',      content: toolResults      }
+          ];
         }
 
         controller.enqueue(encoder.encode('data: [DONE]\n\n'));
         controller.close();
+
       } catch (err) {
-        const errorMsg = `data: ${JSON.stringify({ error: err.message || 'Error interno' })}\n\n`;
-        controller.enqueue(encoder.encode(errorMsg));
+        const msg = String(err?.message || err);
+
+        let userMsg;
+        if (msg.includes('credit balance') || msg.includes('billing')) {
+          userMsg = '⚠️ El servicio de IA no tiene créditos disponibles. El administrador debe recargar en console.anthropic.com/settings/billing.';
+        } else if (msg.includes('API key') || msg.includes('authentication') || msg.includes('401')) {
+          userMsg = '⚠️ API key de IA no configurada. El administrador debe agregarla en el panel de Vercel.';
+        } else if (msg.includes('overloaded') || msg.includes('529')) {
+          userMsg = '⚠️ El servicio de IA está muy solicitado. Intenta en unos segundos.';
+        } else {
+          userMsg = 'Error al conectar con el asistente. Intenta nuevamente.';
+        }
+
+        send({ error: userMsg });
         controller.close();
       }
-    },
+    }
   });
 
   return new Response(stream, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
+      'Content-Type':                'text/event-stream',
+      'Cache-Control':               'no-cache',
       'Access-Control-Allow-Origin': '*',
-    },
+    }
   });
 }
