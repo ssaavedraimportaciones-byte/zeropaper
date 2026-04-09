@@ -49,6 +49,50 @@ const TOOLS = [
       },
       required: ['problema', 'prioridad', 'categoria']
     }
+  },
+  {
+    name: 'consultar_conocimiento',
+    description: 'Consulta la base de conocimiento aprendida de la empresa. Úsala para obtener patrones operativos, documentos frecuentes, vehículos recurrentes, y problemas resueltos anteriormente.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        empresa: {
+          type: 'string',
+          description: 'ID de la empresa'
+        },
+        depto: {
+          type: 'string',
+          description: 'ID del departamento (opcional)'
+        }
+      },
+      required: ['empresa']
+    }
+  },
+  {
+    name: 'resolver_problema',
+    description: 'Registra un problema resuelto para que el sistema aprenda y pueda sugerir soluciones similares en el futuro.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        empresa: {
+          type: 'string',
+          description: 'ID de la empresa'
+        },
+        problema: {
+          type: 'string',
+          description: 'Descripción del problema'
+        },
+        solucion: {
+          type: 'string',
+          description: 'Cómo se resolvió'
+        },
+        categoria: {
+          type: 'string',
+          description: 'Categoría: login, sync, operaciones, ocr, otro'
+        }
+      },
+      required: ['empresa', 'problema', 'solucion']
+    }
   }
 ];
 
@@ -58,12 +102,16 @@ const SYSTEM_PROMPT = `Eres ZP Asistente, el soporte técnico inteligente de Zer
 Tienes acceso en tiempo real al sistema:
 - **buscar_operacion**: busca operaciones por patente o folio en Firestore
 - **crear_ticket**: crea tickets de soporte técnico automáticamente
+- **consultar_conocimiento**: consulta patrones aprendidos de la empresa (docs frecuentes, vehículos recurrentes, problemas resueltos)
+- **resolver_problema**: registra un problema resuelto para que el sistema aprenda
 
 ## CUÁNDO USAR HERRAMIENTAS (sin preguntar)
 - Usuario menciona patente o folio → usa buscar_operacion INMEDIATAMENTE
 - Problema no resuelto en 2 intentos → usa crear_ticket
 - Error técnico que no puedes resolver → usa crear_ticket
 - Datos perdidos o sistema caído → usar crear_ticket (prioridad: alta)
+- Usuario pregunta sobre patrones o frecuencias → usa consultar_conocimiento
+- Resolviste un problema → usa resolver_problema para que el sistema aprenda
 
 ## CONOCIMIENTO DEL SISTEMA
 
@@ -73,32 +121,97 @@ Tienes acceso en tiempo real al sistema:
 - Seguimiento carga: https://zeropaper-swart.vercel.app/seguimiento
 - Certificado ambiental: https://zeropaper-swart.vercel.app/certificado
 
+### Funciones IA (nuevas)
+- **OCR Inteligente**: El operador puede sacar foto del documento y la IA lee automáticamente patente, folio y tipo de documento. Funciona con documentos impresos y escritos a mano.
+- **Autoaprendizaje**: El sistema aprende patrones por departamento: documentos frecuentes por hora, vehículos recurrentes, anomalías típicas. Usa consultar_conocimiento para acceder a estos datos.
+- **Sugerencias IA**: En la pantalla de inicio se muestran sugerencias basadas en lo aprendido.
+
 ### Roles
-**Operador (/app)**: Registra ingresos/egresos/almacén. Funciona offline. Fotos y QR automático en INGRESO.
-**Administrador (/admin)**: Dashboard, aprobaciones, exportar CSV, configurar departamentos y tipos de documentos. Primera vez: click en "⚙ Primera vez? Configurar acceso admin"
+**Operador (/app)**: Registra ingresos/egresos. Funciona offline. OCR automático con foto. QR en INGRESO.
+**Administrador (/admin)**: Dashboard, aprobaciones, exportar CSV, departamentos, reportes IA.
 **Importador (/seguimiento)**: Rastrea su carga sin cuenta, via QR o patente.
 
 ### Problemas frecuentes y soluciones
-- **No puedo iniciar sesión**: Ctrl+Shift+R para limpiar caché. Verificar sin espacios en email. Admin: usar botón "Primera vez" para crear cuenta.
+- **No puedo iniciar sesión**: Ctrl+Shift+R para limpiar caché. Verificar sin espacios en email.
 - **No sincroniza**: Verificar internet. Cerrar y abrir app. Si persiste → crear_ticket
-- **Instalar PWA**: Chrome/Android: menú 3 puntos → "Instalar". Safari/iPhone: compartir → "Agregar a pantalla inicio"
-- **Folio duplicado**: Verificar en /admin si ya existe. Si es error, admin puede anular.
-- **QR no funciona**: URL correcta: /seguimiento. Alternativamente ingresar patente manual.
-- **No veo operaciones**: Admin ve todo en tiempo real. Operadores ven solo cuando sincroniza.
-- **Exportar CSV**: /admin → Operaciones → Exportar CSV. Compatible Excel/SAP/ERP.
+- **OCR no lee bien**: Asegurar buena iluminación. Foto enfocada. Funciona mejor con documentos impresos.
+- **Instalar PWA**: Chrome: menú 3 puntos → "Instalar". Safari: compartir → "Agregar a pantalla inicio"
+- **Folio duplicado**: Verificar en /admin si existe. Admin puede anular.
+- **QR no funciona**: URL: /seguimiento. Alternativamente ingresar patente manual.
 
 ## ESTILO DE RESPUESTA
 - Siempre en español
 - Directo y concreto, máximo 3 párrafos
-- Si creaste un ticket: menciona el número (ej: "Ticket TKT-ABC123 creado. El equipo técnico lo atenderá.")
-- Si encontraste operación: muestra los datos relevantes
+- Si creaste un ticket: menciona el número
+- Si encontraste operación: muestra los datos
+- Si consultaste conocimiento: presenta insights útiles
 - Si el usuario está frustrado: reconoce primero, luego da solución`;
 
 // ── EJECUTAR HERRAMIENTAS ────────────────────────────────────────
 async function executeTool(name, input) {
   if (name === 'buscar_operacion') return buscarOperacion(input);
   if (name === 'crear_ticket')     return crearTicket(input);
+  if (name === 'consultar_conocimiento') return consultarConocimiento(input);
+  if (name === 'resolver_problema') return resolverProblema(input);
   return { error: 'Herramienta desconocida' };
+}
+
+async function consultarConocimiento({ empresa, depto }) {
+  try {
+    const path = depto
+      ? `empresas/${empresa}/knowledge/${depto}`
+      : `empresas/${empresa}/knowledge/global`;
+
+    const res = await fetch(`${FS_URL}/${path}?key=${FB.apiKey}`);
+    if (!res.ok) return { conocimiento: null, mensaje: 'Sin datos de aprendizaje aún' };
+
+    const doc = await res.json();
+    const result = {};
+    for (const [k, v] of Object.entries(doc.fields || {})) {
+      if (v.stringValue) {
+        try { result[k] = JSON.parse(v.stringValue); } catch { result[k] = v.stringValue; }
+      }
+    }
+    return { conocimiento: result, mensaje: 'Datos de aprendizaje encontrados' };
+  } catch (e) {
+    return { error: 'Error al consultar conocimiento: ' + e.message };
+  }
+}
+
+async function resolverProblema({ empresa, problema, solucion, categoria }) {
+  try {
+    const path = `empresas/${empresa}/knowledge/global`;
+    let existing = {};
+    try {
+      const getRes = await fetch(`${FS_URL}/${path}?key=${FB.apiKey}`);
+      if (getRes.ok) {
+        const doc = await getRes.json();
+        for (const [k, v] of Object.entries(doc.fields || {})) {
+          if (v.stringValue) try { existing[k] = JSON.parse(v.stringValue); } catch {}
+        }
+      }
+    } catch {}
+
+    const problems = existing.solvedProblems || [];
+    problems.push({ problema, solucion, categoria: categoria || 'otro', ts: Date.now() });
+    existing.solvedProblems = problems.slice(-50);
+
+    const fields = {};
+    for (const [k, v] of Object.entries(existing)) {
+      fields[k] = { stringValue: JSON.stringify(v) };
+    }
+    fields.updatedAt = { integerValue: String(Date.now()) };
+
+    await fetch(`${FS_URL}/${path}?key=${FB.apiKey}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields })
+    });
+
+    return { exito: true, mensaje: 'Problema registrado para aprendizaje futuro' };
+  } catch (e) {
+    return { error: 'Error al registrar: ' + e.message };
+  }
 }
 
 async function buscarOperacion({ patente, folio }) {
