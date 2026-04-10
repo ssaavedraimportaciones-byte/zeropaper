@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sin Papel + AI — Gestión Documental Inteligente para Empresas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --navy: #050B1F;
+            --navy-dark: #020714;
+            --blue: #0066FF;
+            --cyan: #00D4FF;
+            --green: #00E676;
+            --purple: #7C3AED;
+            --pink: #FF006E;
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 50%, rgba(0, 102, 255, 0.05) 100%);
+            color: #fff;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* ── ANIMATIONS ── */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(5deg); }
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { box-shadow: 0 0 40px rgba(0, 102, 255, 0.4), 0 0 80px rgba(0, 102, 255, 0.1); }
+            50% { box-shadow: 0 0 60px rgba(0, 102, 255, 0.6), 0 0 120px rgba(0, 102, 255, 0.2); }
+        }
+
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        @keyframes marquee-reverse {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes scale-in {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ── UTILITIES ── */
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--blue) 0%, var(--cyan) 50%, var(--green) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 102, 255, 0.1);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            color: var(--cyan);
+            padding: 8px 18px;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ── NAVBAR ── */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: rgba(5, 11, 31, 0.5);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 102, 255, 0.1);
+            transition: all 0.3s ease;
+            padding: 1.2rem 2rem;
+        }
+
+        nav.scrolled {
+            background: rgba(5, 11, 31, 0.95);
+            border-bottom-color: rgba(0, 102, 255, 0.2);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--blue), var(--cyan));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 20px rgba(0, 102, 255, 0.3);
+        }
+
+        .logo-ai {
+            color: var(--pink);
+            font-size: 0.65rem;
+            margin-left: -3px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #ccc;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--cyan);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--blue), var(--cyan));
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--blue) 0%, #0052CC 100%);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(0, 102, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 102, 255, 0.6);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--cyan);
+        }
+
+        /* ── HERO SECTION ── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding-top: 80px;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 800px 600px at 20% 10%, rgba(0, 102, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse 600px 500px at 80% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse 400px 400px at 50% 50%, rgba(124, 58, 237, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            animation: gradient-shift 15s ease infinite;
+            background-size: 200% 200%;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            max-width: 900px;
+            text-align: center;
+            padding: 0 2rem;
+            animation: slide-up 0.8s ease-out;
+        }
+
+        .hero h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            color: #aaa;
+            max-width: 700px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.7;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+            max-width: 900px;
+        }
+
+        .stat-card {
+            background: rgba(0, 102, 255, 0.06);
+            border: 1px solid rgba(0, 102, 255, 0.2);
+            border-radius: 16px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(0, 102, 255, 0.12);
+            border-color: rgba(0, 102, 255, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 102, 255, 0.15);
+        }
+
+        .stat-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--blue), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #999;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* ── MARQUEE ── */
+        .marquee-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2rem 0;
+            overflow: hidden;
+            border-top: 1px solid rgba(0, 102, 255, 0.2);
+            border-bottom: 1px solid rgba(0, 102, 255, 0.2);
+        }
+
+        .marquee-track {
+            display: flex;
+            gap: 1.5rem;
+            width: max-content;
+            animation: marquee 40s linear infinite;
+            padding: 1rem 0;
+        }
+
+        .marquee-item {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 100px;
+            white-space: nowrap;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .marquee-icon {
+            font-size: 1.3rem;
+        }
+
+        /* ── SECTIONS ── */
+        section {
+            padding: 5rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        section h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        section > p {
+            color: #999;
+            font-size: 1.1rem;
+            max-width: 700px;
+            margin-bottom: 3rem;
+        }
+
+        /* ── AI SHOWCASE ── */
+        .ai-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .ai-card {
+            glass;
+            padding: 2.5rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(0, 212, 255, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .ai-card:hover {
+            border-color: rgba(0, 102, 255, 0.5);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0, 102, 255, 0.15);
+        }
+
+        .ai-card:hover::before {
+            opacity: 1;
+        }
+
+        .ai-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .ai-card h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .ai-card p {
+            color: #aaa;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* ── BEFORE/AFTER ── */
+        .before-after {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            margin-top: 3rem;
+        }
+
+        .before-after > div {
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .before {
+            background: rgba(255, 68, 68, 0.08);
+            border-color: rgba(255, 68, 68, 0.2);
+        }
+
+        .after {
+            background: rgba(0, 230, 118, 0.08);
+            border-color: rgba(0, 230, 118, 0.2);
+        }
+
+        .before h4, .after h4 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .before h4 {
+            color: #FF6B6B;
+        }
+
+        .after h4 {
+            color: #00E676;
+        }
+
+        .before ul, .after ul {
+            list-style: none;
+        }
+
+        .before li, .after li {
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.95rem;
+        }
+
+        .before li::before {
+            content: '✗';
+            color: #FF6B6B;
+            font-weight: 900;
+            font-size: 1.2rem;
+        }
+
+        .after li::before {
+            content: '✓';
+            color: #00E676;
+            font-weight: 900;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .before-after {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── FEATURES GRID ── */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature {
+            glass;
+            padding: 2rem;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .feature:hover {
+            border-color: rgba(0, 102, 255, 0.5);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .feature p {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        /* ── ROI SECTION ── */
+        .roi-box {
+            background: linear-gradient(135deg, rgba(0, 230, 118, 0.08), rgba(0, 212, 255, 0.05));
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            border-radius: 24px;
+            padding: 3rem;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .roi-number {
+            font-family: 'Outfit', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--green), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .roi-text {
+            font-size: 1.1rem;
+            color: #ccc;
+        }
+
+        /* ── TESTIMONIALS ── */
+        .testimonials {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .testimonial {
+            glass;
+            padding: 2.5rem;
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            border-top: 3px solid var(--blue);
+        }
+
+        .testimonial:hover {
+            border-top-color: var(--cyan);
+            transform: translateY(-4px);
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            color: #ddd;
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--blue), var(--cyan));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .author-info h4 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .author-info p {
+            color: #999;
+            font-size: 0.8rem;
+        }
+
+        /* ── CTA FORM ── */
+        .cta-section {
+            background: linear-gradient(135deg, rgba(0, 102, 255, 0.08), rgba(124, 58, 237, 0.08));
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            border-radius: 24px;
+            padding: 3rem;
+            margin-top: 3rem;
+        }
+
+        .form-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            max-width: 1000px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #666;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--blue);
+            background: rgba(0, 102, 255, 0.08);
+        }
+
+        .form-submit {
+            grid-column: 1 / -1;
+        }
+
+        .form-submit .btn {
+            width: 100%;
+            justify-content: center;
+            padding: 16px;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 1px solid rgba(0, 102, 255, 0.2);
+            padding: 3rem 2rem;
+            text-align: center;
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--cyan);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--blue);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding-top: 60px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .hero-buttons .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            section {
+                padding: 3rem 1.5rem;
+            }
+
+            .cta-section {
+                padding: 2rem;
+            }
+
+            .form-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav>
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <div class="logo-icon">SP<span class="logo-ai">AI</span></div>
+                <span>Sin Papel <span class="gradient-text">+ AI</span></span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#features">Características</a></li>
+                <li><a href="#ai">IA Integrada</a></li>
+                <li><a href="#security">Seguridad</a></li>
+                <li><a href="#testimonials">Casos de Éxito</a></li>
+                <li><a href="#contact">Contacto</a></li>
+            </ul>
+            <a href="login.html" class="btn btn-primary">Iniciar Sesión</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="section-label">
+                ⚡ Revolución Digital Empresarial
+            </div>
+            <h1>
+                El Futuro de tu Empresa
+                <br>
+                <span class="gradient-text">No Tiene Papel.</span>
+                <br>
+                <span style="color: var(--pink);">Tiene Inteligencia.</span>
+            </h1>
+            <p>
+                Gestión documental 100% digital + IA integrada (tipo DeepSeek) para análisis automático,
+                planificación inteligente y mantenimiento predictivo. Reduce costos, automatiza procesos,
+                y toma decisiones basadas en datos en tiempo real.
+            </p>
+
+            <div class="hero-buttons">
+                <a href="login.html" class="btn btn-primary">🚀 Ver Demo Interactiva</a>
+                <a href="#features" class="btn btn-secondary">Conocer Más ↓</a>
+            </div>
+
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <div class="stat-value">80%</div>
+                    <div class="stat-label">Reducción de costos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">300%</div>
+                    <div class="stat-label">Más velocidad en procesos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Documentos perdidos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">500+</div>
+                    <div class="stat-label">Empresas confiando</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MARQUEE -->
+    <div class="marquee-section">
+        <div class="marquee-track">
+            <div class="marquee-item"><span class="marquee-icon">📄</span> Gestión documental sin papel</div>
+            <div class="marquee-item"><span class="marquee-icon">🤖</span> IA análisis de documentos</div>
+            <div class="marquee-item"><span class="marquee-icon">☁️</span> Backup ilimitado en la nube</div>
+            <div class="marquee-item"><span class="marquee-icon">⚡</span> Automatización de procesos</div>
+            <div class="marquee-item"><span class="marquee-icon">🔒</span> Seguridad ISO 27001</div>
+            <div class="marquee-item"><span class="marquee-icon">📊</span> Reportes automáticos con IA</div>
+            <div class="marquee-item"><span class="marquee-icon">🔄</span> Sincronización en tiempo real</div>
+            <div class="marquee-item"><span class="marquee-icon">💡</span> Planificación inteligente</div>
+            <!-- Duplicado para efecto seamless -->
+            <div class="marquee-item"><span class="marquee-icon">📄</span> Gestión documental sin papel</div>
+            <div class="marquee-item"><span class="marquee-icon">🤖</span> IA análisis de documentos</div>
+            <div class="marquee-item"><span class="marquee-icon">☁️</span> Backup ilimitado en la nube</div>
+            <div class="marquee-item"><span class="marquee-icon">⚡</span> Automatización de procesos</div>
+            <div class="marquee-item"><span class="marquee-icon">🔒</span> Seguridad ISO 27001</div>
+            <div class="marquee-item"><span class="marquee-icon">📊</span> Reportes automáticos con IA</div>
+            <div class="marquee-item"><span class="marquee-icon">🔄</span> Sincronización en tiempo real</div>
+            <div class="marquee-item"><span class="marquee-icon">💡</span> Planificación inteligente</div>
+        </div>
+    </div>
+
+    <!-- ANTES vs DESPUÉS -->
+    <section>
+        <div class="section-label">📊 Comparativa</div>
+        <h2>Tu Empresa Hoy vs Con Sin Papel + AI</h2>
+        <p>Vea la transformación real que experimentan nuestros clientes.</p>
+
+        <div class="before-after">
+            <div class="before">
+                <h4>❌ Sin Solución</h4>
+                <ul>
+                    <li>Archivos físicos en bodegas</li>
+                    <li>Búsqueda manual de documentos</li>
+                    <li>Procesos de aprobación lentos (3-5 días)</li>
+                    <li>$15,000 USD/año en costos</li>
+                    <li>Riesgo de pérdida de documentos</li>
+                    <li>Sin respaldo de información</li>
+                    <li>Reportes manuales, lentos</li>
+                    <li>Cero visibilidad de procesos</li>
+                </ul>
+            </div>
+            <div class="after">
+                <h4>✅ Con Sin Papel + AI</h4>
+                <ul>
+                    <li>100% digital, cloud-based</li>
+                    <li>Búsqueda AI en segundos</li>
+                    <li>Aprobación automática en minutos</li>
+                    <li>Ahorros de $12,000+ USD/año</li>
+                    <li>Backups automáticos diarios</li>
+                    <li>Respaldo en 3 continentes</li>
+                    <li>Reportes automáticos con IA</li>
+                    <li>Dashboard ejecutivo en tiempo real</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- IA INTEGRADA -->
+    <section id="ai">
+        <div class="section-label">🤖 Inteligencia Artificial Integrada</div>
+        <h2>Sin Papel + <span class="gradient-text">Inteligencia Artificial</span></h2>
+        <p>Integración nativa con modelos de IA avanzados (DeepSeek, GPT) para análisis, automatización y toma de decisiones inteligente.</p>
+
+        <div class="ai-showcase">
+            <div class="ai-card">
+                <span class="ai-icon">📋</span>
+                <h3>Análisis Automático de Documentos</h3>
+                <p>IA lee, clasifica y extrae información de documentos en segundos. Identifica campos clave, detecta anomalías y categoriza automáticamente.</p>
+            </div>
+
+            <div class="ai-card">
+                <span class="ai-icon">⚙️</span>
+                <h3>Mantenimiento Predictivo</h3>
+                <p>Algoritmos detectan patrones en tus procesos. Predice cuellos de botella y sugiere optimizaciones antes de que se conviertan en problemas.</p>
+            </div>
+
+            <div class="ai-card">
+                <span class="ai-icon">📈</span>
+                <h3>Planificación Inteligente</h3>
+                <p>IA genera reportes ejecutivos automáticos, analiza tendencias y propone estrategias basadas en datos reales de tu operación.</p>
+            </div>
+
+            <div class="ai-card">
+                <span class="ai-icon">🔍</span>
+                <h3>Búsqueda Semántica</h3>
+                <p>Entiende el significado, no solo palabras clave. Busca "contratos con Apple" y encuentra todos los documentos relacionados al instante.</p>
+            </div>
+
+            <div class="ai-card">
+                <span class="ai-icon">🛡️</span>
+                <h3>Detección de Riesgos</h3>
+                <p>IA analiza documentos para detectar inconsistencias legales, riesgos de cumplimiento y señales de alerta automáticamente.</p>
+            </div>
+
+            <div class="ai-card">
+                <span class="ai-icon">💬</span>
+                <h3>Asistente Conversacional</h3>
+                <p>Chatbot IA disponible 24/7 responde preguntas sobre tus documentos, procesos y proporciona insights automáticos.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features">
+        <div class="section-label">✨ Características Principales</div>
+        <h2>Gestión Documental <span class="gradient-text">de Siguiente Nivel</span></h2>
+        <p>Todo lo que necesitas para transformar tu empresa en una organización 100% digital e inteligente.</p>
+
+        <div class="features-grid">
+            <div class="feature">
+                <span class="feature-icon">☁️</span>
+                <h3>Almacenamiento Ilimitado</h3>
+                <p>Cloud seguro, escalable y redundante. Tus documentos siempre disponibles desde cualquier lugar.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">🔄</span>
+                <h3>Integración Total</h3>
+                <p>Conecta con SAP, Oracle, Salesforce, Microsoft 365. API abierta para cualquier sistema.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">⚡</span>
+                <h3>Flujos Automáticos</h3>
+                <p>Configura aprobaciones automáticas, notificaciones y escalamientos sin una línea de código.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">🔒</span>
+                <h3>Seguridad Enterprise</h3>
+                <p>ISO 27001, AES-256, GDPR, SOC 2. Auditoría completa de cada acción.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">✍️</span>
+                <h3>Firma Electrónica Legal</h3>
+                <p>Válida en 180 países. Cierra acuerdos en segundos sin papel.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">📊</span>
+                <h3>Dashboards Inteligentes</h3>
+                <p>Reportes generados automáticamente por IA. Visualiza lo que importa en tiempo real.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">🔔</span>
+                <h3>Notificaciones Inteligentes</h3>
+                <p>Alertas automáticas basadas en reglas personalizadas. Nunca pierdas una aprobación.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">🌍</span>
+                <h3>Acceso Desde Anywhere</h3>
+                <p>Mobile app, web, desktop. Tus documentos accesibles en todo momento, en cualquier dispositivo.</p>
+            </div>
+
+            <div class="feature">
+                <span class="feature-icon">♻️</span>
+                <h3>Cero Impacto Ambiental</h3>
+                <p>Elimina completamente el uso de papel. Contribuye a la sostenibilidad de tu empresa.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- PARA TODA LA EMPRESA -->
+    <section id="departamentos" style="max-width:1400px;margin:0 auto;padding:5rem 2rem;">
+        <div class="section-label">🏢 Para Toda la Organización</div>
+        <h2>Una sola plataforma, <span class="gradient-text">todos los departamentos</span></h2>
+        <p>Sin Papel AI no es solo para administración. Está diseñada para que cada área de tu empresa se beneficie desde el primer día — con acceso diferenciado por rol.</p>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.5rem;margin-top:2.5rem;">
+            <div class="feature" style="text-align:left;display:flex;gap:1rem;align-items:flex-start;">
+                <span style="font-size:2rem;flex-shrink:0;">💼</span>
+                <div><h3 style="margin-bottom:.4rem;">Gerencia General</h3><p>Dashboard ejecutivo con KPIs en tiempo real. Toma decisiones con datos, no suposiciones.</p></div>
+            </div>
+            <div class="feature" style="text-align:left;display:flex;gap:1rem;align-items:flex-start;">
+                <span style="font-size:2rem;flex-shrink:0;">💰</span>
+                <div><h3 style="margin-bottom:.4rem;">Finanzas y Contabilidad</h3><p>Facturas, contratos y reportes automáticos. Cierres mensuales en horas, no días.</p></div>
+            </div>
+            <div class="feature" style="text-align:left;display:flex;gap:1rem;align-items:flex-start;">
+                <span style="font-size:2rem;flex-shrink:0;">🏗️</span>
+                <div><h3 style="margin-bottom:.4rem;">Operaciones</h3><p>Manuales, procedimientos y órdenes de trabajo siempre actualizados y accesibles.</p></div>
+            </div>
+            <div class="feature" style="text-align:left;display:flex;gap:1rem;align-items:flex-start;">
+                <span style="font-size:2rem;flex-shrink:0;">👥</span>
+                <div><h3 style="margin-bottom:.4rem;">Recursos Humanos</h3><p>Contratos laborales, expedientes digitales, nóminas y políticas — todo en un solo lugar.</p></div>
+            </div>
+            <div class="feature" style="text-align:left;display:flex;gap:1rem;align-items:flex-start;">
+                <span style="font-size:2rem;flex-shrink:0;">⚖️</span>
+                <div><h3 style="margin-bottom:.4rem;">Legal y Compliance</h3><p>Contratos, acuerdos y auditorías con trazabilidad completa y firma electrónica legal.</p></div>
+            </div>
+            <div class="feature" style="text-align:left;display:flex;gap:1rem;align-items:flex-start;">
+                <span style="font-size:2rem;flex-shrink:0;">📦</span>
+                <div><h3 style="margin-bottom:.4rem;">Compras y Logística</h3><p>Órdenes de compra, proveedores, guías de despacho — sin un solo papel físico.</p></div>
+            </div>
+            <div class="feature" style="text-align:left;display:flex;gap:1rem;align-items:flex-start;">
+                <span style="font-size:2rem;flex-shrink:0;">🔧</span>
+                <div><h3 style="margin-bottom:.4rem;">Mantenimiento</h3><p>Órdenes de trabajo, historial técnico y manuales de equipos siempre disponibles en terreno.</p></div>
+            </div>
+            <div class="feature" style="text-align:left;display:flex;gap:1rem;align-items:flex-start;">
+                <span style="font-size:2rem;flex-shrink:0;">📢</span>
+                <div><h3 style="margin-bottom:.4rem;">Marketing y Ventas</h3><p>Propuestas, cotizaciones y materiales de venta actualizados y compartidos al instante.</p></div>
+            </div>
+            <div class="feature" style="text-align:left;display:flex;gap:1rem;align-items:flex-start;">
+                <span style="font-size:2rem;flex-shrink:0;">🖥️</span>
+                <div><h3 style="margin-bottom:.4rem;">Tecnología (TI)</h3><p>Licencias, contratos de software, documentación técnica y respaldos centralizados.</p></div>
+            </div>
+        </div>
+
+        <div style="margin-top:2.5rem;background:linear-gradient(135deg,rgba(0,102,255,.08),rgba(0,212,255,.05));border:1px solid rgba(0,102,255,.25);border-radius:16px;padding:2rem;text-align:center;">
+            <p style="font-size:1.1rem;color:#ddd;">
+                🔐 <strong style="color:#fff;">Acceso diferenciado por rol</strong> — Cada empleado ve únicamente los documentos y herramientas de su área.<br>
+                <span style="color:#999;font-size:.95rem;">Sin Papel AI escala con tu empresa: desde 10 hasta 10,000 usuarios.</span>
+            </p>
+        </div>
+    </section>
+
+    <!-- ROI SECTION -->
+    <section>
+        <div class="section-label">💰 Retorno de Inversión</div>
+        <h2>Rentabilidad <span class="gradient-text">Garantizada</span></h2>
+
+        <div class="roi-box">
+            <div class="roi-number" id="roi-counter">340%</div>
+            <div class="roi-text">ROI en el primer año — una empresa típica con 100 empleados</div>
+        </div>
+
+        <div class="features-grid" style="margin-top: 2rem;">
+            <div class="feature">
+                <h3>📉 Costos Operativos</h3>
+                <p><strong style="color: var(--green);">Ahorro: $12,000-15,000 USD/año</strong><br>Eliminación de costos de papel, impresoras, almacenamiento físico y logística.</p>
+            </div>
+
+            <div class="feature">
+                <h3>⏱️ Productividad</h3>
+                <p><strong style="color: var(--green);">Ganancia: 400+ horas/año por empleado</strong><br>Reducción de tiempo en búsqueda, archivo y traslado de documentos.</p>
+            </div>
+
+            <div class="feature">
+                <h3>📈 Eficiencia</h3>
+                <p><strong style="color: var(--green);">Mejora: 300% en velocidad de procesos</strong><br>Aprobaciones que tardaban días, ahora se cierran en minutos.</p>
+            </div>
+
+            <div class="feature">
+                <h3>🎯 Cumplimiento</h3>
+                <p><strong style="color: var(--green);">Reducción: 100% en riesgos de auditoría</strong><br>Trazabilidad completa, regulación automática, reportes de compliance.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section id="testimonials">
+        <div class="section-label">💬 Casos de Éxito</div>
+        <h2>Lo que Dicen <span class="gradient-text">Nuestros Clientes</span></h2>
+
+        <div class="testimonials">
+            <div class="testimonial">
+                <div class="testimonial-text">
+                    "Implementamos Sin Papel + AI en toda nuestra red de operaciones. El ahorro fue de $47,000 USD en los primeros 3 meses. La IA nos ayuda a detectar inconsistencias antes de que se conviertan en problemas."
+                </div>
+                <div class="testimonial-author">
+                    <div class="avatar">CM</div>
+                    <div class="author-info">
+                        <h4>Carlos Mendoza</h4>
+                        <p>Director de Operaciones, Grupo Financiero</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial">
+                <div class="testimonial-text">
+                    "Nuestros procesos de aprobación ahora toman 15 minutos en lugar de 3 días. La integración con SAP fue perfecta. El ROI se cumplió en menos de 8 meses."
+                </div>
+                <div class="testimonial-author">
+                    <div class="avatar">AR</div>
+                    <div class="author-info">
+                        <h4>Ana Romero</h4>
+                        <p>Gerente de Finanzas, Constructora</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial">
+                <div class="testimonial-text">
+                    "La IA que analiza documentos nos ahorra horas cada semana en tareas manuales. El asistente conversacional responde preguntas sobre nuestros procesos al instante. Increíble."
+                </div>
+                <div class="testimonial-author">
+                    <div class="avatar">RF</div>
+                    <div class="author-info">
+                        <h4>Roberto Fuentes</h4>
+                        <p>CTO, Industrias Manufactureras</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- QR WHATSAPP FEEDBACK -->
+    <section id="feedback" style="max-width:1400px;margin:0 auto;padding:5rem 2rem;">
+        <div style="text-align:center;margin-bottom:3rem;">
+            <div class="section-label" style="margin:0 auto 1.5rem;">💬 Tu Opinión Construye Esta App</div>
+            <h2>¿Qué funciones te <span class="gradient-text">gustaría ver?</span></h2>
+            <p style="max-width:650px;margin:1rem auto 0;">Esta plataforma es <strong style="color:#fff;">de todos y para todos</strong> en la empresa. Tu idea puede convertirse en la próxima función. Escanea el QR y cuéntanos — ¡cada sugerencia cuenta!</p>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;max-width:900px;margin:0 auto;">
+            <!-- QR Card -->
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1.5rem;">
+                <div id="qrWrapper" style="
+                    padding:1.2rem;
+                    background:#fff;
+                    border-radius:20px;
+                    box-shadow:0 0 60px rgba(0,102,255,.35),0 0 120px rgba(0,212,255,.15);
+                    animation:glow-pulse 3s ease-in-out infinite;
+                    display:inline-block;
+                ">
+                    <img id="qrImg"
+                        src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https%3A%2F%2Fwa.me%2F56995854721%3Ftext%3DHola!%2520Tengo%2520una%2520sugerencia%2520para%2520Sin%2520Papel%2520AI%253A%2520&format=png&qzone=2&color=0-0-0&bgcolor=255-255-255"
+                        alt="QR WhatsApp"
+                        width="220" height="220"
+                        style="display:block;border-radius:8px;"
+                    >
+                </div>
+                <div style="text-align:center;">
+                    <p style="color:#ccc;font-size:.9rem;margin-bottom:.5rem;">📱 Escanea con la cámara de tu celular</p>
+                    <p style="color:#888;font-size:.8rem;">Abre directo en WhatsApp con mensaje pre-listo</p>
+                </div>
+                <a href="https://wa.me/56995854721?text=Hola!%20Tengo%20una%20sugerencia%20para%20Sin%20Papel%20AI%3A%20"
+                   target="_blank"
+                   style="
+                    display:inline-flex;align-items:center;gap:8px;
+                    padding:10px 22px;
+                    background:rgba(37,211,102,.12);
+                    border:1px solid rgba(37,211,102,.35);
+                    border-radius:100px;
+                    color:#25D366;
+                    font-weight:700;font-size:.9rem;
+                    text-decoration:none;
+                    transition:all .3s ease;
+                " onmouseover="this.style.background='rgba(37,211,102,.2)'" onmouseout="this.style.background='rgba(37,211,102,.12)'">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    Abrir en WhatsApp
+                </a>
+            </div>
+
+            <!-- Right: Instructions -->
+            <div>
+                <h3 style="font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:1.5rem;">
+                    Cuéntanos qué necesitas 👇
+                </h3>
+                <div style="display:flex;flex-direction:column;gap:1.2rem;">
+                    <div style="display:flex;gap:1rem;align-items:flex-start;">
+                        <div style="width:36px;height:36px;background:rgba(0,102,255,.12);border:1px solid rgba(0,102,255,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#00D4FF;flex-shrink:0;">1</div>
+                        <div><p style="font-weight:600;color:#fff;margin-bottom:.2rem;">Escanea el QR con tu cámara</p><p style="color:#888;font-size:.85rem;">Funciona con iPhone y Android sin necesidad de app</p></div>
+                    </div>
+                    <div style="display:flex;gap:1rem;align-items:flex-start;">
+                        <div style="width:36px;height:36px;background:rgba(0,102,255,.12);border:1px solid rgba(0,102,255,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#00D4FF;flex-shrink:0;">2</div>
+                        <div><p style="font-weight:600;color:#fff;margin-bottom:.2rem;">Se abre WhatsApp con mensaje pre-listo</p><p style="color:#888;font-size:.85rem;">Solo escribe tu idea o sugerencia al final</p></div>
+                    </div>
+                    <div style="display:flex;gap:1rem;align-items:flex-start;">
+                        <div style="width:36px;height:36px;background:rgba(0,102,255,.12);border:1px solid rgba(0,102,255,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;color:#00D4FF;flex-shrink:0;">3</div>
+                        <div><p style="font-weight:600;color:#fff;margin-bottom:.2rem;">¡Envía y listo!</p><p style="color:#888;font-size:.85rem;">Tu sugerencia llega directamente al equipo de desarrollo</p></div>
+                    </div>
+                </div>
+
+                <div style="margin-top:2rem;padding:1.2rem;background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);border-radius:12px;">
+                    <p style="font-size:.9rem;color:#ccc;">
+                        💡 Puedes sugerir: <strong style="color:#fff;">nuevas funciones, integraciones que uses en tu área, mejoras al flujo de trabajo, reportes que necesitas</strong> o cualquier idea que te facilite el día a día.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section id="contact">
+        <div class="section-label">🚀 Comienza Hoy</div>
+        <h2>Solicita Tu Demo <span class="gradient-text">Personalizada</span></h2>
+        <p>Agenda 30 minutos con nuestro equipo. Te mostraremos exactamente cómo Sin Papel + AI transformará tu empresa.</p>
+
+        <div class="cta-section">
+            <div class="form-container">
+                <div>
+                    <h3 style="margin-bottom: 1.5rem; font-family: 'Outfit', sans-serif; font-size: 1.3rem;">
+                        ¿Por qué Sin Papel + AI?
+                    </h3>
+                    <ul style="text-align: left; line-height: 2;">
+                        <li>✅ Implementación en menos de 72 horas</li>
+                        <li>✅ 30 días gratis, sin tarjeta de crédito</li>
+                        <li>✅ Soporte dedicado durante la implementación</li>
+                        <li>✅ ROI garantizado o dinero de vuelta</li>
+                        <li>✅ IA análisis incluida desde el día 1</li>
+                    </ul>
+                </div>
+
+                <form id="demoForm">
+                    <div class="form-group">
+                        <label>Nombre Completo *</label>
+                        <input type="text" required placeholder="Tu nombre">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Empresa *</label>
+                        <input type="text" required placeholder="Nombre de tu empresa">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Correo Empresarial *</label>
+                        <input type="email" required placeholder="tu@empresa.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" placeholder="+52 55 0000 0000">
+                    </div>
+
+                    <div class="form-group">
+                        <label># de Empleados *</label>
+                        <select required>
+                            <option value="">Selecciona...</option>
+                            <option value="1-50">1–50</option>
+                            <option value="51-200">51–200</option>
+                            <option value="201-500">201–500</option>
+                            <option value="500+">500+</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>¿Cuál es tu principal desafío? *</label>
+                        <select required>
+                            <option value="">Selecciona...</option>
+                            <option value="paper-costs">Costos de papel y almacenamiento</option>
+                            <option value="slow-processes">Procesos muy lentos</option>
+                            <option value="compliance">Cumplimiento normativo</option>
+                            <option value="automation">Automatización de flujos</option>
+                            <option value="ai-analysis">Análisis inteligente de datos</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group form-submit">
+                        <button type="submit" class="btn btn-primary">
+                            📅 Agendar Demo (Gratis)
+                        </button>
+                    </div>
+
+                    <p style="text-align: center; color: #999; font-size: 0.85rem; margin-top: 1rem;">
+                        Sin tarjeta de crédito • Demo en 30 minutos • Propuesta personalizada en 24h
+                    </p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p style="margin-bottom: 1rem;">
+            © 2026 Sin Papel + AI. Transformando empresas con gestión documental inteligente.
+        </p>
+        <p>
+            <a href="#">Términos</a> •
+            <a href="#">Privacidad</a> •
+            <a href="#">Seguridad (ISO 27001)</a> •
+            <a href="#">Contacto</a>
+        </p>
+        <p style="margin-top: 1rem; color: #666;">
+            Hecho para empresas que quieren competir en el futuro.
+        </p>
+    </footer>
+
+    <script>
+        // NAVBAR SCROLL EFFECT
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        });
+
+        // COUNTER ANIMATION
+        const counterElements = document.querySelectorAll('.stat-value');
+        const observerOptions = { threshold: 0.1 };
+
+        const observerCallback = (entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !entry.target.dataset.counted) {
+                    entry.target.dataset.counted = true;
+                    animateCounter(entry.target);
+                }
+            });
+        };
+
+        const observer = new IntersectionObserver(observerCallback, observerOptions);
+        counterElements.forEach(el => observer.observe(el));
+
+        function animateCounter(element) {
+            const text = element.textContent;
+            const value = parseInt(text.replace(/[^0-9]/g, ''));
+            const suffix = text.replace(/[0-9]/g, '');
+
+            let current = 0;
+            const increment = value / 60;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= value) {
+                    element.textContent = value + suffix;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(current) + suffix;
+                }
+            }, 30);
+        }
+
+        // FORM SUBMISSION
+        document.getElementById('demoForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('✅ ¡Solicitud recibida! \n\nEn las próximas 2 horas recibirás un email con tu horario de demo personalizada.');
+            e.target.reset();
+        });
+
+        // SMOOTH SCROLL LINKS
+        document.querySelectorAll('a[href^="#"]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(link.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // ANIMATION ON SCROLL
+        const fadeElements = document.querySelectorAll('.feature, .ai-card, .testimonial');
+        const fadeObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'slide-up 0.6s ease-out forwards';
+                    fadeObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        fadeElements.forEach(el => fadeObserver.observe(el));
+    </script>
+</body>
+</html>
