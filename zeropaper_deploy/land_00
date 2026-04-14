@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="ZeroPaper™ — Plataforma de gestión portuaria digital. Digitaliza tus operaciones de puerto desde hoy. Sin papeles, sin errores, sin demoras.">
+<meta name="theme-color" content="#0a0f0d">
+<link rel="manifest" href="/manifest.json">
+<title>ZeroPaper™ — Gestión Portuaria Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080c0a;
+  --bg2:#0e1510;
+  --bg3:#141c15;
+  --fg:#e8ede9;
+  --mu:#5a6b5c;
+  --brd:rgba(255,255,255,.06);
+  --g:#1a6b3a;
+  --g2:#22c55e;
+  --g3:#4ade80;
+  --glow:rgba(34,197,94,.15);
+  --mono:'Space Mono',monospace;
+  --display:'Bebas Neue',sans-serif;
+  --body:'DM Sans',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);overflow-x:hidden}
+
+/* ── NOISE OVERLAY ── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:.4;
+}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 48px;
+  background:rgba(8,12,10,.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--brd);
+  z-index:100;
+}
+.nav-logo{font-family:var(--display);font-size:28px;letter-spacing:3px;color:var(--g2);}
+.nav-logo span{color:var(--mu);font-size:14px;font-family:var(--mono);letter-spacing:1px;display:block;margin-top:-4px}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{color:var(--mu);text-decoration:none;font-size:13px;font-family:var(--mono);letter-spacing:1px;transition:color .2s}
+.nav-links a:hover{color:var(--fg)}
+.nav-cta{
+  background:var(--g2);color:#000;
+  padding:9px 20px;border-radius:6px;
+  font-size:12px;font-family:var(--mono);font-weight:700;letter-spacing:1px;
+  text-decoration:none;transition:all .2s;
+}
+.nav-cta:hover{background:var(--g3);transform:translateY(-1px)}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:140px 48px 80px;
+  position:relative;overflow:hidden;
+}
+.hero::after{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(34,197,94,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34,197,94,.04) 1px, transparent 1px);
+  background-size:60px 60px;
+  pointer-events:none;
+}
+.hero-glow{
+  position:absolute;top:20%;left:50%;transform:translateX(-50%);
+  width:800px;height:400px;
+  background:radial-gradient(ellipse,rgba(34,197,94,.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+.hero-eyebrow{
+  font-family:var(--mono);font-size:10px;color:var(--g2);
+  letter-spacing:4px;margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;
+}
+.hero-eyebrow::before{content:'';width:40px;height:1px;background:var(--g2)}
+
+.hero-title{
+  font-family:var(--display);
+  font-size:clamp(72px,10vw,140px);
+  line-height:.92;
+  letter-spacing:4px;
+  color:var(--fg);
+  margin-bottom:8px;
+}
+.hero-title .accent{color:var(--g2)}
+.hero-title .tm{font-family:var(--body);font-size:24px;color:var(--g2);vertical-align:top}
+
+.hero-sub{
+  font-family:var(--display);
+  font-size:clamp(40px,5vw,72px);
+  line-height:1;
+  letter-spacing:2px;
+  color:var(--mu);
+  margin-bottom:32px;
+}
+
+.hero-desc{
+  max-width:560px;
+  font-size:17px;line-height:1.65;
+  color:#8aa08c;
+  margin-bottom:40px;
+  font-weight:300;
+}
+
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:60px}
+.btn-hero-main{
+  background:var(--g2);color:#000;
+  padding:14px 32px;border-radius:8px;
+  font-size:13px;font-family:var(--mono);font-weight:700;letter-spacing:2px;
+  text-decoration:none;transition:all .2s;display:inline-block;
+}
+.btn-hero-main:hover{background:var(--g3);transform:translateY(-2px);box-shadow:0 8px 30px rgba(34,197,94,.3)}
+.btn-hero-sec{
+  border:1px solid var(--brd);color:var(--mu);
+  padding:14px 32px;border-radius:8px;
+  font-size:13px;font-family:var(--mono);letter-spacing:2px;
+  text-decoration:none;transition:all .2s;display:inline-block;
+}
+.btn-hero-sec:hover{border-color:var(--g2);color:var(--g2)}
+
+.hero-stats{
+  display:flex;gap:40px;
+  border-top:1px solid var(--brd);padding-top:32px;
+}
+.hero-stat-n{font-family:var(--display);font-size:42px;color:var(--g2);letter-spacing:2px;line-height:1}
+.hero-stat-l{font-family:var(--mono);font-size:8px;color:var(--mu);letter-spacing:2px;margin-top:4px}
+
+/* ── TICKER ── */
+.ticker{
+  background:var(--bg2);border-top:1px solid var(--brd);border-bottom:1px solid var(--brd);
+  padding:12px 0;overflow:hidden;white-space:nowrap;
+}
+.ticker-inner{
+  display:inline-block;
+  animation:ticker 30s linear infinite;
+  font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:2px;
+}
+.ticker-inner span{margin:0 40px;color:var(--g2)}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── SECTION ── */
+section{padding:100px 48px;position:relative;z-index:1}
+.section-label{
+  font-family:var(--mono);font-size:9px;color:var(--g2);letter-spacing:4px;
+  margin-bottom:16px;display:flex;align-items:center;gap:12px;
+}
+.section-label::before{content:'';width:32px;height:1px;background:var(--g2)}
+.section-title{
+  font-family:var(--display);font-size:clamp(36px,5vw,64px);
+  letter-spacing:2px;line-height:1;margin-bottom:20px;
+}
+.section-sub{font-size:16px;color:#8aa08c;max-width:540px;line-height:1.6;font-weight:300;margin-bottom:60px}
