@@ -1,0 +1,240 @@
+        <div class="theme-preview" style="background:linear-gradient(135deg,#0d0d1a,#1a1a35)"></div>
+        OSCURO
+      </div>
+      <div class="theme-btn" onclick="setTema('claro',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#f0f4f8,#ffffff)"></div>
+        CLARO
+      </div>
+      <div class="theme-btn" onclick="setTema('azul',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#0a1628,#0d1f3c)"></div>
+        AZUL
+      </div>
+      <div class="theme-btn" onclick="setTema('contraste',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#000,#111)"></div>
+        CONTRASTE
+      </div>
+    </div>
+    <div class="sec-row" style="margin-top:8px"><span class="sec-l">TAMAÑO DE TEXTO</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn-prime btn-gray" onclick="setFontSize(14)" style="font-size:12px">A Pequeño</button>
+      <button class="btn-prime btn-gray" onclick="setFontSize(16)" style="font-size:14px">A Normal</button>
+      <button class="btn-prime btn-gray" onclick="setFontSize(18)" style="font-size:16px">A Grande</button>
+    </div>
+  </div>
+
+  <!-- ▸ CONFIG ◂ -->
+  <div class="view" id="vConfig">
+    <div class="sec-row"><span class="sec-l">CONFIGURACIÓN</span></div>
+    <div class="card" id="configUserCard">
+      <div class="card-title">MI CUENTA</div>
+      <div id="configUserInfo" style="font-family:var(--mono);font-size:11px;color:var(--mu);margin-bottom:12px"></div>
+      <label class="flbl">Nombre del operador</label>
+      <input class="finp" id="cfgOperador" placeholder="Juan Pérez">
+      <button class="btn-prime btn-green" onclick="guardarNombre()">✓ Guardar nombre</button>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-title">DATOS</div>
+      <button class="btn-prime btn-gray" style="margin-bottom:8px" onclick="exportarCSV()">📊 Exportar CSV</button>
+      <button class="btn-prime btn-gray" style="margin-bottom:8px" onclick="if(confirm('¿Borrar todos los datos locales?')){limpiarDatos()}">🗑 Limpiar datos locales</button>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-title">ADMINISTRACIÓN</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:10px">Panel de gestión y estadísticas completas.</div>
+      <a href="/zeropaper_admin.html" target="_blank" style="text-decoration:none">
+        <button class="btn-prime btn-green" style="width:100%;margin-bottom:8px">🖥 Abrir Panel Admin</button>
+      </a>
+      <button class="btn-prime btn-gray" onclick="doLogout()">🔓 Cerrar sesión</button>
+    </div>
+  </div>
+
+</div><!-- fin scroll -->
+
+<!-- NAV -->
+<nav>
+  <div class="ftab on" id="t-home" onclick="goTo('home')"><span class="ftab-i">⌂</span><span class="ftab-l">INICIO</span></div>
+  <div class="ftab" id="t-historial" onclick="goTo('historial')"><span class="ftab-i">📋</span><span class="ftab-l">HISTORIAL</span></div>
+  <div class="ftab" id="t-turno" onclick="goTo('turno')"><span class="ftab-i">🔄</span><span class="ftab-l">TURNO</span></div>
+  <div class="ftab" id="t-deptos" onclick="goTo('deptos')"><span class="ftab-i">🏗</span><span class="ftab-l">DEPTOS</span></div>
+  <div class="ftab" id="t-config" onclick="goTo('config')"><span class="ftab-i">⚙</span><span class="ftab-l">CONFIG</span></div>
+</nav>
+
+</div><!-- fin app -->
+
+<!-- TOAST -->
+<div id="toast"><div class="t-icon" id="tIco"></div><div><div class="t-title" id="tTit"></div><div class="t-sub" id="tSub"></div></div></div>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════
+   ZeroPaper™ v5.0 — Multi-Empresa + Auth
+   © 2025 ZeroPaper™
+═══════════════════════════════════════════ */
+
+// ── FIREBASE CONFIG ──
+const FB = {
+  projectId: 'zeropaper-prod',
+  apiKey:    'AIzaSyCli7F4hLi-XEmmekGZpO2KQ1SO612I85Y'
+};
+const FS_BASE = () => `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
+
+// ── CONSTANTES ──
+const DB_NAME  = 'zp5_db';
+const DB_VER   = 1;
+const K_DEPTOS = 'zp5_deptos';
+const K_DEPTO  = 'zp5_depto_activo';
+const K_TEMA   = 'zp5_tema';
+const K_SESSION= 'zp5_session';
+const K_TURNO  = 'zp5_turno_inicio';
+
+// ── DEPARTAMENTOS PREDEFINIDOS ──
+const DEPTOS_DEFAULT = [
+  { id:'guarda_almacen', nombre:'Guarda Almacén', icon:'🏭', desc:'Cabotaje nacional',
+    docs:['CONOCIMIENTO_EMBARQUE','GUIA_CABOTAJE','MANIFIESTO','LISTA_EMPAQUE','ORDEN_CARGA','RECIBO_BODEGA','AUTORIZACIÓN_SALIDA','NOTA_COBRO'] },
+  { id:'control', nombre:'Control', icon:'📦', desc:'Contenedores · Intercheck',
+    docs:['INTERCHECK','EIR','BOOKING','GATE_IN','GATE_OUT','DAMAGE_REPORT','SEAL_REPORT','CONTENEDOR_VACÍO','CONTENEDOR_LLENO','TARJA'] },
+  { id:'aduana', nombre:'Aduana', icon:'🌍', desc:'DUS · DAM · Despacho',
+    docs:['DUS','DAM','AFORO','LEVANTE','MIC_DTA','DECLARACION_INGRESO','PODER_NOTARIAL','FACTURA_COMERCIAL','CERTIFICADO_ORIGEN','CARTA_PORTE'] },
+  { id:'recepcion', nombre:'Recepción General', icon:'🚪', desc:'Entrada y salida general',
+    docs:['GUIA_DESPACHO','ORDEN_COMPRA','FACTURA','NOTA_ENTREGA','RECIBO_MERCADERIA','CONTROL_ACCESO','PASE_SALIDA'] }
+];
+
+// ── ESTADO ──
+let db         = null;
+let session    = null;
+let deptos     = [];
+let deptoActivo= null;
+let curFiltro  = 'TODOS';
+let fotosDir   = { in: [], out: [] };
+let toastTimer = null;
+let turnoInicio= null;
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function emailToUid(email) {
+  return email.toLowerCase().replace(/[^a-z0-9]/g,'_').slice(0,40);
+}
+
+function genToken() {
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function getValidToken() {
+  if (!session) return null;
+  if (Date.now() > session.expiresAt) { doLogout(); return null; }
+  return session.localToken || 'local';
+}
+
+function saveSession() {
+  localStorage.setItem(K_SESSION, JSON.stringify(session));
+}
+
+function loadSession() {
+  try {
+    const s = localStorage.getItem(K_SESSION);
+    if (s) session = JSON.parse(s);
+  } catch(e) { session = null; }
+}
+
+function doLogout() {
+  session = null;
+  localStorage.removeItem(K_SESSION);
+  document.getElementById('app').style.display = 'none';
+  showLogin();
+}
+
+function toFsDoc(obj) {
+  const fields = {};
+  for (const [k,v] of Object.entries(obj)) {
+    if (v === null || v === undefined) continue;
+    if (typeof v === 'number')  fields[k] = { integerValue: String(Math.round(v)) };
+    else if (typeof v === 'boolean') fields[k] = { booleanValue: v };
+    else fields[k] = { stringValue: String(v) };
+  }
+  return { fields };
+}
+
+function parseFs(doc) {
+  const out = { _id: doc.name?.split('/').pop() };
+  for (const [k,v] of Object.entries(doc.fields || {})) {
+    if (v.stringValue  !== undefined) out[k] = v.stringValue;
+    else if (v.integerValue !== undefined) out[k] = parseInt(v.integerValue);
+    else if (v.booleanValue !== undefined) out[k] = v.booleanValue;
+  }
+  return out;
+}
+
+async function fsGet(path) {
+  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+async function fsList(path) {
+  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}&pageSize=500`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+async function fsSet(path, data) {
+  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}`;
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(toFsDoc(data))
+  });
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+async function fsPost(path, data) {
+  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(toFsDoc(data))
+  });
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+async function cargarPerfil(uid) {
+  try {
+    const doc = await fsGet(`usuarios/${uid}`);
+    const p = parseFs(doc);
+    return p.email ? p : null;
+  } catch(e) { return null; }
+}
+
+async function crearEmpresa(empresaNombre) {
+  const empresaId = 'emp_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const codigo = empresaId.slice(4,10).toUpperCase();
+  const data = { nombre: empresaNombre, codigo, creadoEn: Date.now(), activa: true };
+  await fsSet(`empresas/${empresaId}/perfil/datos`, data);
+  await fsSet(`codigoEmpresas/${codigo}`, { empresaId, empresaNombre: empresaNombre });
+  return { empresaId, codigo };
+}
+
+async function buscarEmpresaPorCodigo(codigo) {
+  try {
+    const doc = await fsGet(`codigoEmpresas/${codigo.toUpperCase().trim()}`);
+    const data = parseFs(doc);
+    return data.empresaId ? data : null;
+  } catch(e) { return null; }
+}
+
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('registerScreen').style.display = 'none';
+}
+
+function showRegister() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('registerScreen').style.display = 'flex';
+}
