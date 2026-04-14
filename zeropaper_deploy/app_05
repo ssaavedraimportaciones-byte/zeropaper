@@ -1,0 +1,206 @@
+function verFotoCaptura(dir, idx) {
+  const fotos = fotosDir[dir];
+  if (!fotos || !fotos[idx]) return;
+  const prev = document.getElementById('fotoViewerModal');
+  if (prev) prev.remove();
+  const total = fotos.length;
+  const f = fotos[idx];
+  const m = document.createElement('div');
+  m.id = 'fotoViewerModal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;';
+  m.innerHTML = `
+    <div style="width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="color:#22c55e;font-family:'Space Mono',monospace;font-size:13px;">📷 Foto ${idx+1} / ${total}</span>
+        <button onclick="document.getElementById('fotoViewerModal').remove()" style="background:none;border:1px solid #444;color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+      <img src="${f.data}" alt="Documento" style="width:100%;max-height:65vh;object-fit:contain;border-radius:12px;border:1px solid #333;">
+      ${total > 1 ? `
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button onclick="verFotoCaptura('${dir}',${Math.max(0,idx-1)})" ${idx===0?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===0?'#222':'#1a6b3a'};color:#fff;font-size:13px;cursor:${idx===0?'default':'pointer'};">← Anterior</button>
+        <button onclick="verFotoCaptura('${dir}',${Math.min(total-1,idx+1)})" ${idx===total-1?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===total-1?'#222':'#22c55e'};color:#fff;font-size:13px;cursor:${idx===total-1?'default':'pointer'};">Siguiente →</button>
+      </div>` : ''}
+    </div>`;
+  m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  document.body.appendChild(m);
+}
+
+function verFotoHistorial(fotosArr, idx) {
+  const prev = document.getElementById('fotoHistorialModal');
+  if (prev) prev.remove();
+  const total = fotosArr.length;
+  const src = fotosArr[idx];
+  const m = document.createElement('div');
+  m.id = 'fotoHistorialModal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;';
+  m.innerHTML = `
+    <div style="width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="color:var(--g2);font-family:var(--mono);font-size:12px;letter-spacing:1px;">📄 DOC ${idx+1} / ${total}</span>
+        <button onclick="document.getElementById('fotoHistorialModal').remove()" style="background:none;border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <img src="${src}" alt="Documento" style="width:100%;max-height:70vh;object-fit:contain;border-radius:12px;border:1px solid var(--brd);">
+      ${total > 1 ? `
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('fotoHistorialModal').remove();verFotoHistorial(${JSON.stringify(fotosArr)},${Math.max(0,idx-1)})" ${idx===0?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===0?'rgba(255,255,255,.05)':'var(--g)'};color:#fff;font-size:13px;cursor:${idx===0?'default':'pointer'};opacity:${idx===0?.4:1}">← Anterior</button>
+        <button onclick="document.getElementById('fotoHistorialModal').remove();verFotoHistorial(${JSON.stringify(fotosArr)},${Math.min(total-1,idx+1)})" ${idx===total-1?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===total-1?'rgba(255,255,255,.05)':'var(--g2)'};color:#fff;font-size:13px;cursor:${idx===total-1?'default':'pointer'};opacity:${idx===total-1?.4:1}">Siguiente →</button>
+      </div>` : ''}
+      <a href="${src}" download="documento_${idx+1}.jpg" style="text-align:center;padding:10px;border-radius:10px;border:1px solid var(--brd);color:var(--mu);font-size:12px;font-family:var(--mono);text-decoration:none;letter-spacing:1px;">⬇ DESCARGAR IMAGEN</a>
+    </div>`;
+  m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  document.body.appendChild(m);
+}
+
+async function runOCR(dir) {
+  const fotos = fotosDir[dir];
+  if (!fotos.length) return;
+  const btn = document.getElementById(`ocrBtn_${dir}`);
+  if (btn) { btn.innerHTML = '<span style="animation:pulse 1s infinite">🧠</span> <span>Analizando documento...</span>'; btn.disabled = true; }
+  try {
+    const res = await fetch('/api/ocr', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: fotos[0].data })
+    });
+    const data = await res.json();
+    if (data.error) {
+      showToast('⚠', 'OCR Error', data.error);
+      if (btn) { btn.innerHTML = '<span>🧠</span> <span>Reintentar lectura</span>'; btn.disabled = false; }
+      return;
+    }
+    const pre = dir === 'in' ? 'in' : 'out';
+    let filled = [];
+    if (data.patente) { const el = document.getElementById(pre+'Plate'); if(el){el.value=data.patente;el.style.borderColor='var(--g2)';} filled.push('Patente'); }
+    if (data.folio)   { const el = document.getElementById(pre+'Folio'); if(el){el.value=data.folio;el.style.borderColor='var(--g2)';} filled.push('Folio'); }
+    if (data.tipoDocumento) {
+      const docEl = document.getElementById(pre+'DocType');
+      if (docEl) {
+        const match = Array.from(docEl.options).find(o => o.value===data.tipoDocumento||o.value.includes(data.tipoDocumento));
+        if (match) { docEl.value=match.value; docEl.style.borderColor='var(--g2)'; filled.push('Tipo doc'); }
+      }
+    }
+    const resultEl = document.getElementById(`ocrResult_${dir}`);
+    if (resultEl) {
+      const confianza = data.confianza || {};
+      const confBadge = (val) => { const v=val||0; const color=v>=.8?'#4ade80':v>=.5?'#fbbf24':'#f87171'; const label=v>=.8?'Alta':v>=.5?'Media':'Baja'; return `<span style="color:${color};font-size:10px;font-weight:700">${label} ${Math.round(v*100)}%</span>`; };
+      resultEl.innerHTML = `<div style="background:rgba(82,183,136,.08);border:1px solid rgba(82,183,136,.25);border-radius:14px;padding:14px;">
+        <div style="font-weight:700;font-size:13px;color:var(--g2);margin-bottom:8px;">✨ IA detectó ${filled.length} campo${filled.length!==1?'s':''} ${data.escritoAMano?'<span style="font-size:10px;background:rgba(245,197,66,.15);color:#f5c542;padding:2px 8px;border-radius:6px;">✍ Escrito a mano</span>':''}</div>
+        ${data.patente?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(82,183,136,.1)"><span>Patente: <strong>${data.patente}</strong></span>${confBadge(confianza.patente)}</div>`:''}
+        ${data.folio?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(82,183,136,.1)"><span>Folio: <strong>${data.folio}</strong></span>${confBadge(confianza.folio)}</div>`:''}
+        ${data.tipoDocumento?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;"><span>Documento: <strong>${data.tipoDocumento.replace(/_/g,' ')}</strong></span>${confBadge(confianza.tipoDocumento)}</div>`:''}
+        ${data.resumen?`<div style="font-size:11px;color:var(--mu);margin-top:8px;padding-top:8px;border-top:1px solid rgba(82,183,136,.1)">${data.resumen}</div>`:''}
+      </div>`;
+      resultEl.style.display = 'block';
+    }
+    fotosDir[dir].ocrData = data;
+    showToast('🧠', 'Documento leído', filled.length ? `Detectado: ${filled.join(', ')}` : 'No se detectaron campos');
+    if (btn) { btn.innerHTML = '<span>✅</span> <span>Documento analizado</span>'; btn.disabled = false; }
+    registerLearning('doc_pattern', { docType: data.tipoDocumento, depto: deptoActivo?.id });
+  } catch(e) {
+    showToast('⚠', 'Sin conexión', 'OCR requiere internet');
+    if (btn) { btn.innerHTML = '<span>🧠</span> <span>Reintentar lectura</span>'; btn.disabled = false; }
+  }
+}
+
+async function registerLearning(type, data) {
+  if (!session?.empresaId) return;
+  try {
+    await fetch('/api/learn', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ empresa:session.empresaId, depto:deptoActivo?.id||'global', type, data }) });
+  } catch(e) {}
+}
+
+async function getSmartSuggestions() {
+  if (!session?.empresaId || !navigator.onLine) return null;
+  try {
+    const res = await fetch(`/api/learn?empresa=${session.empresaId}&depto=${deptoActivo?.id||''}`);
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+function addFoto(ev, dir) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e2 => { fotosDir[dir].push({ data: e2.target.result }); renderFotosZone(dir); };
+  reader.readAsDataURL(file);
+  ev.target.value = '';
+}
+
+function removeFoto(dir, idx) {
+  fotosDir[dir].splice(idx, 1);
+  renderFotosZone(dir);
+}
+
+async function confirmarOp(dir) {
+  if (!session) { doLogout(); return; }
+  const isIn  = dir === 'in';
+  const pre   = isIn ? 'in' : 'out';
+  const plate = document.getElementById(pre+'Plate').value.trim().toUpperCase();
+  const folio = document.getElementById(pre+'Folio').value.trim();
+  const docT  = document.getElementById(pre+'DocType').value;
+  const obs   = document.getElementById(pre+'Obs').value.trim();
+
+  if (!plate) { showToast('⚠','Falta patente','Ingresa la patente del vehículo'); return; }
+
+  const btn = document.getElementById(isIn?'inBtn':'outBtn');
+  btn.textContent = '⏳ Guardando...';
+  btn.disabled = true;
+
+  if (folio) {
+    const opsPrevias = await getOpsEmpresa();
+    const dup = opsPrevias.find(o => o.folio && o.folio === folio);
+    if (dup) {
+      const ok = confirm(`⚠ Folio "${folio}" ya fue registrado\n${dup.plate} · ${(dup.docType||'').replace(/_/g,' ')} · ${dup.fecha}\n¿Continuar de todos modos?`);
+      if (!ok) { btn.textContent = isIn ? '✓ Confirmar Ingreso' : '✓ Confirmar Salida'; btn.disabled = false; return; }
+    }
+  }
+
+  const now = new Date();
+  const op = {
+    id: 'op_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
+    tipo: isIn ? 'INGRESO' : 'SALIDA',
+    plate, folio, docType: docT, obs,
+    depto: deptoActivo?.id || '',
+    deptoNombre: deptoActivo?.nombre || '',
+    fecha: now.toLocaleDateString('es-CL'),
+    hora:  now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),
+    ts: now.getTime(),
+    uid: session.uid,
+    empresaId:    session.empresaId,
+    empresaNombre:session.empresaNombre,
+    operador:     session.nombre,
+    fotoId: null, fotoIds: [],
+    syncStatus: 'pending',
+    estado: 'PENDIENTE',
+    logs: [{ accion:'CREADO', usuario:session.nombre, ts:now.getTime(), comentario:'' }]
+  };
+
+  const fotos = fotosDir[dir] || [];
+  if (fotos.length > 0) {
+    op.fotoIds = [];
+    for (let i = 0; i < fotos.length; i++) {
+      const fId = 'foto_' + op.id + '_' + i;
+      op.fotoIds.push(fId);
+      await dbPut('fotos', { id: fId, data: fotos[i].data, ts: op.ts });
+    }
+    op.fotoId = op.fotoIds[0];
+  }
+
+  await dbPut('ops', op);
+  sincronizarFirebase(op);
+
+  btn.textContent = isIn ? '✓ Confirmar Ingreso' : '✓ Confirmar Salida';
+  btn.disabled = false;
+  fotosDir[dir] = [];
+
+  showToast(isIn?'📥':'📤', isIn?'Ingreso registrado':'Salida registrada', `${plate} · ${docT.replace(/_/g,' ')}`);
+  registerLearning('plate_frequency', { plate });
+  registerLearning('doc_pattern', { docType: docT, depto: deptoActivo?.id });
+
+  if (isIn && session?.empresaId) {
+    const qrUrl = `${location.origin}/seguimiento?e=${session.empresaId}&p=${encodeURIComponent(plate)}`;
+    setTimeout(() => showQRModal(plate, qrUrl), 700);
+  } else {
+    setTimeout(() => goTo('home'), 600);
+  }
+}
