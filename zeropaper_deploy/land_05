@@ -1,0 +1,142 @@
+  <div class="zai-chips" id="zaiChips"></div>
+  <div class="zai-inp-area">
+    <input id="zai-input" placeholder="Escribe tu pregunta..." onkeydown="if(event.key==='Enter')zaiSend()">
+    <button id="zai-send" onclick="zaiSend()">→</button>
+  </div>
+</div>
+
+<script>
+const ZAI_KB = [
+  {k:['hola','buenas','buenos','hey','saludos','buen día','buen dia'],r:'¡Hola! Soy ZeroAI, el asistente de ZeroPaper 🤖\n\nPuedo responder preguntas sobre la plataforma: cómo funciona, cómo buscar documentos, qué significa cada término, cómo se implementa y más. ¿En qué te ayudo?'},
+  {k:['que es','qué es','zeropaper','plataforma','sistema'],r:'ZeroPaper es una plataforma de gestión documental portuaria 100% digital. Permite registrar ingresos y salidas desde el celular en 30 segundos, fotografiar documentos físicos, buscar cualquier registro por patente o empresa, y dar acceso a clientes para ver su carga en tiempo real.\n\nFunciona sin internet y sincroniza automáticamente con la nube cuando vuelve la señal.'},
+  {k:['precio','costo','cuanto','cuánto','valor','mensual','tarifa','pago','plan'],r:'El valor de implementación se define según el tamaño de tu operación, número de departamentos y funcionalidades requeridas. Tenemos 3 planes:\n\n• **Piloto**: 30 días gratis para probar\n• **Profesional**: implementación + mensualidad según uso\n• **Enterprise**: multi-empresa, SLA garantizado, a convenir\n\nPara una cotización personalizada escribe a contacto@zeropaper.cl o al WhatsApp +56 9 9585 4721.'},
+  {k:['implementacion','implementación','cuanto demora','cuánto demora','tiempo instalar','cuando funciona','cuándo funciona'],r:'La implementación toma entre 48 y 72 horas. No requiere instalar software ni configurar servidores. Los operadores se capacitan en menos de 30 minutos. El día 3 ya están registrando operaciones en producción.'},
+  {k:['documento','documentos','eir','intercheck','booking','dus','dam','aforo','levante','conocimiento embarque','guia despacho','guía despacho'],r:'ZeroPaper maneja todos los documentos portuarios estándar:\n\nOperaciones: EIR, Intercheck, Booking, Gate IN/OUT, Damage Report\nAduana: DUS, DAM, Aforo, Levante, MIC/DTA, Carta Porte\nCabotaje: Conocimiento de Embarque, Guía Cabotaje, Manifiesto\nRecepción: Guía Despacho, Orden Compra, Pase Salida\n\nTodos escaneables y clasificados automáticamente.'},
+  {k:['internet','sin internet','offline','sin conexion','sin señal','funciona sin'],r:'Sí, funciona 100% sin internet gracias a IndexedDB local. Los datos se guardan en el dispositivo y se sincronizan automáticamente cuando vuelve la conexión. Ideal para zonas portuarias con señal inestable.'},
+  {k:['seguridad','seguro','datos','privacidad','iso','certificacion','cifrado','encriptacion'],r:'Seguridad nivel bancario:\n• Cifrado AES-256 en tránsito y almacenamiento\n• Autenticación por roles (cada usuario ve solo lo suyo)\n• Backups automáticos diarios en múltiples regiones\n• Cumplimiento ISO 27001\n• Infraestructura Google Cloud con 99.9% uptime'},
+  {k:['firebase','nube','cloud','sincronizacion','sincronización','tiempo real'],r:'Usamos Firebase Firestore de Google — la misma infraestructura que Spotify y Duolingo. La sincronización es en tiempo real: cuando un operador registra una operación, todos los demás la ven al instante, sin refrescar.'},
+  {k:['inteligencia artificial','ia','ai','machine learning','predicción','prediccion','mantenimiento predictivo','analytics','analitica','análitica'],r:'ZeroPaper incluye 6 capacidades de IA:\n\n🤖 Mantenimiento Predictivo: detecta patrones de fallo antes de que ocurran\n📊 Analytics Portuario: identifica cuellos de botella y optimiza flujos\n⚡ Optimización de Rutas: trayectos óptimos para reducir tiempos\n🔍 Búsqueda Semántica: entiende contexto, no solo palabras clave\n⚠️ Detección de Anomalías: flags en tiempo real de operaciones inusuales\n💬 Asistente 24/7: responde consultas sobre cualquier documento u operación'},
+  {k:['departamento','departamentos','areas','operaciones','finanzas','logistica','rrhh','seguridad','aduana','comercial','tecnologia','mantenimiento','gerencia'],r:'ZeroPaper viene con 9 departamentos pre-configurados:\n\n🏭 Operaciones Portuarias · 💰 Finanzas · 🚛 Logística\n👥 RRHH · 🔒 Seguridad · 🌍 Aduana\n📢 Comercial · 🖥 Tecnología · 🔧 Mantenimiento\n📊 Gerencia\n\nCada uno con acceso diferenciado por rol. También puedes crear los tuyos en menos de 30 segundos.'},
+  {k:['sap','erp','excel','exportar','exportacion','exportación','csv','json','integracion','integración','api'],r:'Sí, integramos con cualquier ERP o sistema contable:\n• Exportación CSV con 1 clic (abre directo en Excel)\n• Exportación JSON para sistemas como SAP\n• API REST disponible en plan Enterprise\n• Webhooks para notificaciones automáticas\n\nTus datos son tuyos siempre — sin lock-in.'},
+  {k:['roi','retorno','ahorro','ahorra','ahorrar','cuanto ahorro','cuánto ahorro','beneficio','rentable'],r:'En promedio nuestros clientes logran:\n\n• 340% ROI en el primer año\n• 80% reducción en costos de papelería\n• 70% menos horas administrativas\n• Payback period menor a 6 meses\n\nEl ahorro viene de eliminar papel, impresoras, archivadores, horas de búsqueda manual y errores de transcripción.'},
+  {k:['pwa','instalar','app store','play store','celular','movil','móvil','android','iphone','ios'],r:'ZeroPaper es una PWA (Progressive Web App). Se instala desde el navegador directamente en cualquier celular — Android o iPhone — sin pasar por App Store ni Play Store. Sin actualizaciones manuales, sin almacenamiento adicional.'},
+  {k:['turno','turnos','cambio turno','traspaso'],r:'El cierre de turno es automático. Al terminar el turno, el sistema genera un resumen de todas las operaciones y lo traspasa al turno siguiente con historial completo. Sin cuadernos, sin Excel, sin llamadas entre turnos.'},
+  {k:['cliente','clientes','seguimiento','portal','acceso cliente','rastreo','carga'],r:'Cada cliente tiene su propio portal de seguimiento en tiempo real. Pueden ver el estado de su carga sin llamar ni escribir. Esto reduce las consultas telefónicas en más del 80% y mejora la percepción de servicio.'},
+  {k:['capacitacion','capacitación','entrenamiento','aprender','como usar','cómo usar','dificil','difícil','fácil'],r:'La capacitación es mínima. Los operadores aprenden la app en menos de 30 minutos. La interfaz está diseñada para ser usada con guantes, en condiciones de luz variable, con una sola mano. Sin manuales, sin cursos.'},
+  {k:['competencia','competidor','alternativa','otros sistemas','tos','navis','portbase'],r:'A diferencia de sistemas TOS tradicionales que cuestan $50K-200K+ en implementación, ZeroPaper cuesta una fracción con la misma funcionalidad. Más ágil, más fácil de usar, adaptado al mercado portuario chileno.'},
+  {k:['soporte','ayuda','problema','error','falla','contacto'],r:'El soporte está incluido en todos los planes:\n• Plan Piloto: soporte por email\n• Plan Profesional: respuesta en menos de 12 horas\n• Plan Enterprise: SLA garantizado 99.9%, soporte dedicado\n\nTambién puedes escribirnos directo al WhatsApp +56 9 9585 4721'},
+  {k:['multi empresa','multiempresa','varias empresas','franquicia','holding'],r:'El plan Enterprise soporta múltiples empresas o sedes bajo una misma cuenta. Con panel de administración centralizado, reportes consolidados y acceso diferenciado por empresa y departamento.'},
+  {k:['gracias','muchas gracias','excelente','perfecto','ok','listo'],r:'Con gusto. Si quieres coordinar una demo personalizada, escríbenos al WhatsApp +56 9 9585 4721 o a contacto@zeropaper.cl. ¡Que tengas un excelente día! 🚀'},
+  {k:['demo','demostracion','demostración','ver en vivo','prueba','probar'],r:'Coordinamos demos personalizadas — remotas o presenciales — mostrando la app en vivo con datos de operación reales. Sin compromiso. Escríbenos al WhatsApp +56 9 9585 4721.'},
+  {k:['ocr','reconocimiento','escaneo','leer documento','foto documento','leer automatico'],r:'ZeroPaper incluye OCR (lectura automática de documentos). La cámara del celular "lee" el texto del documento físico y extrae los datos sin que el operador tenga que escribirlos. Elimina errores de transcripción.'},
+  {k:['backup','respaldo','perder datos','perdida','recuperar','se puede perder'],r:'Los datos nunca se pierden. Los registros se replican en múltiples servidores de Google Cloud en diferentes continentes. Si se rompe el celular, si hay un corte de luz, si se borra la app — todos los datos siguen en la nube y son accesibles desde cualquier otro dispositivo en segundos.'},
+  {k:['buscar','encontrar','como busco','como encuentro','busqueda','patente','empresa','folio','nombre'],r:'En ZeroPaper puedes buscar cualquier registro desde la sección Historial. El buscador acepta: patente del vehículo, nombre de empresa, número de folio, tipo de documento, nombre del operador, fecha, o cualquier otro dato del registro.\n\nEjemplo: escribes "HJKL-72" → aparecen todas las operaciones con esa patente, con sus fotos adjuntas. En menos de 1 segundo.'},
+  {k:['visualizar','ver documento','ver foto','imagen documento','abrir documento'],r:'Sí. Cada registro en el historial incluye las fotos de los documentos físicos tomadas en el momento del registro. Haces clic en el registro → ves todos los datos + las fotos en pantalla completa. También puedes navegar entre múltiples fotos del mismo documento.'},
+  {k:['nube','cloud','donde se guardan','donde guarda','almacenamiento'],r:'ZeroPaper guarda los datos en Firebase, la plataforma de nube de Google. Los datos se replican en múltiples servidores en diferentes partes del mundo. Son accesibles desde cualquier dispositivo con conexión, protegidos con el mismo nivel de seguridad que usan los bancos.'},
+  {k:['firebase','google cloud','infraestructura','servidor'],r:'Firebase es la plataforma de datos en tiempo real de Google. Es la misma que usan aplicaciones como Duolingo, NY Times App y miles de empresas en el mundo. Garantiza disponibilidad del 99.9%, sincronización en menos de 1 segundo y backups automáticos.'},
+  {k:['termino','terminos','glosario','eir','mictda','dam','dus','intercheck','booking','conocimiento embarque'],r:'Puedo explicarte cualquier término. En la sección "DICCIONARIO" de esta página encontrarás explicaciones simples de: EIR, DUS, DAM, MIC/DTA, Intercheck, Booking, Firebase, PWA, OCR, SLA, API, Trazabilidad y más. ¿Sobre cuál quieres saber?'},
+  {k:['papel','fotocopia','archivo fisico','carpetas','cuadernos'],r:'ZeroPaper fue creado exactamente para empresas que operan con papel, cuadernos, fotocopias y Excel. No requiere que ya tengas un sistema digital. Partes desde cero y en 72 horas ya están los operadores registrando digitalmente — sin eliminar el papel de golpe si no quieres.'},
+  {k:['cuanto tiempo','rapido','demora','implementacion rapida','72 horas','72h'],r:'La implementación toma entre 48 y 72 horas. No requiere instalar software, configurar servidores ni contratar IT. Los operadores aprenden a usar la app en menos de 30 minutos. Al tercer día ya están registrando operaciones reales en producción.'},
+];
+
+const ZAI_FALLBACK = [
+  'Esa es una buena pregunta. Para darte la respuesta más precisa, te recomiendo consultarla directamente con nuestro equipo técnico. Puedes escribir al WhatsApp +56 9 9585 4721 o a contacto@zeropaper.cl.',
+  'No tengo esa información específica disponible ahora, pero nuestro equipo puede responderla en menos de 2 horas. ¿Quieres que te dé el contacto directo?',
+  'Para esa consulta específica es mejor que hables con un especialista de ZeroPaper. Escribe al +56 9 9585 4721 — te atienden de lunes a sábado hasta las 20h.',
+];
+
+const ZAI_CHIPS_INIT = ['¿Qué es ZeroPaper?','¿Cómo busco un documento?','¿Funciona sin internet?','¿Cuánto tarda implementar?','Explica la nube'];
+
+let zaiOpen = false;
+
+function zaiToggle() {
+  zaiOpen = !zaiOpen;
+  const box = document.getElementById('zai-box');
+  if (zaiOpen) {
+    box.classList.add('open');
+    document.getElementById('zaiBadge').style.display='none';
+    if (!document.getElementById('zai-msgs').children.length) zaiInit();
+    setTimeout(()=>document.getElementById('zai-input').focus(), 200);
+  } else {
+    box.classList.remove('open');
+  }
+}
+
+function zaiInit() {
+  zaiAddMsg('bot','¡Hola! Soy **ZeroAI** 🤖, el asistente de ZeroPaper.\n\nPuedo ayudarte a entender cómo funciona la plataforma, cómo buscar documentos, qué significa cada término técnico, cómo se implementa y mucho más. ¿Por dónde empezamos?');
+  zaiChips(ZAI_CHIPS_INIT);
+}
+
+function zaiAddMsg(type, text) {
+  const msgs = document.getElementById('zai-msgs');
+  const d = document.createElement('div');
+  d.className = 'zai-msg ' + type;
+  d.innerHTML = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+  return d;
+}
+
+function zaiTyping() {
+  const msgs = document.getElementById('zai-msgs');
+  const d = document.createElement('div');
+  d.className = 'zai-typing';
+  d.id = 'zaiTyping';
+  d.innerHTML = '<div class="zai-dot"></div><div class="zai-dot"></div><div class="zai-dot"></div>';
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function zaiRemoveTyping() {
+  const t = document.getElementById('zaiTyping');
+  if (t) t.remove();
+}
+
+function zaiChips(list) {
+  const c = document.getElementById('zaiChips');
+  c.innerHTML = '';
+  list.forEach(chip => {
+    const s = document.createElement('span');
+    s.className = 'zai-chip';
+    s.textContent = chip;
+    s.onclick = () => { document.getElementById('zai-input').value = chip; zaiSend(); };
+    c.appendChild(s);
+  });
+}
+
+function zaiMatch(q) {
+  const lower = q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  for (const item of ZAI_KB) {
+    if (item.k.some(k => lower.includes(k.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))) {
+      return item.r;
+    }
+  }
+  return null;
+}
+
+function zaiSend() {
+  const input = document.getElementById('zai-input');
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = '';
+  document.getElementById('zaiChips').innerHTML = '';
+  zaiAddMsg('user', q);
+  zaiTyping();
+  const delay = 800 + Math.random() * 700;
+  setTimeout(() => {
+    zaiRemoveTyping();
+    const ans = zaiMatch(q);
+    if (ans) {
+      zaiAddMsg('bot', ans);
+      const followUps = ['¿Algo más?','Ver precios','¿Cómo implementar?','Solicitar demo'];
+      zaiChips(followUps);
+    } else {
+      zaiAddMsg('bot', ZAI_FALLBACK[Math.floor(Math.random()*ZAI_FALLBACK.length)]);
+      zaiChips(['WhatsApp directo','Ver precios','¿Funciona sin internet?']);
+    }
+  }, delay);
+}
+</script>
+
+</body>
+</html>

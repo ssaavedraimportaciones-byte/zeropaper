@@ -1,0 +1,279 @@
+      <div class="feat-why">Nunca más un "el documento se perdió" — siempre hay respaldo fotográfico.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">03</div>
+      <div class="feat-icon">🔍</div>
+      <div class="feat-title">Búsqueda instantánea por cualquier dato</div>
+      <div class="feat-desc">Busca por patente, nombre de empresa, número de folio, tipo de documento, nombre del operador, fecha o cualquier otro dato. El resultado aparece en menos de 1 segundo, sin importar si fue registrado hace un año.</div>
+      <div class="feat-why">Lo que antes tomaba 30 minutos buscando en archivos, ahora toma 3 segundos.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">04</div>
+      <div class="feat-icon">🏢</div>
+      <div class="feat-title">Portal de seguimiento para tus clientes</div>
+      <div class="feat-desc">Cada cliente tiene acceso a un portal propio donde puede ver el estado de su carga en tiempo real, sin necesidad de llamar ni escribir. Tú te concentras en operar; ellos tienen la información que necesitan.</div>
+      <div class="feat-why">Reduce las llamadas de consulta en más del 80% — menos interrupciones, más foco.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">05</div>
+      <div class="feat-icon">☁️</div>
+      <div class="feat-title">Sincronización automática en la nube</div>
+      <div class="feat-desc">Todos los operadores de todos los turnos ven exactamente los mismos datos en tiempo real. Si el turno de noche registra algo, el turno de día lo ve apenas llega. No existen "versiones distintas" ni información desactualizada.</div>
+      <div class="feat-why">Un solo sistema compartido = cero confusión entre turnos.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">06</div>
+      <div class="feat-icon">📴</div>
+      <div class="feat-title">Funciona sin internet</div>
+      <div class="feat-desc">Si el WiFi se cae o no hay señal de datos, la aplicación sigue funcionando. Los registros se guardan en el dispositivo y se sincronizan automáticamente en cuanto vuelve la conexión. Ideal para zonas con señal inestable.</div>
+      <div class="feat-why">Cero excusas: "se cayó internet" ya no paraliza la operación.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">07</div>
+      <div class="feat-icon">📊</div>
+      <div class="feat-title">Exportación a Excel y sistemas contables</div>
+      <div class="feat-desc">Con un solo clic, exportas todos los registros en formato CSV (hoja de cálculo compatible con Excel, SAP u otros sistemas). Tus datos son siempre tuyos. Sin depender de nadie para acceder a tu propia información.</div>
+      <div class="feat-why">Integración natural con los sistemas que ya usas — sin cambiar lo que funciona.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">08</div>
+      <div class="feat-icon">🖥</div>
+      <div class="feat-title">Panel de administración central</div>
+      <div class="feat-desc">El jefe o gerente tiene acceso a un panel web con estadísticas en tiempo real: cuántas operaciones se hicieron, quién las hizo, qué documentos se procesaron, cuánto tiempo tomaron. Todo visible sin necesidad de preguntar.</div>
+      <div class="feat-why">Gerencia ve todo sin interrumpir a nadie — datos en tiempo real, siempre.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">09</div>
+      <div class="feat-icon">📲</div>
+      <div class="feat-title">Se instala como app, sin App Store</div>
+      <div class="feat-desc">ZeroPaper es lo que se llama una PWA (Aplicación Web Progresiva). En palabras simples: el operador abre el link desde su celular y elige "Agregar a la pantalla de inicio". Queda instalada como cualquier app, sin trámites en tiendas digitales.</div>
+      <div class="feat-why">Sin IT, sin administrador, sin permisos especiales — cualquiera puede instalarla en 10 segundos.</div>
+    </div>
+  </div>
+</section>
+
+<!-- IA PORTUARIA -->
+<section id="ia" class="ia-section">
+  <div class="section-label">INTELIGENCIA ARTIFICIAL INTEGRADA</div>
+  <h2 class="section-title">EL SISTEMA<br>QUE APRENDE</h2>
+  <p class="section-sub">ZeroPaper incluye capacidades de IA que analizan tus operaciones, detectan problemas y optimizan procesos — todo en segundo plano, sin que debas hacer nada extra. <em style="color:var(--mu);font-size:14px">(¿Tienes preguntas? Usa el asistente ZeroAI en la esquina inferior derecha.)</em></p>
+  <div class="ia-grid">
+    <div class="ia-card">
+      <div class="ia-icon">🤖</div>
+      <div class="ia-title">Predictive Maintenance</div>
+      <div class="ia-desc">Detecta fallos en equipos antes de ocurrir. Reduce downtime no planificado en 40%.</div>
+    </div>
+    <div class="ia-card">
+      <div class="ia-icon">📊</div>
+      <div class="ia-title">Analytics Inteligente</div>
+      <div class="ia-desc">Identifica patrones en movimiento de carga. Optimiza flujos portuarios automáticamente.</div>
+    </div>
+    <div class="ia-card">
+      <div class="ia-icon">⚡</div>
+      <div class="ia-title">Optimización de Rutas</div>
+      <div class="ia-desc">Calcula trayectos óptimos para camiones. Reduce consumo de combustible en 25%.</div>
+    </div>
+    <div class="ia-card">
+      <div class="ia-icon">🔍</div>
+      <div class="ia-title">Búsqueda Semántica</div>
+      <div class="ia-desc">Entiende contexto en documentos. Encuentra información 10x más rápido que búsqueda manual.</div>
+    </div>
+    <div class="ia-card">
+      <div class="ia-icon">⚠️</div>
+      <div class="ia-title">Detección de Anomalías</div>
+      <div class="ia-desc">Flags automáticos de riesgos. Operaciones fuera de parámetros normales detectadas en tiempo real.</div>
+    </div>
+    <div class="ia-card">
+      <div class="ia-icon">💬</div>
+      <div class="ia-title">Asistente 24/7</div>
+      <div class="ia-desc">Chatbot responde preguntas sobre operaciones. Integrado con historial completo de carga.</div>
+    </div>
+  </div>
+</section>
+
+<!-- DEPTOS -->
+<section id="deptos">
+  <div class="section-label">DEPARTAMENTOS</div>
+  <h2 class="section-title">NUEVE ÁREAS,<br>UN SISTEMA</h2>
+  <p class="section-sub">Pre-configurados para la operación portuaria. Cada departamento con acceso diferenciado y roles específicos.</p>
+  <div class="deptos-grid">
+    <div class="depto-card">
+      <div class="depto-emoji">🏭</div>
+      <div class="depto-name">Operaciones Portuarias</div>
+      <div class="depto-desc">CABOTAJE · CONTENEDORES</div>
+      <div class="depto-docs">
+        <span class="doc-chip">CONOCIMIENTO EMBARQUE</span>
+        <span class="doc-chip">INTERCHECK</span>
+        <span class="doc-chip">GATE IN / OUT</span>
+      </div>
+    </div>
+    <div class="depto-card">
+      <div class="depto-emoji">💰</div>
+      <div class="depto-name">Finanzas</div>
+      <div class="depto-desc">FACTURACIÓN · PAGOS</div>
+      <div class="depto-docs">
+        <span class="doc-chip">FACTURA</span>
+        <span class="doc-chip">ORDEN PAGO</span>
+        <span class="doc-chip">PRESUPUESTO</span>
+      </div>
+    </div>
+    <div class="depto-card">
+      <div class="depto-emoji">🚛</div>
+      <div class="depto-name">Logística</div>
+      <div class="depto-desc">MANIFIESTOS · RUTAS</div>
+      <div class="depto-docs">
+        <span class="doc-chip">MANIFIESTO</span>
+        <span class="doc-chip">RUTA ASIGNADA</span>
+        <span class="doc-chip">SEGUIMIENTO GPS</span>
+      </div>
+    </div>
+    <div class="depto-card">
+      <div class="depto-emoji">👥</div>
+      <div class="depto-name">RRHH</div>
+      <div class="depto-desc">TURNOS · CAPACITACIÓN</div>
+      <div class="depto-docs">
+        <span class="doc-chip">ASIGNACIÓN TURNO</span>
+        <span class="doc-chip">CERTIFICACIONES</span>
+        <span class="doc-chip">CAPACITACIÓN</span>
+      </div>
+    </div>
+    <div class="depto-card">
+      <div class="depto-emoji">🔒</div>
+      <div class="depto-name">Seguridad</div>
+      <div class="depto-desc">ACCESO · INCIDENTES</div>
+      <div class="depto-docs">
+        <span class="doc-chip">CONTROL ACCESO</span>
+        <span class="doc-chip">REPORTE INCIDENTE</span>
+        <span class="doc-chip">AUDITORÍA</span>
+      </div>
+    </div>
+    <div class="depto-card">
+      <div class="depto-emoji">🌍</div>
+      <div class="depto-name">Aduana</div>
+      <div class="depto-desc">DUS · DAM · DESPACHO</div>
+      <div class="depto-docs">
+        <span class="doc-chip">DUS</span>
+        <span class="doc-chip">DAM</span>
+        <span class="doc-chip">LEVANTE</span>
+      </div>
+    </div>
+    <div class="depto-card">
+      <div class="depto-emoji">📢</div>
+      <div class="depto-name">Comercial</div>
+      <div class="depto-desc">CLIENTES · COTIZACIONES</div>
+      <div class="depto-docs">
+        <span class="doc-chip">COTIZACIÓN</span>
+        <span class="doc-chip">CONTRATO SERVICIO</span>
+        <span class="doc-chip">CLIENTE PORTAL</span>
+      </div>
+    </div>
+    <div class="depto-card">
+      <div class="depto-emoji">🖥</div>
+      <div class="depto-name">Tecnología</div>
+      <div class="depto-desc">INTEGRACIÓN · SOPORTE</div>
+      <div class="depto-docs">
+        <span class="doc-chip">API REST</span>
+        <span class="doc-chip">INTEGRACIONES</span>
+        <span class="doc-chip">LOGS TÉCNICOS</span>
+      </div>
+    </div>
+    <div class="depto-card">
+      <div class="depto-emoji">🔧</div>
+      <div class="depto-name">Mantenimiento</div>
+      <div class="depto-desc">EQUIPOS · PREVENTIVO</div>
+      <div class="depto-docs">
+        <span class="doc-chip">ORDEN TRABAJO</span>
+        <span class="doc-chip">BITÁCORA EQUIPO</span>
+        <span class="doc-chip">CALIBRACIÓN</span>
+      </div>
+    </div>
+    <div class="depto-card">
+      <div class="depto-emoji">📊</div>
+      <div class="depto-name">Gerencia</div>
+      <div class="depto-desc">REPORTES · KPIs</div>
+      <div class="depto-docs">
+        <span class="doc-chip">DASHBOARD EJECUTIVO</span>
+        <span class="doc-chip">REPORTES MENSUALES</span>
+        <span class="doc-chip">AUDITORÍAS</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CÓMO FUNCIONA -->
+<section id="como" style="background:var(--bg2)">
+  <div class="section-label">PROCESO</div>
+  <h2 class="section-title">EN PRODUCCIÓN<br>EN 5 PASOS</h2>
+  <p class="section-sub">Sin instalación de software. Sin configuración de servidores. Sin IT.</p>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="how-num">1</div>
+      <div class="how-title">Abre la app</div>
+      <div class="how-desc">Desde cualquier celular en zeropaper.cl — sin instalar nada.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">2</div>
+      <div class="how-title">Configura tu empresa</div>
+      <div class="how-desc">Nombre, operador y selecciona tu departamento activo.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">3</div>
+      <div class="how-title">Registra una operación</div>
+      <div class="how-desc">Patente + documento + foto → guardar. 30 segundos.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">4</div>
+      <div class="how-title">Sincroniza automático</div>
+      <div class="how-desc">Firebase guarda y distribuye a todos los turnos en tiempo real.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">5</div>
+      <div class="how-title">Cliente ve su carga</div>
+      <div class="how-desc">Panel de seguimiento en tiempo real sin llamadas.</div>
+    </div>
+  </div>
+</section>
+
+<!-- TERMINAL DEMO -->
+<section>
+  <div class="section-label">DEMO EN VIVO</div>
+  <h2 class="section-title">ASÍ SE VE<br>UNA OPERACIÓN</h2>
+  <div style="max-width:640px">
+    <div class="terminal">
+      <div class="term-bar">
+        <div class="term-dot" style="background:#ef4444"></div>
+        <div class="term-dot" style="background:#eab308"></div>
+        <div class="term-dot" style="background:#22c55e"></div>
+        <span style="font-size:10px;color:#374151;margin-left:10px">zeropaper_app.html — operación registrada</span>
+      </div>
+      <div class="term-body">
+        <div class="term-line term-comment" style="animation-delay:.2s">// INGRESO · Guarda Almacén · 14:32</div>
+        <div class="term-line" style="animation-delay:.5s"><span class="term-key">patente</span>   : <span class="term-val">"HJKL-72"</span></div>
+        <div class="term-line" style="animation-delay:.8s"><span class="term-key">documento</span> : <span class="term-val">"CONOCIMIENTO_EMBARQUE"</span></div>
+        <div class="term-line" style="animation-delay:1.1s"><span class="term-key">folio</span>     : <span class="term-val">"CBT-2025-4821"</span></div>
+        <div class="term-line" style="animation-delay:1.4s"><span class="term-key">foto</span>      : <span class="term-val">"foto_op_1741234567.jpg"</span></div>
+        <div class="term-line" style="animation-delay:1.7s"><span class="term-key">depto</span>     : <span class="term-val">"guarda_almacen"</span></div>
+        <div class="term-line" style="animation-delay:2.0s"><span class="term-key">sync</span>      : <span class="term-val">"pending"</span></div>
+        <div class="term-line" style="animation-delay:2.5s">&nbsp;</div>
+        <div class="term-line" style="animation-delay:2.8s"><span class="term-comment">// Guardando en IndexedDB...</span></div>
+        <div class="term-line" style="animation-delay:3.2s"><span class="term-comment">// Sincronizando con Firebase...</span></div>
+        <div class="term-line term-ok" style="animation-delay:3.8s">✓ OPERACIÓN REGISTRADA EN 0.3s · SYNC: OK</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECNOLOGÍA EXPLICADA -->
+<section id="tecnologia" class="tech-section">
+  <div class="section-label">TECNOLOGÍA EN PALABRAS SIMPLES</div>
+  <h2 class="section-title">SIN JERGA<br>TÉCNICA</h2>
+  <p class="section-sub">Explicamos cada tecnología que usa ZeroPaper de forma que cualquier persona pueda entenderla — sin ser ingeniero.</p>
+  <div class="tech-grid">
+    <div class="tech-card">
+      <div class="tech-tag">ALMACENAMIENTO</div>
+      <div class="tech-term">Firebase (La Nube de Google)</div>
+      <div class="tech-def">Firebase es el sistema donde ZeroPaper guarda toda la información de tu empresa. Está operado por Google — la misma empresa que maneja Gmail, Google Drive y YouTube — y tiene centros de datos en múltiples continentes.</div>
+      <div class="tech-analogy">En palabras simples: es como tener tu archivero digital en la bodega más segura de Google. Si algo pasa con tu celular o computador, los datos siguen ahí, intactos.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-tag">APLICACIÓN</div>

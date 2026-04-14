@@ -1,0 +1,201 @@
+      <div class="testimonio-avatar">📦</div>
+      <div class="testimonio-quote">"Sin sincronización manual. Los datos llegan solos a SAP. Menos errores de transcripción, más velocidad en despachos. Implementación invisible para el cliente."</div>
+      <div class="testimonio-author">María José González</div>
+      <div class="testimonio-role">Gerente General, Almacén Logístico San Antonio</div>
+    </div>
+    <div class="testimonio-card">
+      <div class="testimonio-avatar">✈️</div>
+      <div class="testimonio-quote">"Trazabilidad completa en auditorías. Cumplimiento ISO 27001 garantizado. Las inspecciones aduanales ahora toman la mitad del tiempo."</div>
+      <div class="testimonio-author">Carlos Mendoza</div>
+      <div class="testimonio-role">Jefe Control Aduanal, Zona Franca Antofagasta</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACTO DIRECTO -->
+<section class="qr-section">
+  <div class="section-label" style="justify-content:center">CONTACTO DIRECTO</div>
+  <h2 class="qr-title">CONVERSEMOS HOY</h2>
+  <p class="qr-subtitle">Coordinamos una demostración personalizada para tu empresa — sin costo, sin compromiso</p>
+  <div class="qr-container">
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=https://wa.me/56995854721?text=Hola%21%20Me%20interesa%20conocer%20m%C3%A1s%20sobre%20ZeroPaper%20para%20mi%20empresa." alt="QR WhatsApp ZeroPaper" class="qr-code">
+    <div class="qr-text">
+      📱 <strong>Escanea con tu celular</strong><br>
+      → Se abre WhatsApp directo<br>
+      → Respondemos en menos de 2 horas<br>
+      → Coordinamos demo presencial o remota<br><br>
+      ¿Prefiere llamar o escribir? <a href="https://wa.me/56995854721?text=Hola%21%20Me%20interesa%20conocer%20m%C3%A1s%20sobre%20ZeroPaper%20para%20mi%20empresa." class="qr-link">WhatsApp directo →</a>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARATIVA MERCADO -->
+<section style="background:var(--bg2)">
+  <div class="section-label">CONTEXTO DE MERCADO</div>
+  <h2 class="section-title">¿CUÁNTO CUESTA<br>NO HACERLO?</h2>
+  <p class="section-sub">Comparativa con alternativas reales del mercado portuario global.</p>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:48px">
+    <div style="background:var(--bg3);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:28px">
+      <div style="font-family:var(--mono);font-size:9px;color:#ef4444;letter-spacing:3px;margin-bottom:12px">TOS ENTERPRISE</div>
+      <div style="font-weight:700;font-size:20px;margin-bottom:6px">NAVIS N4 / N4+</div>
+      <div style="font-family:var(--display);font-size:36px;color:#ef4444;letter-spacing:1px;margin-bottom:4px">$150K–500K</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--mu);margin-bottom:16px">USD · solo implementación</div>
+      <div style="font-size:13px;color:var(--mu);line-height:1.7">Solo para terminales de gran escala. Requiere servidores dedicados, consultores certificados y 12-24 meses de implementación. Sin soporte en español.</div>
+    </div>
+    <div style="background:var(--bg3);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:28px">
+      <div style="font-family:var(--mono);font-size:9px;color:#ef4444;letter-spacing:3px;margin-bottom:12px">ERP LOGÍSTICO</div>
+      <div style="font-weight:700;font-size:20px;margin-bottom:6px">SAP TM / Oracle TMS</div>
+      <div style="font-family:var(--display);font-size:36px;color:#ef4444;letter-spacing:1px;margin-bottom:4px">$50K–200K</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--mu);margin-bottom:16px">USD + licencias anuales</div>
+      <div style="font-size:13px;color:var(--mu);line-height:1.7">Requiere equipo de IT dedicado, integradores certificados y proceso de implementación de 6 a 18 meses. Alta resistencia al cambio del personal.</div>
+    </div>
+    <div style="background:var(--bg3);border:1px solid rgba(239,68,68,.2);border-radius:12px;padding:28px">
+      <div style="font-family:var(--mono);font-size:9px;color:#f59e0b;letter-spacing:3px;margin-bottom:12px">SAAS PORTUARIO EUROPEO</div>
+      <div style="font-weight:700;font-size:20px;margin-bottom:6px">Portbase / CargoWise</div>
+      <div style="font-family:var(--display);font-size:36px;color:#f59e0b;letter-spacing:1px;margin-bottom:4px">€800–2.500</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--mu);margin-bottom:16px">EUR / mes + onboarding</div>
+      <div style="font-size:13px;color:var(--mu);line-height:1.7">Diseñados para regulaciones europeas. Sin adaptación al marco documental chileno (DUS, DAM, MIC/DTA). Soporte fuera de horario local.</div>
+    </div>
+    <div style="background:var(--bg3);border:1px solid rgba(239,68,68,.15);border-radius:12px;padding:28px">
+      <div style="font-family:var(--mono);font-size:9px;color:#6b7280;letter-spacing:3px;margin-bottom:12px">SOLUCIÓN ACTUAL — LA MÁS COMÚN</div>
+      <div style="font-weight:700;font-size:20px;margin-bottom:6px">Excel + WhatsApp + Papel</div>
+      <div style="font-family:var(--display);font-size:36px;color:#6b7280;letter-spacing:1px;margin-bottom:4px">$0</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--mu);margin-bottom:16px">directo · muy caro en el tiempo</div>
+      <div style="font-size:13px;color:var(--mu);line-height:1.7">Sin trazabilidad. Documentos perdidos. Errores de transcripción. Horas buscando información entre turnos. Imposible auditar. Costo oculto: alto.</div>
+    </div>
+  </div>
+  <div style="background:linear-gradient(135deg,rgba(34,197,94,.06),rgba(34,197,94,.02));border:1px solid rgba(34,197,94,.3);border-radius:16px;padding:32px;text-align:center;max-width:700px;margin:0 auto">
+    <div style="font-family:var(--mono);font-size:9px;color:var(--g2);letter-spacing:3px;margin-bottom:12px">LA ALTERNATIVA</div>
+    <div style="font-family:var(--display);font-size:clamp(28px,4vw,48px);letter-spacing:2px;margin-bottom:12px">ZEROPAPER™</div>
+    <p style="font-size:15px;color:#8aa08c;line-height:1.8;margin-bottom:24px">Implementación en 72 horas. Hecho para la operación portuaria chilena. Sin servidores, sin IT, sin contratos largos. El operador aprende en 30 minutos.</p>
+    <a href="mailto:contacto@zeropaper.cl?subject=Solicito cotización ZeroPaper" class="btn-hero-main" style="display:inline-block">SOLICITAR COTIZACIÓN PERSONALIZADA →</a>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background:var(--bg)">
+  <div class="section-label">PLANES</div>
+  <h2 class="section-title">ELIGE TU<br>PUNTO DE PARTIDA</h2>
+  <p class="section-sub">El valor exacto se define según tu operación. Sin permanencia mínima.</p>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-name">PILOTO</div>
+      <div class="price-amount">$0</div>
+      <div class="price-cur">30 días gratis · sin tarjeta</div>
+      <div class="price-divider"></div>
+      <div class="price-feature">1 departamento activo</div>
+      <div class="price-feature">Hasta 200 operaciones</div>
+      <div class="price-feature">Acceso app + historial</div>
+      <div class="price-feature">Soporte por email</div>
+      <a href="/zeropaper_app.html" class="price-btn price-btn-ghost">INICIAR PRUEBA GRATIS</a>
+    </div>
+    <div class="price-card featured">
+      <div class="price-name">PROFESIONAL</div>
+      <div style="font-family:var(--display);font-size:36px;color:var(--g2);letter-spacing:2px;line-height:1;margin-bottom:4px">A MEDIDA</div>
+      <div class="price-cur">Implementación + mensualidad según uso</div>
+      <div class="price-divider"></div>
+      <div class="price-feature featured-item">Departamentos ilimitados</div>
+      <div class="price-feature featured-item">Panel cliente incluido</div>
+      <div class="price-feature featured-item">Panel admin + reportes</div>
+      <div class="price-feature featured-item">Exportación CSV/ERP</div>
+      <div class="price-feature featured-item">Soporte prioritario 12h</div>
+      <div class="price-feature featured-item">Historial completo + fotos</div>
+      <a href="mailto:contacto@zeropaper.cl?subject=Cotización ZeroPaper Profesional" class="price-btn price-btn-main">SOLICITAR COTIZACIÓN →</a>
+    </div>
+    <div class="price-card">
+      <div class="price-name">ENTERPRISE</div>
+      <div style="font-family:var(--display);font-size:36px;color:var(--g2);letter-spacing:2px;line-height:1;margin-bottom:4px">A CONVENIR</div>
+      <div class="price-cur">Multi-empresa · SLA garantizado</div>
+      <div class="price-divider"></div>
+      <div class="price-feature">Multi-empresa / multi-sede</div>
+      <div class="price-feature">API REST + webhooks</div>
+      <div class="price-feature">Integración ERP/SAP</div>
+      <div class="price-feature">Capacitación presencial</div>
+      <div class="price-feature">SLA 99.9% garantizado</div>
+      <a href="mailto:contacto@zeropaper.cl?subject=Cotización ZeroPaper Enterprise" class="price-btn price-btn-ghost">CONTACTAR →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <div class="section-label" style="justify-content:center">COMIENZA HOY</div>
+  <h2 class="cta-title">TU OPERACIÓN<br>SIN PAPEL</h2>
+  <p class="cta-sub">30 días gratis. Sin instalación. Sin compromiso.</p>
+  <div class="cta-badges">
+    <div class="cta-badge">GRATIS 30 DÍAS</div>
+    <div class="cta-badge">SIN TARJETA</div>
+    <div class="cta-badge">INSTALACIÓN $0</div>
+    <div class="cta-badge">SOPORTE INCLUIDO</div>
+  </div>
+  <a href="/zeropaper_app.html" class="btn-hero-main">ABRIR ZEROPAPER™ →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-logo">ZEROPAPER™</div>
+  <div class="foot-links">
+    <a href="/zeropaper_app.html">Aplicación</a>
+    <a href="/zeropaper_admin.html">Admin</a>
+    <a href="#features">Funciones</a>
+    <a href="#pricing">Precios</a>
+    <a href="mailto:contacto@zeropaper.cl">contacto@zeropaper.cl</a>
+  </div>
+  <div class="foot-copy">© 2025 ZEROPAPER™ · VALPARAÍSO, CHILE</div>
+</footer>
+
+<!-- ═══ ZEROAI CHATBOT ═══ -->
+<style>
+#zai-btn{position:fixed;bottom:28px;right:28px;z-index:999;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#1a6b3a,#22c55e);border:none;cursor:pointer;box-shadow:0 4px 20px rgba(34,197,94,.4);display:flex;align-items:center;justify-content:center;font-size:26px;transition:transform .2s,box-shadow .2s;animation:zaiPulse 2.5s infinite}
+#zai-btn:hover{transform:scale(1.08);box-shadow:0 8px 30px rgba(34,197,94,.5)}
+@keyframes zaiPulse{0%,100%{box-shadow:0 4px 20px rgba(34,197,94,.4)}50%{box-shadow:0 4px 30px rgba(34,197,94,.7)}}
+.zai-badge{position:absolute;top:0;right:0;background:#ef4444;color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;animation:badgePop .3s ease}
+@keyframes badgePop{from{transform:scale(0)}to{transform:scale(1)}}
+#zai-box{position:fixed;bottom:100px;right:28px;z-index:999;width:360px;max-height:520px;background:#0e1510;border:1px solid rgba(34,197,94,.2);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;animation:zaiOpen .2s ease}
+@keyframes zaiOpen{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+#zai-box.open{display:flex}
+.zai-head{background:linear-gradient(135deg,#0a160c,#111d12);padding:16px 18px;border-bottom:1px solid rgba(34,197,94,.15);display:flex;align-items:center;gap:12px}
+.zai-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#1a6b3a,#22c55e);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.zai-name{font-weight:700;font-size:15px;color:#e8ede9}
+.zai-status{font-family:'Space Mono',monospace;font-size:9px;color:#22c55e;letter-spacing:2px;margin-top:2px}
+.zai-close{margin-left:auto;background:none;border:none;color:#5a6b5c;cursor:pointer;font-size:20px;padding:0;line-height:1;transition:color .2s}
+.zai-close:hover{color:#e8ede9}
+#zai-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+#zai-msgs::-webkit-scrollbar{width:4px}
+#zai-msgs::-webkit-scrollbar-track{background:transparent}
+#zai-msgs::-webkit-scrollbar-thumb{background:rgba(34,197,94,.2);border-radius:4px}
+.zai-msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;animation:msgIn .2s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.zai-msg.bot{background:#141c15;border:1px solid rgba(34,197,94,.12);color:#c8d4ca;border-radius:12px 12px 12px 4px;align-self:flex-start}
+.zai-msg.user{background:linear-gradient(135deg,#1a4d2a,#22c55e22);border:1px solid rgba(34,197,94,.25);color:#e8ede9;border-radius:12px 12px 4px 12px;align-self:flex-end}
+.zai-typing{display:flex;gap:4px;padding:12px 14px;background:#141c15;border:1px solid rgba(34,197,94,.12);border-radius:12px 12px 12px 4px;align-self:flex-start;width:fit-content}
+.zai-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;opacity:.4;animation:zaiDot 1.2s infinite}
+.zai-dot:nth-child(2){animation-delay:.2s}
+.zai-dot:nth-child(3){animation-delay:.4s}
+@keyframes zaiDot{0%,60%,100%{opacity:.4;transform:translateY(0)}30%{opacity:1;transform:translateY(-5px)}}
+.zai-inp-area{border-top:1px solid rgba(34,197,94,.1);padding:12px;display:flex;gap:8px;background:#0a120b}
+#zai-input{flex:1;background:#141c15;border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:10px 14px;color:#e8ede9;font-size:13px;outline:none;font-family:inherit;transition:border-color .2s}
+#zai-input:focus{border-color:rgba(34,197,94,.5)}
+#zai-input::placeholder{color:#3a4a3c}
+#zai-send{background:linear-gradient(135deg,#1a6b3a,#22c55e);border:none;border-radius:8px;width:40px;height:40px;color:#000;font-size:18px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;font-weight:700}
+#zai-send:hover{filter:brightness(1.1);transform:scale(1.05)}
+.zai-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 12px}
+.zai-chip{background:#141c15;border:1px solid rgba(34,197,94,.2);color:#8aa08c;font-size:11px;padding:5px 10px;border-radius:100px;cursor:pointer;transition:all .2s;font-family:'Space Mono',monospace}
+.zai-chip:hover{border-color:rgba(34,197,94,.5);color:#22c55e}
+</style>
+
+<button id="zai-btn" onclick="zaiToggle()">
+  🤖
+  <span class="zai-badge" id="zaiBadge">1</span>
+</button>
+
+<div id="zai-box">
+  <div class="zai-head">
+    <div class="zai-av">🤖</div>
+    <div>
+      <div class="zai-name">ZeroAI</div>
+      <div class="zai-status">● EN LÍNEA · ASISTENTE ZEROPAPER</div>
+    </div>
+    <button class="zai-close" onclick="zaiToggle()">✕</button>
+  </div>
+  <div id="zai-msgs"></div>

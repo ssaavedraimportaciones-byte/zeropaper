@@ -1,6 +1,90 @@
+  const plate = document.getElementById(pre+'Plate').value.trim().toUpperCase();
+  const folio = document.getElementById(pre+'Folio').value.trim();
+  const docT  = document.getElementById(pre+'DocType').value;
+  const obs   = document.getElementById(pre+'Obs').value.trim();
+
+  if (!plate) { showToast('⚠','Falta patente','Ingresa la patente del vehículo'); return; }
+
+  const btn = document.getElementById(isIn?'inBtn':'outBtn');
+  btn.textContent = '⏳ Guardando...';
+  btn.disabled = true;
+
+  // ── Validar folio duplicado ──
+  if (folio) {
+    const opsPrevias = await getOpsEmpresa();
+    const dup = opsPrevias.find(o => o.folio && o.folio === folio);
+    if (dup) {
+      const ok = confirm(`⚠ Folio "${folio}" ya fue registrado\n${dup.plate} · ${(dup.docType||'').replace(/_/g,' ')} · ${dup.fecha}\n¿Continuar de todos modos?`);
+      if (!ok) {
+        btn.textContent = isIn ? '✓ Confirmar Ingreso' : '✓ Confirmar Salida';
+        btn.disabled = false;
+        return;
+      }
+    }
+  }
+
+  const now = new Date();
+  const op = {
+    id:          'op_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
+    tipo:        isIn ? 'INGRESO' : 'SALIDA',
+    plate, folio, docType: docT, obs,
+    depto:       deptoActivo?.id || '',
+    deptoNombre: deptoActivo?.nombre || '',
+    fecha:       now.toLocaleDateString('es-CL'),
+    hora:        now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),
+    ts:          now.getTime(),
+    uid:         session.uid,
+    empresaId:   session.empresaId,
+    empresaNombre: session.empresaNombre,
+    operador:    session.nombre,
+    fotoId:      null,
+    fotoIds:     [],
+    syncStatus:  'pending',
+    estado:      'PENDIENTE',
+    logs:        [{ accion:'CREADO', usuario: session.nombre, ts: now.getTime(), comentario:'' }]
+  };
+
+  const fotos = fotosDir[dir] || [];
+  if (fotos.length > 0) {
+    op.fotoIds = [];
+    for (let i = 0; i < fotos.length; i++) {
+      const fId = 'foto_' + op.id + '_' + i;
+      op.fotoIds.push(fId);
+      await dbPut('fotos', { id: fId, data: fotos[i].data, ts: op.ts });
+    }
+    op.fotoId = op.fotoIds[0]; // compatibilidad hacia atrás
+  }
+
+  await dbPut('ops', op);
+  sincronizarFirebase(op); // async, no esperar
+
+  btn.textContent = isIn ? '✓ Confirmar Ingreso' : '✓ Confirmar Salida';
+  btn.disabled = false;
+  fotosDir[dir] = [];
+
+  showToast(isIn?'📥':'📤', isIn?'Ingreso registrado':'Salida registrada', `${plate} · ${docT.replace(/_/g,' ')}`);
+
+  // Register learning patterns
+  registerLearning('plate_frequency', { plate });
+  registerLearning('doc_pattern', { docType: docT, depto: deptoActivo?.id });
+
+  // QR de seguimiento solo en INGRESO
+  if (isIn && session?.empresaId) {
+    const qrUrl = `${location.origin}/seguimiento?e=${session.empresaId}&p=${encodeURIComponent(plate)}`;
+    setTimeout(() => showQRModal(plate, qrUrl), 700);
+  } else {
+    setTimeout(() => goTo('home'), 600);
+  }
+}
+
+// ══════════════════════════════════════
+//  RENDER HOME
+// ══════════════════════════════════════
+
 async function renderHome() {
   if (!session) return;
   document.getElementById('homeDeptName').textContent = deptoActivo?.nombre || 'Sin departamento';
+  // User badge
   const initials = (session.nombre||'?').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
   document.getElementById('homeUserBadge').innerHTML = `
     <div class="user-badge">
@@ -13,22 +97,29 @@ async function renderHome() {
   const hoy = ops.filter(o => o.fecha===today);
   document.getElementById('homeCount').textContent = hoy.length;
 
+  // ── Alerta de operaciones rechazadas ──
   const rechazadas = ops.filter(o => o.estado==='RECHAZADO' && o.uid===session.uid).slice(0,3);
   const alertEl = document.getElementById('rechazoAlert');
   if (rechazadas.length && alertEl) {
-    alertEl.innerHTML = `<div class="rechazo-alert">
-      <div class="rechazo-alert-title">⚠️ ${rechazadas.length} operación${rechazadas.length>1?'es':''} rechazada${rechazadas.length>1?'s':''}</div>
-      ${rechazadas.map(o => {
-        const motivo = o.logs?.slice().reverse().find(l=>l.accion==='RECHAZADO')?.comentario || 'Sin motivo';
-        return `<div class="rechazo-item"><span><strong>${o.plate}</strong> · ${(o.docType||'').replace(/_/g,' ')}</span><span style="font-size:11px;color:#f87171">${motivo}</span></div>`;
-      }).join('')}
-    </div>`;
+    alertEl.innerHTML = `
+      <div class="rechazo-alert">
+        <div class="rechazo-alert-title">⚠️ ${rechazadas.length} operación${rechazadas.length>1?'es':''} rechazada${rechazadas.length>1?'s':''}</div>
+        ${rechazadas.map(o => {
+          const motivo = o.logs?.slice().reverse().find(l=>l.accion==='RECHAZADO')?.comentario || 'Sin motivo';
+          return `<div class="rechazo-item">
+            <span><strong>${o.plate}</strong> · ${(o.docType||'').replace(/_/g,' ')}</span>
+            <span style="font-size:11px;color:#f87171">${motivo}</span>
+          </div>`;
+        }).join('')}
+      </div>`;
     alertEl.style.display = 'block';
   } else if (alertEl) alertEl.style.display = 'none';
 
+  // ── Detección de anomalías ──
   const anomaliaEl = document.getElementById('anomaliaAlert');
   if (anomaliaEl) {
     const anomalias = [];
+    // Vehículos con más de 1 ingreso pendiente sin salida
     const recientes48h = ops.filter(o => (Date.now() - (o.ts||0)) < 172800000 && o.plate);
     const placasMap = {};
     recientes48h.sort((a,b) => a.ts - b.ts).forEach(op => {
@@ -38,8 +129,11 @@ async function renderHome() {
     });
     const atrapados = Object.entries(placasMap).filter(([,n]) => n > 1).map(([p]) => p);
     if (atrapados.length) anomalias.push(`🔴 ${atrapados.length} patente${atrapados.length>1?'s':''} con múltiples ingresos sin salida: ${atrapados.slice(0,3).join(', ')}`);
+
+    // Últimas 10 ops sin foto
     const sinFoto = ops.slice(0,10).filter(o => !o.fotoId && !(o.fotoIds?.length));
     if (sinFoto.length >= 5) anomalias.push(`📷 ${sinFoto.length} de las últimas 10 operaciones sin foto de documento`);
+
     if (anomalias.length) {
       anomaliaEl.innerHTML = `<div class="rechazo-alert" style="border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.07)">
         <div class="rechazo-alert-title" style="color:#fbbf24">⚡ Anomalías detectadas</div>
@@ -49,14 +143,21 @@ async function renderHome() {
     } else anomaliaEl.style.display = 'none';
   }
 
+  // ── Sugerencias IA ──
   const sugEl = document.getElementById('aiSuggestions');
-  if (sugEl && navigator.onLine) loadAISuggestions(sugEl, ops);
+  if (sugEl && navigator.onLine) {
+    loadAISuggestions(sugEl, ops);
+  }
 
   const recents = ops.slice(0,5);
   const el = document.getElementById('homeList');
   el.innerHTML = recents.length ? recents.map(opRow).join('') :
     '<div class="empty"><div class="empty-i">📋</div><div class="empty-t">Sin operaciones aún</div></div>';
 }
+
+// ══════════════════════════════════════
+//  OP ROW
+// ══════════════════════════════════════
 
 function estadoBadge(est) {
   const map = {
@@ -89,6 +190,10 @@ function opRow(op) {
     <span class="h-badge">${(op.fotoIds?.length||0)>1?`📷${op.fotoIds.length}`:op.fotoId?'📷':'📋'}</span>
   </div>`;
 }
+
+// ══════════════════════════════════════
+//  HISTORIAL
+// ══════════════════════════════════════
 
 async function renderHistorial(ops_override) {
   const ops = ops_override || await getOpsEmpresa();
@@ -126,73 +231,15 @@ async function buscarOps(q) {
   }));
 }
 
+// ══════════════════════════════════════
+//  DETALLE OPERACIÓN
+// ══════════════════════════════════════
+
 async function verDetalle(id) {
   const ops = await dbGetAll('ops');
   const op = ops.find(o=>o.id===id);
   if (!op) return;
   const isIn = op.tipo==='INGRESO';
   let fotoHtml = '<div style="background:var(--bg3);border-radius:12px;padding:24px;text-align:center;margin-bottom:14px;color:var(--mu);font-family:var(--mono);font-size:12px">📷 Sin fotos adjuntas</div>';
+  // Soporte multi-foto: fotoIds[] tiene prioridad, sino usa fotoId legacy
   const fotoIds = op.fotoIds?.length ? op.fotoIds : (op.fotoId ? [op.fotoId] : []);
-  if (fotoIds.length > 0) {
-    const fotosData = [];
-    for (const fId of fotoIds) {
-      const fObj = await dbGet('fotos', fId);
-      if (fObj?.data) fotosData.push(fObj.data);
-    }
-    if (fotosData.length > 0) {
-      const thumbs = fotosData.map((src, i) =>
-        `<div class="foto-thumb" onclick="verFotoHistorial(${JSON.stringify(fotosData)},${i})" style="cursor:pointer;width:80px;height:80px;">
-          <img src="${src}" alt="doc">
-          <span class="foto-num">${i+1}</span>
-         </div>`).join('');
-      fotoHtml = `<div>
-        <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:8px;letter-spacing:1px">📷 ${fotosData.length} FOTO${fotosData.length>1?'S':''} — TAP PARA VER</div>
-        <div class="fotos-grid" style="margin-bottom:0">${thumbs}</div>
-      </div>`;
-    }
-  }
-  const est = op.estado || 'PENDIENTE';
-  const logsHtml = op.logs?.length ? `
-    <div style="margin-top:14px">
-      <div style="font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:2px;margin-bottom:8px">HISTORIAL</div>
-      <div class="log-list">
-        ${op.logs.map(l => `
-          <div class="log-item">
-            <div class="log-dot log-ld-${l.accion==='CREADO'?'c':l.accion==='APROBADO'?'a':l.accion==='RECHAZADO'?'r':'v'}"></div>
-            <div><div style="font-size:12px;font-weight:600">${l.accion} por ${l.usuario||'?'}</div>
-              ${l.comentario?`<div style="font-size:11px;color:var(--mu);margin-top:2px">${l.comentario}</div>`:''}
-              <div class="log-ts">${new Date(l.ts).toLocaleString('es-CL')}</div>
-            </div>
-          </div>`).join('')}
-      </div>
-    </div>` : '';
-
-  const ov = document.createElement('div');
-  ov.className = 'modal-ov';
-  ov.innerHTML = `<div class="modal-box">
-    <div class="modal-hdr">
-      <span class="modal-title">${isIn?'📥':'📤'} ${op.tipo}</span>
-      <button class="modal-x" onclick="this.closest('.modal-ov').remove()">✕</button>
-    </div>
-    ${fotoHtml}
-    ${estadoBadge(est)}
-    <div class="modal-row"><span class="modal-lbl">PATENTE</span><span class="modal-val">${op.plate||'—'}</span></div>
-    <div class="modal-row"><span class="modal-lbl">FOLIO</span><span class="modal-val">${op.folio||'—'}</span></div>
-    <div class="modal-row"><span class="modal-lbl">DOCUMENTO</span><span class="modal-val">${(op.docType||'—').replace(/_/g,' ')}</span></div>
-    <div class="modal-row"><span class="modal-lbl">DEPTO</span><span class="modal-val">${op.deptoNombre||op.depto||'—'}</span></div>
-    <div class="modal-row"><span class="modal-lbl">FECHA/HORA</span><span class="modal-val">${op.fecha} ${op.hora}</span></div>
-    <div class="modal-row"><span class="modal-lbl">OPERADOR</span><span class="modal-val">${op.operador||'—'}</span></div>
-    <div class="modal-row"><span class="modal-lbl">EMPRESA</span><span class="modal-val">${op.empresaNombre||'—'}</span></div>
-    ${op.obs?`<div class="modal-row"><span class="modal-lbl">OBS</span><span class="modal-val" style="font-size:13px">${op.obs}</span></div>`:''}
-    ${logsHtml}
-    <div style="display:flex;gap:8px;margin-top:16px">
-      ${session?.rol==='admin'||session?.rol==='supervisor' ? `
-        <button class="btn-prime btn-green" style="font-size:13px;padding:12px" onclick="cambiarEstado('${op.id}','APROBADO',this.closest('.modal-ov'))">✓ Aprobar</button>
-        <button class="btn-prime btn-orange" style="font-size:13px;padding:12px" onclick="pedirRechazo('${op.id}',this.closest('.modal-ov'))">✗ Rechazar</button>
-      ` : ''}
-      <button class="btn-prime btn-gray" style="font-size:13px;padding:12px;flex:1" onclick="this.closest('.modal-ov').remove()">Cerrar</button>
-    </div>
-  </div>`;
-  ov.onclick = e => { if(e.target===ov) ov.remove(); };
-  document.body.appendChild(ov);
-}

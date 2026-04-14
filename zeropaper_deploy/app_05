@@ -1,3 +1,4 @@
+
 function verFotoCaptura(dir, idx) {
   const fotos = fotosDir[dir];
   if (!fotos || !fotos[idx]) return;
@@ -25,6 +26,10 @@ function verFotoCaptura(dir, idx) {
   document.body.appendChild(m);
 }
 
+// ══════════════════════════════════════
+//  VER FOTO DE HISTORIAL — VISOR FULL SCREEN
+// ══════════════════════════════════════
+
 function verFotoHistorial(fotosArr, idx) {
   const prev = document.getElementById('fotoHistorialModal');
   if (prev) prev.remove();
@@ -51,68 +56,120 @@ function verFotoHistorial(fotosArr, idx) {
   document.body.appendChild(m);
 }
 
+// ══════════════════════════════════════
+//  OCR — LECTURA INTELIGENTE
+// ══════════════════════════════════════
+
 async function runOCR(dir) {
   const fotos = fotosDir[dir];
   if (!fotos.length) return;
+
   const btn = document.getElementById(`ocrBtn_${dir}`);
-  if (btn) { btn.innerHTML = '<span style="animation:pulse 1s infinite">🧠</span> <span>Analizando documento...</span>'; btn.disabled = true; }
+  if (btn) {
+    btn.innerHTML = '<span style="animation:pulse 1s infinite">🧠</span> <span>Analizando documento...</span>';
+    btn.disabled = true;
+  }
+
   try {
     const res = await fetch('/api/ocr', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: fotos[0].data })
     });
     const data = await res.json();
+
     if (data.error) {
       showToast('⚠', 'OCR Error', data.error);
       if (btn) { btn.innerHTML = '<span>🧠</span> <span>Reintentar lectura</span>'; btn.disabled = false; }
       return;
     }
+
+    // Auto-fill fields with detected data
     const pre = dir === 'in' ? 'in' : 'out';
     let filled = [];
-    if (data.patente) { const el = document.getElementById(pre+'Plate'); if(el){el.value=data.patente;el.style.borderColor='var(--g2)';} filled.push('Patente'); }
-    if (data.folio)   { const el = document.getElementById(pre+'Folio'); if(el){el.value=data.folio;el.style.borderColor='var(--g2)';} filled.push('Folio'); }
+
+    if (data.patente) {
+      const plateEl = document.getElementById(pre + 'Plate');
+      if (plateEl) { plateEl.value = data.patente; plateEl.style.borderColor = 'var(--g2)'; }
+      filled.push('Patente');
+    }
+    if (data.folio) {
+      const folioEl = document.getElementById(pre + 'Folio');
+      if (folioEl) { folioEl.value = data.folio; folioEl.style.borderColor = 'var(--g2)'; }
+      filled.push('Folio');
+    }
     if (data.tipoDocumento) {
-      const docEl = document.getElementById(pre+'DocType');
+      const docEl = document.getElementById(pre + 'DocType');
       if (docEl) {
-        const match = Array.from(docEl.options).find(o => o.value===data.tipoDocumento||o.value.includes(data.tipoDocumento));
-        if (match) { docEl.value=match.value; docEl.style.borderColor='var(--g2)'; filled.push('Tipo doc'); }
+        const opts = Array.from(docEl.options);
+        const match = opts.find(o => o.value === data.tipoDocumento || o.value.includes(data.tipoDocumento));
+        if (match) { docEl.value = match.value; docEl.style.borderColor = 'var(--g2)'; filled.push('Tipo doc'); }
       }
     }
+
+    // Show result card
     const resultEl = document.getElementById(`ocrResult_${dir}`);
     if (resultEl) {
       const confianza = data.confianza || {};
-      const confBadge = (val) => { const v=val||0; const color=v>=.8?'#4ade80':v>=.5?'#fbbf24':'#f87171'; const label=v>=.8?'Alta':v>=.5?'Media':'Baja'; return `<span style="color:${color};font-size:10px;font-weight:700">${label} ${Math.round(v*100)}%</span>`; };
-      resultEl.innerHTML = `<div style="background:rgba(82,183,136,.08);border:1px solid rgba(82,183,136,.25);border-radius:14px;padding:14px;">
-        <div style="font-weight:700;font-size:13px;color:var(--g2);margin-bottom:8px;">✨ IA detectó ${filled.length} campo${filled.length!==1?'s':''} ${data.escritoAMano?'<span style="font-size:10px;background:rgba(245,197,66,.15);color:#f5c542;padding:2px 8px;border-radius:6px;">✍ Escrito a mano</span>':''}</div>
-        ${data.patente?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(82,183,136,.1)"><span>Patente: <strong>${data.patente}</strong></span>${confBadge(confianza.patente)}</div>`:''}
-        ${data.folio?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(82,183,136,.1)"><span>Folio: <strong>${data.folio}</strong></span>${confBadge(confianza.folio)}</div>`:''}
-        ${data.tipoDocumento?`<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;"><span>Documento: <strong>${data.tipoDocumento.replace(/_/g,' ')}</strong></span>${confBadge(confianza.tipoDocumento)}</div>`:''}
-        ${data.resumen?`<div style="font-size:11px;color:var(--mu);margin-top:8px;padding-top:8px;border-top:1px solid rgba(82,183,136,.1)">${data.resumen}</div>`:''}
-      </div>`;
+      const confBadge = (val) => {
+        const v = val || 0;
+        const color = v >= 0.8 ? '#4ade80' : v >= 0.5 ? '#fbbf24' : '#f87171';
+        const label = v >= 0.8 ? 'Alta' : v >= 0.5 ? 'Media' : 'Baja';
+        return `<span style="color:${color};font-size:10px;font-weight:700">${label} ${Math.round(v*100)}%</span>`;
+      };
+      resultEl.innerHTML = `
+        <div style="background:rgba(82,183,136,.08);border:1px solid rgba(82,183,136,.25);border-radius:14px;padding:14px;">
+          <div style="font-weight:700;font-size:13px;color:var(--g2);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            ✨ IA detectó ${filled.length} campo${filled.length!==1?'s':''}
+            ${data.escritoAMano ? '<span style="font-size:10px;background:rgba(245,197,66,.15);color:#f5c542;padding:2px 8px;border-radius:6px;">✍ Escrito a mano</span>' : ''}
+          </div>
+          ${data.patente ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(82,183,136,.1)"><span>Patente: <strong>${data.patente}</strong></span>${confBadge(confianza.patente)}</div>` : ''}
+          ${data.folio ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(82,183,136,.1)"><span>Folio: <strong>${data.folio}</strong></span>${confBadge(confianza.folio)}</div>` : ''}
+          ${data.tipoDocumento ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;"><span>Documento: <strong>${data.tipoDocumento.replace(/_/g,' ')}</strong></span>${confBadge(confianza.tipoDocumento)}</div>` : ''}
+          ${data.resumen ? `<div style="font-size:11px;color:var(--mu);margin-top:8px;padding-top:8px;border-top:1px solid rgba(82,183,136,.1)">${data.resumen}</div>` : ''}
+        </div>`;
       resultEl.style.display = 'block';
     }
+
+    // Store OCR data for learning
     fotosDir[dir].ocrData = data;
+
     showToast('🧠', 'Documento leído', filled.length ? `Detectado: ${filled.join(', ')}` : 'No se detectaron campos');
     if (btn) { btn.innerHTML = '<span>✅</span> <span>Documento analizado</span>'; btn.disabled = false; }
+
+    // Send learning data
     registerLearning('doc_pattern', { docType: data.tipoDocumento, depto: deptoActivo?.id });
+
   } catch(e) {
     showToast('⚠', 'Sin conexión', 'OCR requiere internet');
     if (btn) { btn.innerHTML = '<span>🧠</span> <span>Reintentar lectura</span>'; btn.disabled = false; }
   }
 }
 
+// ══════════════════════════════════════
+//  LEARNING — AUTOAPRENDIZAJE
+// ══════════════════════════════════════
+
 async function registerLearning(type, data) {
   if (!session?.empresaId) return;
   try {
-    await fetch('/api/learn', { method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ empresa:session.empresaId, depto:deptoActivo?.id||'global', type, data }) });
-  } catch(e) {}
+    await fetch('/api/learn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        empresa: session.empresaId,
+        depto: deptoActivo?.id || 'global',
+        type, data
+      })
+    });
+  } catch(e) { /* offline, skip */ }
 }
 
 async function getSmartSuggestions() {
   if (!session?.empresaId || !navigator.onLine) return null;
   try {
-    const res = await fetch(`/api/learn?empresa=${session.empresaId}&depto=${deptoActivo?.id||''}`);
+    const depto = deptoActivo?.id || '';
+    const res = await fetch(`/api/learn?empresa=${session.empresaId}&depto=${depto}`);
     return await res.json();
   } catch(e) { return null; }
 }
@@ -121,7 +178,10 @@ function addFoto(ev, dir) {
   const file = ev.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = e2 => { fotosDir[dir].push({ data: e2.target.result }); renderFotosZone(dir); };
+  reader.onload = e2 => {
+    fotosDir[dir].push({ data: e2.target.result });
+    renderFotosZone(dir);
+  };
   reader.readAsDataURL(file);
   ev.target.value = '';
 }
@@ -131,76 +191,11 @@ function removeFoto(dir, idx) {
   renderFotosZone(dir);
 }
 
+// ══════════════════════════════════════
+//  CONFIRMAR OPERACIÓN
+// ══════════════════════════════════════
+
 async function confirmarOp(dir) {
   if (!session) { doLogout(); return; }
   const isIn  = dir === 'in';
   const pre   = isIn ? 'in' : 'out';
-  const plate = document.getElementById(pre+'Plate').value.trim().toUpperCase();
-  const folio = document.getElementById(pre+'Folio').value.trim();
-  const docT  = document.getElementById(pre+'DocType').value;
-  const obs   = document.getElementById(pre+'Obs').value.trim();
-
-  if (!plate) { showToast('⚠','Falta patente','Ingresa la patente del vehículo'); return; }
-
-  const btn = document.getElementById(isIn?'inBtn':'outBtn');
-  btn.textContent = '⏳ Guardando...';
-  btn.disabled = true;
-
-  if (folio) {
-    const opsPrevias = await getOpsEmpresa();
-    const dup = opsPrevias.find(o => o.folio && o.folio === folio);
-    if (dup) {
-      const ok = confirm(`⚠ Folio "${folio}" ya fue registrado\n${dup.plate} · ${(dup.docType||'').replace(/_/g,' ')} · ${dup.fecha}\n¿Continuar de todos modos?`);
-      if (!ok) { btn.textContent = isIn ? '✓ Confirmar Ingreso' : '✓ Confirmar Salida'; btn.disabled = false; return; }
-    }
-  }
-
-  const now = new Date();
-  const op = {
-    id: 'op_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
-    tipo: isIn ? 'INGRESO' : 'SALIDA',
-    plate, folio, docType: docT, obs,
-    depto: deptoActivo?.id || '',
-    deptoNombre: deptoActivo?.nombre || '',
-    fecha: now.toLocaleDateString('es-CL'),
-    hora:  now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),
-    ts: now.getTime(),
-    uid: session.uid,
-    empresaId:    session.empresaId,
-    empresaNombre:session.empresaNombre,
-    operador:     session.nombre,
-    fotoId: null, fotoIds: [],
-    syncStatus: 'pending',
-    estado: 'PENDIENTE',
-    logs: [{ accion:'CREADO', usuario:session.nombre, ts:now.getTime(), comentario:'' }]
-  };
-
-  const fotos = fotosDir[dir] || [];
-  if (fotos.length > 0) {
-    op.fotoIds = [];
-    for (let i = 0; i < fotos.length; i++) {
-      const fId = 'foto_' + op.id + '_' + i;
-      op.fotoIds.push(fId);
-      await dbPut('fotos', { id: fId, data: fotos[i].data, ts: op.ts });
-    }
-    op.fotoId = op.fotoIds[0];
-  }
-
-  await dbPut('ops', op);
-  sincronizarFirebase(op);
-
-  btn.textContent = isIn ? '✓ Confirmar Ingreso' : '✓ Confirmar Salida';
-  btn.disabled = false;
-  fotosDir[dir] = [];
-
-  showToast(isIn?'📥':'📤', isIn?'Ingreso registrado':'Salida registrada', `${plate} · ${docT.replace(/_/g,' ')}`);
-  registerLearning('plate_frequency', { plate });
-  registerLearning('doc_pattern', { docType: docT, depto: deptoActivo?.id });
-
-  if (isIn && session?.empresaId) {
-    const qrUrl = `${location.origin}/seguimiento?e=${session.empresaId}&p=${encodeURIComponent(plate)}`;
-    setTimeout(() => showQRModal(plate, qrUrl), 700);
-  } else {
-    setTimeout(() => goTo('home'), 600);
-  }
-}

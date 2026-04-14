@@ -1,3 +1,4 @@
+}
 
 async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
@@ -25,13 +26,14 @@ async function doLogin() {
     session = {
       uid, email,
       localToken:  genToken(),
-      expiresAt:   Date.now() + 12 * 3600 * 1000,
+      expiresAt:   Date.now() + 12 * 3600 * 1000, // 12 horas
       nombre:      perfil.nombre || email.split('@')[0],
       empresaId:   perfil.empresaId,
       empresaNombre: perfil.empresaNombre,
       rol:         perfil.rol || 'operador'
     };
     saveSession();
+    // Actualizar último login en operadores
     try {
       await fsSet(`empresas/${perfil.empresaId}/operadores/${uid}`, {
         nombre: perfil.nombre || email.split('@')[0],
@@ -66,6 +68,7 @@ async function doRegister() {
     const uid  = emailToUid(email);
     const hash = await sha256(email + '::' + pass);
 
+    // Verificar si el correo ya existe
     try {
       const existing = await fsGet(`usuarios/${uid}`);
       const ex = parseFs(existing);
@@ -126,6 +129,10 @@ async function doRegister() {
 document.getElementById('regCodigo').addEventListener('input', function() {
   document.getElementById('regEmpresaBox').style.display = this.value.trim() ? 'none' : 'block';
 });
+
+// ══════════════════════════════════════
+//  INDEXEDDB
+// ══════════════════════════════════════
 
 function initDB() {
   return new Promise((res, rej) => {
@@ -188,6 +195,10 @@ async function getOpsEmpresa() {
   return all.filter(o => o.empresaId === session.empresaId).sort((a,b) => b.ts - a.ts);
 }
 
+// ══════════════════════════════════════
+//  NAVEGACIÓN
+// ══════════════════════════════════════
+
 const VIEWS = ['home','ingreso','salida','historial','turno','deptos','temas','config'];
 const TABS  = ['home','historial','turno','deptos','config'];
 
@@ -210,6 +221,10 @@ function goTo(name) {
 }
 
 function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ══════════════════════════════════════
+//  DEPARTAMENTOS
+// ══════════════════════════════════════
 
 function cargarDeptos() {
   const saved = localStorage.getItem(K_DEPTOS);
@@ -252,6 +267,10 @@ function prepForm(dir) {
   renderFotosZone(dir);
 }
 
+// ══════════════════════════════════════
+//  FOTOS MÚLTIPLES
+// ══════════════════════════════════════
+
 function renderFotosZone(dir) {
   const zoneId = dir==='in' ? 'fotosZoneIn' : 'fotosZoneOut';
   const zone = document.getElementById(zoneId);
@@ -278,3 +297,7 @@ function renderFotosZone(dir) {
     <div id="ocrResult_${dir}" style="display:none;margin-top:10px;"></div>
     ` : ''}`;
 }
+
+// ══════════════════════════════════════
+//  VER FOTO CAPTURADA — VISOR FULL SCREEN
+// ══════════════════════════════════════

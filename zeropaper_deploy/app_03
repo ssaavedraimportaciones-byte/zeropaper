@@ -100,7 +100,7 @@ const DEPTOS_DEFAULT = [
 
 // ── ESTADO ──
 let db         = null;
-let session    = null;
+let session    = null; // { uid, idToken, refreshToken, expiresAt, email, nombre, empresaId, empresaNombre, rol }
 let deptos     = [];
 let deptoActivo= null;
 let curFiltro  = 'TODOS';
@@ -108,12 +108,18 @@ let fotosDir   = { in: [], out: [] };
 let toastTimer = null;
 let turnoInicio= null;
 
+// ══════════════════════════════════════
+//  AUTH PROPIO — SHA-256 + Firestore
+//  (No requiere Firebase Auth habilitado)
+// ══════════════════════════════════════
+
 async function sha256(str) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
 function emailToUid(email) {
+  // uid deterministico basado en email (para lookup directo)
   return email.toLowerCase().replace(/[^a-z0-9]/g,'_').slice(0,40);
 }
 
@@ -123,11 +129,16 @@ function genToken() {
   return Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
+// getValidToken — solo verifica expiración de sesión local (sin refresh remoto)
 function getValidToken() {
   if (!session) return null;
   if (Date.now() > session.expiresAt) { doLogout(); return null; }
   return session.localToken || 'local';
 }
+
+// ══════════════════════════════════════
+//  SESIÓN
+// ══════════════════════════════════════
 
 function saveSession() {
   localStorage.setItem(K_SESSION, JSON.stringify(session));
@@ -146,6 +157,10 @@ function doLogout() {
   document.getElementById('app').style.display = 'none';
   showLogin();
 }
+
+// ══════════════════════════════════════
+//  FIRESTORE HELPERS
+// ══════════════════════════════════════
 
 function toFsDoc(obj) {
   const fields = {};
@@ -204,6 +219,10 @@ async function fsPost(path, data) {
   return res.json();
 }
 
+// ══════════════════════════════════════
+//  PERFIL DE USUARIO
+// ══════════════════════════════════════
+
 async function cargarPerfil(uid) {
   try {
     const doc = await fsGet(`usuarios/${uid}`);
@@ -229,6 +248,10 @@ async function buscarEmpresaPorCodigo(codigo) {
   } catch(e) { return null; }
 }
 
+// ══════════════════════════════════════
+//  LOGIN / REGISTRO UI
+// ══════════════════════════════════════
+
 function showLogin() {
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('registerScreen').style.display = 'none';
@@ -237,4 +260,3 @@ function showLogin() {
 function showRegister() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('registerScreen').style.display = 'flex';
-}
