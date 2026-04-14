@@ -775,6 +775,13 @@
             .form-container {
                 grid-template-columns: 1fr;
             }
+            #mercado > div[style*="grid-template-columns:repeat(2"],
+            #pricing > div[style*="grid-template-columns:repeat(3"] {
+                grid-template-columns: 1fr !important;
+            }
+            #mercado > div[style*="grid-template-columns:repeat(2"] {
+                grid-template-columns: 1fr !important;
+            }
         }
     </style>
 </head>
@@ -789,8 +796,8 @@
             <ul class="nav-links">
                 <li><a href="#features">Características</a></li>
                 <li><a href="#ai">IA Integrada</a></li>
-                <li><a href="#security">Seguridad</a></li>
                 <li><a href="#testimonials">Casos de Éxito</a></li>
+                <li><a href="#pricing">Precios</a></li>
                 <li><a href="#contact">Contacto</a></li>
             </ul>
             <a href="login.html" class="btn btn-primary">Iniciar Sesión</a>
@@ -1217,6 +1224,123 @@
                 </div>
             </div>
         </div>
+    </section>
+
+    <!-- COMPARATIVA MERCADO -->
+    <section id="mercado" style="background:rgba(0,0,0,.3);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);">
+        <div class="section-label">📊 Contexto de Mercado</div>
+        <h2>¿Cuánto Cuesta <span class="gradient-text">No Hacerlo?</span></h2>
+        <p>Comparativa con alternativas reales del mercado de gestión documental.</p>
+
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1.5rem;margin:3rem 0;">
+
+            <div style="background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.2);border-radius:16px;padding:2rem;">
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:3px;color:#ef4444;margin-bottom:.8rem;">ERP EMPRESARIAL</div>
+                <div style="font-size:1.4rem;font-weight:800;margin-bottom:.5rem;">SAP Document Management</div>
+                <div style="font-family:monospace;font-size:2.2rem;font-weight:700;color:#ef4444;line-height:1;margin-bottom:.3rem;">$50K–200K</div>
+                <div style="font-size:.75rem;color:#888;margin-bottom:1.2rem;">USD + licencias anuales</div>
+                <p style="font-size:.9rem;color:#999;line-height:1.7;">Requiere equipo de IT dedicado, integradores certificados y proceso de implementación de 6 a 18 meses. Alta resistencia al cambio del personal.</p>
+            </div>
+
+            <div style="background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.2);border-radius:16px;padding:2rem;">
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:3px;color:#ef4444;margin-bottom:.8rem;">DMS ENTERPRISE</div>
+                <div style="font-size:1.4rem;font-weight:800;margin-bottom:.5rem;">SharePoint / OpenText</div>
+                <div style="font-family:monospace;font-size:2.2rem;font-weight:700;color:#ef4444;line-height:1;margin-bottom:.3rem;">$20K–80K</div>
+                <div style="font-size:.75rem;color:#888;margin-bottom:1.2rem;">USD implementación + mantenimiento</div>
+                <p style="font-size:.9rem;color:#999;line-height:1.7;">Interfaces complejas. Requiere consultores certificados y administradores de sistema. Sin IA nativa. Adaptación al idioma y regulación local es costosa.</p>
+            </div>
+
+            <div style="background:rgba(245,158,11,.04);border:1px solid rgba(245,158,11,.2);border-radius:16px;padding:2rem;">
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:3px;color:#f59e0b;margin-bottom:.8rem;">SAAS GENÉRICO</div>
+                <div style="font-size:1.4rem;font-weight:800;margin-bottom:.5rem;">DocuWare / M-Files</div>
+                <div style="font-family:monospace;font-size:2.2rem;font-weight:700;color:#f59e0b;line-height:1;margin-bottom:.3rem;">$800–3.000</div>
+                <div style="font-size:.75rem;color:#888;margin-bottom:1.2rem;">USD / mes + onboarding</div>
+                <p style="font-size:.9rem;color:#999;line-height:1.7;">Diseñados para mercados anglosajones. Sin adaptación al marco legal chileno. Soporte fuera de horario local. Sin IA de análisis documental avanzada.</p>
+            </div>
+
+            <div style="background:rgba(107,114,128,.04);border:1px solid rgba(107,114,128,.2);border-radius:16px;padding:2rem;">
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:3px;color:#6b7280;margin-bottom:.8rem;">SOLUCIÓN ACTUAL — LA MÁS COMÚN</div>
+                <div style="font-size:1.4rem;font-weight:800;margin-bottom:.5rem;">Email + Excel + Papel</div>
+                <div style="font-family:monospace;font-size:2.2rem;font-weight:700;color:#6b7280;line-height:1;margin-bottom:.3rem;">$0</div>
+                <div style="font-size:.75rem;color:#888;margin-bottom:1.2rem;">directo · muy caro en el tiempo</div>
+                <p style="font-size:.9rem;color:#999;line-height:1.7;">Sin trazabilidad. Documentos perdidos. Errores de transcripción. Imposible auditar. Cumplimiento normativo en riesgo. Costo oculto: $15,000+ USD/año.</p>
+            </div>
+
+        </div>
+
+        <div style="background:linear-gradient(135deg,rgba(0,102,255,.08),rgba(0,230,118,.05));border:1px solid rgba(0,102,255,.25);border-radius:20px;padding:2.5rem;text-align:center;max-width:700px;margin:0 auto;">
+            <div style="font-size:.7rem;font-weight:700;letter-spacing:3px;color:var(--cyan);margin-bottom:1rem;">LA ALTERNATIVA</div>
+            <div style="font-family:'Outfit',sans-serif;font-size:clamp(1.8rem,3vw,2.8rem);font-weight:900;margin-bottom:.8rem;">SIN PAPEL + AI</div>
+            <p style="font-size:1rem;color:#bbb;line-height:1.8;margin-bottom:1.5rem;">Implementación en 72 horas. Hecho para empresas chilenas. Sin servidores propios, sin IT, sin contratos largos. Con IA incluida desde el día 1.</p>
+            <a href="#contact" style="display:inline-block;background:linear-gradient(135deg,#0066FF,#00D4FF);color:#fff;font-weight:700;padding:14px 32px;border-radius:100px;text-decoration:none;font-size:.95rem;transition:all .3s ease;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 40px rgba(0,102,255,.4)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">SOLICITAR COTIZACIÓN PERSONALIZADA →</a>
+        </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="pricing">
+        <div class="section-label">💰 Planes</div>
+        <h2>Elige Tu <span class="gradient-text">Punto de Partida</span></h2>
+        <p>El valor exacto se define según tu empresa, número de usuarios y funcionalidades. Sin permanencia mínima.</p>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin:3rem 0;max-width:1000px;margin-left:auto;margin-right:auto;">
+
+            <!-- PILOTO -->
+            <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:2rem;display:flex;flex-direction:column;">
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:3px;color:#888;margin-bottom:1rem;">PLAN</div>
+                <div style="font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:900;margin-bottom:1rem;">PILOTO</div>
+                <div style="font-family:monospace;font-size:2.5rem;font-weight:700;color:var(--green);line-height:1;margin-bottom:.3rem;">$0</div>
+                <div style="font-size:.8rem;color:#888;margin-bottom:1.5rem;">30 días gratis · sin tarjeta</div>
+                <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin-bottom:1.5rem;">
+                <ul style="list-style:none;display:flex;flex-direction:column;gap:.7rem;flex:1;">
+                    <li style="font-size:.9rem;color:#ccc;">✅ 1 departamento activo</li>
+                    <li style="font-size:.9rem;color:#ccc;">✅ Hasta 500 documentos</li>
+                    <li style="font-size:.9rem;color:#ccc;">✅ App web + móvil</li>
+                    <li style="font-size:.9rem;color:#ccc;">✅ Soporte por email</li>
+                    <li style="font-size:.9rem;color:#999;">— IA análisis (limitada)</li>
+                </ul>
+                <a href="/login.html" style="display:block;text-align:center;margin-top:1.5rem;padding:12px;border-radius:100px;border:1px solid rgba(255,255,255,.2);color:#fff;text-decoration:none;font-weight:600;font-size:.9rem;transition:all .3s;" onmouseover="this.style.borderColor='rgba(0,230,118,.5)';this.style.color='var(--green)'" onmouseout="this.style.borderColor='rgba(255,255,255,.2)';this.style.color='#fff'">COMENZAR GRATIS</a>
+            </div>
+
+            <!-- PROFESIONAL -->
+            <div style="background:linear-gradient(135deg,rgba(0,102,255,.1),rgba(0,212,255,.05));border:1px solid rgba(0,102,255,.4);border-radius:20px;padding:2rem;display:flex;flex-direction:column;position:relative;">
+                <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#0066FF,#00D4FF);color:#fff;font-size:.65rem;font-weight:800;letter-spacing:2px;padding:4px 16px;border-radius:100px;">MÁS POPULAR</div>
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:3px;color:var(--cyan);margin-bottom:1rem;">PLAN</div>
+                <div style="font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:900;margin-bottom:.5rem;">PROFESIONAL</div>
+                <div style="font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:900;color:var(--cyan);line-height:1;margin-bottom:.3rem;">A MEDIDA</div>
+                <div style="font-size:.8rem;color:#888;margin-bottom:1.5rem;">Implementación + mensualidad según uso</div>
+                <hr style="border:none;border-top:1px solid rgba(0,102,255,.2);margin-bottom:1.5rem;">
+                <ul style="list-style:none;display:flex;flex-direction:column;gap:.7rem;flex:1;">
+                    <li style="font-size:.9rem;color:#ccc;">✅ Departamentos ilimitados</li>
+                    <li style="font-size:.9rem;color:#ccc;">✅ Usuarios ilimitados</li>
+                    <li style="font-size:.9rem;color:#ccc;">✅ IA análisis completa</li>
+                    <li style="font-size:.9rem;color:#ccc;">✅ Dashboard ejecutivo</li>
+                    <li style="font-size:.9rem;color:#ccc;">✅ Integración ERP/SAP</li>
+                    <li style="font-size:.9rem;color:#ccc;">✅ Soporte prioritario 12h</li>
+                </ul>
+                <a href="mailto:contacto@sinpapel.cl?subject=Cotización%20Sin%20Papel%20Profesional" style="display:block;text-align:center;margin-top:1.5rem;padding:12px;border-radius:100px;background:linear-gradient(135deg,#0066FF,#00D4FF);color:#fff;text-decoration:none;font-weight:700;font-size:.9rem;transition:all .3s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 30px rgba(0,102,255,.4)'" onmouseout="this.style.transform='none';this.style.boxShadow='none'">SOLICITAR COTIZACIÓN →</a>
+            </div>
+
+            <!-- ENTERPRISE -->
+            <div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:2rem;display:flex;flex-direction:column;">
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:3px;color:#888;margin-bottom:1rem;">PLAN</div>
+                <div style="font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:900;margin-bottom:.5rem;">ENTERPRISE</div>
+                <div style="font-family:'Outfit',sans-serif;font-size:1.8rem;font-weight:900;color:var(--purple);line-height:1;margin-bottom:.3rem;">A CONVENIR</div>
+                <div style="font-size:.8rem;color:#888;margin-bottom:1.5rem;">Multi-empresa · SLA garantizado</div>
+                <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin-bottom:1.5rem;">
+                <ul style="list-style:none;display:flex;flex-direction:column;gap:.7rem;flex:1;">
+                    <li style="font-size:.9rem;color:#ccc;">✅ Multi-empresa / multi-sede</li>
+                    <li style="font-size:.9rem;color:#ccc;">✅ API REST + webhooks</li>
+                    <li style="font-size:.9rem;color:#ccc;">✅ On-premise o cloud privado</li>
+                    <li style="font-size:.9rem;color:#ccc;">✅ Capacitación presencial</li>
+                    <li style="font-size:.9rem;color:#ccc;">✅ SLA 99.9% garantizado</li>
+                    <li style="font-size:.9rem;color:#ccc;">✅ Gerente de cuenta dedicado</li>
+                </ul>
+                <a href="mailto:contacto@sinpapel.cl?subject=Cotización%20Sin%20Papel%20Enterprise" style="display:block;text-align:center;margin-top:1.5rem;padding:12px;border-radius:100px;border:1px solid rgba(255,255,255,.2);color:#fff;text-decoration:none;font-weight:600;font-size:.9rem;transition:all .3s;" onmouseover="this.style.borderColor='rgba(124,58,237,.5)';this.style.color='var(--purple)'" onmouseout="this.style.borderColor='rgba(255,255,255,.2)';this.style.color='#fff'">CONTACTAR →</a>
+            </div>
+
+        </div>
+
+        <p style="text-align:center;color:#666;font-size:.85rem;margin-top:1rem;">El valor se define según tamaño de operación, número de departamentos y funcionalidades requeridas.</p>
     </section>
 
     <!-- CTA -->
