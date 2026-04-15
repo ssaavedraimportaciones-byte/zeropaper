@@ -1,0 +1,2328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d0d1a">
+<title>ZeroPaper™ v5.0</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ZeroPaper™">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ══ TEMAS ══ */
+:root {
+  --bg:#0a0a18; --bg2:#111128; --bg3:#1a1a38;
+  --fg:#eef0f6; --fg2:#c8ccd8; --mu:#7b8294; --brd:rgba(255,255,255,.07);
+  --g:#3d9970; --g2:#52b788; --g3:#95d5b2; --o:#ff7b00; --o2:#ffab40;
+  --b:#4f8ff7; --r:#f06060; --y:#f5c542;
+  --nav:rgba(10,10,24,.92); --card:rgba(255,255,255,.035);
+  --glass:rgba(255,255,255,.04); --glass-brd:rgba(255,255,255,.08);
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.3);
+  --shadow-glow:0 0 20px rgba(82,183,136,.15);
+  --mono:'Courier New',monospace;
+  --disp:'Inter',system-ui,-apple-system,sans-serif;
+  --radius:16px; --radius-lg:22px; --radius-sm:10px; --pad:16px;
+  --ease:cubic-bezier(.4,0,.2,1);
+}
+[data-theme="claro"] {
+  --bg:#f3f6fa; --bg2:#ffffff; --bg3:#e8ecf2;
+  --fg:#1a202c; --fg2:#4a5568; --mu:#718096; --brd:rgba(0,0,0,.08);
+  --nav:rgba(255,255,255,.95); --card:rgba(0,0,0,.03);
+  --glass:rgba(255,255,255,.7); --glass-brd:rgba(0,0,0,.06);
+  --shadow:0 4px 24px rgba(0,0,0,.08); --shadow-sm:0 2px 8px rgba(0,0,0,.05);
+}
+[data-theme="azul"] {
+  --bg:#080f20; --bg2:#0c1830; --bg3:#10264a;
+  --fg:#e2f0ff; --fg2:#a0c4e8; --mu:#7eadd4; --brd:rgba(59,130,246,.12);
+  --nav:rgba(8,15,32,.95); --card:rgba(59,130,246,.05);
+  --glass:rgba(59,130,246,.06); --glass-brd:rgba(59,130,246,.12);
+}
+[data-theme="contraste"] {
+  --bg:#000000; --bg2:#0a0a0a; --bg3:#1a1a1a;
+  --fg:#ffffff; --fg2:#dddddd; --mu:#bbbbbb; --brd:rgba(255,255,255,.25);
+  --g:#00ff88; --g2:#00ff88; --o:#ffaa00; --nav:#000000;
+  --card:rgba(255,255,255,.06); --glass:rgba(255,255,255,.08);
+}
+/* ══ BASE ══ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--fg);font-family:var(--disp);overflow:hidden;-webkit-font-smoothing:antialiased;}
+#app{height:100%;display:flex;flex-direction:column;max-width:500px;margin:0 auto;position:relative;}
+/* ══ ANIMATIONS ══ */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes ripple{to{transform:scale(2.5);opacity:0}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(82,183,136,.2)}50%{box-shadow:0 0 20px rgba(82,183,136,.4)}}
+.fade-in{animation:fadeIn .3s var(--ease) both;}
+.skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--card) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;}
+
+/* ══ LOGIN / SETUP ══ */
+.auth-screen{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;z-index:500;
+}
+.auth-box{
+  background:var(--bg2);border:1px solid var(--brd);border-radius:22px;
+  padding:32px 24px;width:100%;max-width:380px;
+}
+.auth-logo{text-align:center;margin-bottom:24px;}
+.auth-logo-title{font-family:var(--disp);font-weight:900;font-size:28px;color:var(--g2);letter-spacing:-1px;}
+.auth-logo-tm{font-size:14px;color:var(--mu);vertical-align:super;}
+.auth-logo-sub{font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:3px;margin-top:4px;}
+.auth-title{font-weight:700;font-size:20px;margin-bottom:4px;}
+.auth-sub{font-family:var(--mono);font-size:12px;color:var(--mu);letter-spacing:1px;margin-bottom:22px;}
+.auth-inp{
+  width:100%;background:var(--bg3);border:1px solid var(--brd);
+  border-radius:11px;padding:12px 14px;color:var(--fg);font-size:14px;
+  margin-bottom:10px;
+}
+.auth-inp:focus{outline:none;border-color:var(--g2);}
+.auth-btn{
+  width:100%;padding:15px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,var(--g),var(--g2));
+  color:#fff;font-weight:700;font-size:14px;font-family:var(--disp);
+  letter-spacing:.5px;cursor:pointer;margin-bottom:10px;position:relative;overflow:hidden;
+  box-shadow:0 4px 16px rgba(82,183,136,.25);transition:transform .15s var(--ease),box-shadow .15s var(--ease);
+}
+.auth-btn:active{transform:scale(.97);box-shadow:0 2px 8px rgba(82,183,136,.15);}
+.auth-link{
+  text-align:center;font-family:var(--mono);font-size:10px;
+  color:var(--mu);cursor:pointer;margin-top:6px;
+}
+.auth-link span{color:var(--g2);text-decoration:underline;}
+.auth-err{color:var(--r);font-size:13px;font-family:var(--mono);min-height:16px;margin-bottom:8px;text-align:center;}
+.auth-divider{height:1px;background:var(--brd);margin:14px 0;}
+.auth-empresa-code{
+  background:rgba(74,124,89,.08);border:1px solid rgba(74,124,89,.2);
+  border-radius:10px;padding:10px 14px;margin-bottom:10px;
+}
+.auth-empresa-code-lbl{font-family:var(--mono);font-size:9px;color:var(--g2);letter-spacing:1px;margin-bottom:4px;}
+.auth-empresa-code-val{font-family:var(--mono);font-size:16px;font-weight:700;letter-spacing:4px;}
+
+/* ══ TOPBAR ══ */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top)+12px) var(--pad) 12px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-brd);flex-shrink:0;gap:8px;z-index:10;}
+.zp-logo{font-family:var(--disp);font-weight:900;font-size:16px;color:var(--g2);letter-spacing:-.5px;white-space:nowrap;text-shadow:0 0 20px rgba(82,183,136,.2);}
+.depto-sel{flex:1;background:var(--bg3);border:1px solid var(--brd);border-radius:var(--radius-sm);padding:8px 12px;color:var(--fg);font-size:13px;font-family:var(--disp);font-weight:600;cursor:pointer;max-width:170px;transition:border-color .2s var(--ease);}
+.depto-sel:focus{border-color:var(--g2);outline:none;}
+.topbar-btns{display:flex;gap:6px;}
+.ico-btn{background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius-sm);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;flex-shrink:0;transition:all .2s var(--ease);}
+.ico-btn:active{transform:scale(.9);background:var(--bg3);}
+
+/* ══ VIEWS ══ */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:var(--pad);padding-bottom:80px;}
+.view{display:none;}
+.view.active{display:block;}
+
+/* ══ NAV ══ */
+nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px calc(env(safe-area-inset-bottom)+6px);background:var(--nav);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--glass-brd);flex-shrink:0;}
+.ftab{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:6px 10px;border-radius:12px;min-width:52px;position:relative;transition:all .2s var(--ease);}
+.ftab:active{transform:scale(.92);}
+.ftab-i{font-size:22px;color:var(--mu);transition:all .2s var(--ease);}
+.ftab-l{font-family:var(--disp);font-size:10px;font-weight:600;color:var(--mu);letter-spacing:.3px;transition:all .2s var(--ease);}
+.ftab.on{background:rgba(82,183,136,.08);}
+.ftab.on .ftab-i{color:var(--g2);transform:scale(1.1);}
+.ftab.on .ftab-l{color:var(--g2);font-weight:700;}
+.ftab.on::after{content:'';position:absolute;bottom:0;left:25%;right:25%;height:3px;background:var(--g2);border-radius:3px;}
+
+/* ══ CARDS ══ */
+.card{background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--glass-brd);border-radius:var(--radius);padding:16px;margin-bottom:12px;transition:border-color .2s var(--ease);}
+.card:hover{border-color:rgba(255,255,255,.12);}
+.card-title{font-family:var(--disp);font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--mu);margin-bottom:10px;text-transform:uppercase;}
+
+/* ══ BOTONES ACCIÓN ══ */
+.act-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.act-btn{border:none;border-radius:var(--radius-lg);padding:24px 18px;cursor:pointer;text-align:left;transition:transform .2s var(--ease),box-shadow .2s var(--ease);position:relative;overflow:hidden;}
+.act-btn:active{transform:scale(.95);}
+.act-btn::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--x,50%) var(--y,50%),rgba(255,255,255,.12) 0%,transparent 60%);opacity:0;transition:opacity .3s;}
+.act-btn:hover::after{opacity:1;}
+.ab-g{background:linear-gradient(135deg,#1a3d28,#2d5f42);border:1px solid rgba(82,183,136,.3);box-shadow:0 4px 20px rgba(82,183,136,.1);}
+.ab-o{background:linear-gradient(135deg,#3d1a00,#6b3000);border:1px solid rgba(255,123,0,.3);box-shadow:0 4px 20px rgba(255,123,0,.1);}
+.ab-icon{font-size:30px;margin-bottom:8px;display:block;}
+.ab-label{font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:1.5px;color:var(--mu);display:block;}
+.ab-title{font-weight:800;font-size:17px;display:block;margin-top:4px;}
+.cg{color:var(--g2);} .co{color:var(--o2);}
+
+/* ══ ESCANEAR ══ */
+.scan-zone{background:var(--card);border:2px dashed var(--brd);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;margin-bottom:12px;transition:all .2s var(--ease);}
+.scan-zone:active{border-color:var(--g2);background:rgba(82,183,136,.05);}
+.scan-icon{font-size:40px;margin-bottom:8px;}
+.scan-label{font-family:var(--disp);font-size:14px;font-weight:600;color:var(--mu);}
+
+/* ══ FORMULARIO ══ */
+.flbl{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.5px;color:var(--fg2);display:block;margin-bottom:8px;text-transform:uppercase;}
+.finp{width:100%;background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:15px 16px;color:var(--fg);font-size:17px;font-family:var(--disp);margin-bottom:14px;transition:border-color .2s var(--ease),box-shadow .2s var(--ease);}
+.fsel{width:100%;background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:15px 16px;color:var(--fg);font-size:16px;font-family:var(--disp);margin-bottom:14px;appearance:none;transition:border-color .2s var(--ease);}
+.finp:focus,.fsel:focus{outline:none;border-color:var(--g2);box-shadow:0 0 0 3px rgba(82,183,136,.12);}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* ══ BOTÓN PRIMARIO ══ */
+.btn-prime{width:100%;padding:18px;border:none;border-radius:14px;font-family:var(--disp);font-size:16px;letter-spacing:.3px;cursor:pointer;font-weight:700;transition:all .2s var(--ease);position:relative;overflow:hidden;}
+.btn-green{background:linear-gradient(135deg,var(--g),var(--g2));color:#fff;box-shadow:0 4px 16px rgba(82,183,136,.25);}
+.btn-orange{background:linear-gradient(135deg,var(--o),var(--o2));color:#fff;box-shadow:0 4px 16px rgba(255,123,0,.25);}
+.btn-gray{background:var(--bg3);color:var(--mu);border:1px solid var(--brd);}
+.btn-prime:active{transform:scale(.97);opacity:.9;}
+
+/* ══ HISTORIAL ══ */
+.search-bar{position:relative;margin-bottom:10px;}
+.search-inp{width:100%;background:var(--bg3);border:1px solid var(--brd);border-radius:10px;padding:12px 14px 12px 40px;color:var(--fg);font-size:15px;font-family:var(--mono);}
+.search-inp::placeholder{color:var(--mu);}
+.search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--mu);font-size:13px;pointer-events:none;}
+.h-item{display:flex;align-items:center;gap:12px;background:var(--glass);border:1px solid var(--glass-brd);border-radius:14px;padding:15px 16px;margin-bottom:10px;cursor:pointer;transition:all .2s var(--ease);}
+.h-item:active{transform:scale(.98);border-color:var(--g2);}
+.h-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.hd-g{background:var(--g2);box-shadow:0 0 8px rgba(82,183,136,.4);} .hd-o{background:var(--o);box-shadow:0 0 8px rgba(255,123,0,.4);}
+.h-body{flex:1;min-width:0;}
+.h-top{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.h-tipo{font-family:var(--disp);font-size:11px;font-weight:700;letter-spacing:1px;}
+.h-pat{font-weight:800;font-size:16px;letter-spacing:.5px;}
+.h-depto{font-family:var(--disp);font-size:10px;font-weight:600;color:var(--mu);background:var(--bg3);padding:2px 8px;border-radius:6px;}
+.h-meta{font-size:13px;color:var(--mu);margin-top:2px;}
+.h-badge{font-size:18px;flex-shrink:0;}
+
+/* ══ ESTADO DOCUMENTAL ══ */
+.estado-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.8px;padding:2px 8px;border-radius:100px;flex-shrink:0;}
+.est-pendiente{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3);}
+.est-aprobado {background:rgba(34,197,94,.15); color:#4ade80;border:1px solid rgba(34,197,94,.3);}
+.est-rechazado{background:rgba(239,68,68,.15); color:#f87171;border:1px solid rgba(239,68,68,.3);}
+.est-revision {background:rgba(59,130,246,.15); color:#60a5fa;border:1px solid rgba(59,130,246,.3);}
+.rechazo-alert{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:14px;padding:14px;margin-bottom:12px;}
+.rechazo-alert-title{font-weight:700;font-size:14px;color:#f87171;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.rechazo-item{font-size:13px;color:var(--fg2);padding:6px 0;border-bottom:1px solid rgba(239,68,68,.1);display:flex;align-items:center;justify-content:space-between;}
+.rechazo-item:last-child{border-bottom:none}
+.log-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.log-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--fg2);}
+.log-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.log-ld-c{background:#4ade80;}.log-ld-a{background:#4ade80;}.log-ld-r{background:#f87171;}.log-ld-v{background:#60a5fa;}
+.log-ts{font-family:var(--mono);font-size:10px;color:var(--mu);}
+
+/* ══ PILLS ══ */
+.pills{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:12px;scrollbar-width:none;}
+.pills::-webkit-scrollbar{display:none;}
+.pill{flex-shrink:0;background:var(--glass);border:1px solid var(--glass-brd);border-radius:22px;padding:8px 16px;font-family:var(--disp);font-size:12px;font-weight:600;cursor:pointer;color:var(--mu);white-space:nowrap;transition:all .2s var(--ease);}
+.pill:active{transform:scale(.95);}
+.pill.on{background:rgba(82,183,136,.15);border-color:rgba(82,183,136,.4);color:var(--g2);font-weight:700;}
+
+/* ══ STATS ══ */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.stat-box{background:var(--glass);border:1px solid var(--glass-brd);border-radius:14px;padding:16px;text-align:center;transition:border-color .2s var(--ease);}
+.stat-box:hover{border-color:rgba(255,255,255,.12);}
+.stat-n{font-family:var(--disp);font-size:32px;font-weight:900;color:var(--fg);letter-spacing:-1px;}
+.stat-l{font-family:var(--disp);font-size:11px;font-weight:600;color:var(--mu);letter-spacing:.5px;margin-top:4px;}
+
+/* ══ TURNO ══ */
+.turno-header{background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(74,124,89,.05));border:1px solid rgba(74,124,89,.25);border-radius:14px;padding:14px;margin-bottom:12px;}
+.turno-op-name{font-weight:800;font-size:19px;margin-bottom:4px;}
+.turno-empresa{font-family:var(--mono);font-size:12px;color:var(--g2);letter-spacing:1px;}
+.turno-time{font-family:var(--mono);font-size:12px;color:var(--mu);margin-top:6px;}
+
+.pendiente-item{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,109,0,.06);border:1px solid rgba(255,109,0,.2);
+  border-radius:12px;padding:11px 12px;margin-bottom:6px;
+}
+.pendiente-icon{font-size:20px;flex-shrink:0;}
+.pendiente-body{flex:1;}
+.pendiente-plate{font-weight:700;font-size:14px;}
+.pendiente-meta{font-family:var(--mono);font-size:9px;color:var(--mu);margin-top:2px;}
+.pendiente-time{font-family:var(--mono);font-size:9px;color:var(--o2);}
+
+.link-portal{
+  background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);
+  border-radius:12px;padding:12px;margin-bottom:10px;
+}
+.link-portal-lbl{font-family:var(--mono);font-size:9px;color:#60a5fa;letter-spacing:1px;margin-bottom:6px;}
+.link-portal-url{font-family:var(--mono);font-size:10px;color:var(--fg);word-break:break-all;line-height:1.5;}
+.btn-copy{
+  margin-top:8px;width:100%;padding:9px;border:1px solid rgba(59,130,246,.3);
+  border-radius:9px;background:rgba(59,130,246,.1);color:#60a5fa;
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;
+}
+.btn-copy:active{opacity:.7;}
+
+.handover-box{margin-bottom:12px;}
+.btn-cerrar-turno{
+  width:100%;padding:15px;border:none;border-radius:13px;
+  background:linear-gradient(135deg,#3d1a00,#6b3000);
+  border:1px solid rgba(255,109,0,.4);
+  color:var(--o2);font-family:var(--mono);font-size:12px;
+  font-weight:700;letter-spacing:1.5px;cursor:pointer;
+}
+.btn-cerrar-turno:active{opacity:.8;}
+
+/* ══ MODAL ══ */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+.modal-box{background:var(--bg2);border-radius:var(--radius-lg) var(--radius-lg) 0 0;width:100%;max-width:500px;padding:24px 20px 40px;max-height:88vh;overflow-y:auto;animation:slideUp .3s var(--ease);box-shadow:0 -8px 40px rgba(0,0,0,.5);}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.modal-title{font-family:var(--disp);font-weight:800;font-size:18px;}
+.modal-x{font-size:22px;cursor:pointer;color:var(--mu);background:var(--bg3);border:none;padding:6px 10px;border-radius:var(--radius-sm);transition:all .2s var(--ease);}
+.modal-x:active{background:var(--brd);transform:scale(.92);}
+.modal-foto{width:100%;border-radius:14px;margin-bottom:14px;border:1px solid var(--brd);}
+.modal-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--brd);}
+.modal-lbl{font-family:var(--disp);font-size:11px;font-weight:600;color:var(--mu);letter-spacing:1px;}
+.modal-val{font-weight:600;font-size:15px;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--disp);}
+
+/* ══ TEMAS SELECTOR ══ */
+.theme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.theme-btn{border:2px solid var(--brd);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;font-size:9px;font-family:var(--mono);color:var(--mu);transition:border-color .2s;}
+.theme-btn.on{border-color:var(--g2);color:var(--g2);}
+.theme-preview{width:24px;height:24px;border-radius:6px;margin:0 auto 4px;}
+
+/* ══ DEPTOS MANAGER ══ */
+.depto-card{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.depto-icon-big{font-size:24px;flex-shrink:0;}
+.depto-info{flex:1;}
+.depto-name{font-weight:700;font-size:14px;margin-bottom:2px;}
+.depto-docs{font-family:var(--mono);font-size:9px;color:var(--mu);}
+.depto-badge-act{background:rgba(74,124,89,.2);color:var(--g2);border:1px solid rgba(74,124,89,.3);border-radius:6px;padding:2px 8px;font-size:9px;font-family:var(--mono);}
+
+/* ══ EMPTY ══ */
+.empty{text-align:center;padding:40px 20px;color:var(--mu);}
+.empty-i{font-size:40px;margin-bottom:10px;}
+.empty-t{font-family:var(--mono);font-size:11px;letter-spacing:1px;}
+
+/* ══ TOAST ══ */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid var(--glass-brd);border-radius:16px;padding:12px 18px;display:flex;align-items:center;gap:12px;opacity:0;transition:all .35s var(--ease);z-index:300;pointer-events:none;max-width:340px;width:92%;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:var(--shadow);}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.t-icon{font-size:22px;flex-shrink:0;}
+.t-title{font-weight:700;font-size:14px;}
+.t-sub{font-size:12px;color:var(--mu);}
+
+/* ══ OFFLINE ══ */
+#offBadge{display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#f44336;color:#fff;padding:4px 14px;border-radius:20px;font-size:11px;font-family:var(--mono);z-index:400;}
+#offBadge.show{display:block;}
+
+/* ══ MULTI-FOTOS ══ */
+.fotos-zone{margin-bottom:14px;}
+.fotos-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.foto-thumb{position:relative;width:88px;height:88px;border-radius:12px;overflow:hidden;border:1px solid var(--brd);flex-shrink:0;background:var(--bg3);}
+.foto-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.foto-remove{position:absolute;top:4px;right:4px;background:rgba(220,38,38,.92);border:none;border-radius:50%;width:22px;height:22px;color:#fff;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1;padding:0;}
+.foto-add-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:var(--card);border:2px dashed var(--brd);border-radius:12px;cursor:pointer;font-family:var(--mono);font-size:12px;color:var(--mu);letter-spacing:1px;width:100%;transition:border-color .2s,color .2s;}
+.foto-add-btn:active{border-color:var(--g2);color:var(--g2);}
+.foto-count{background:var(--g2);color:#fff;border-radius:100px;padding:2px 10px;font-size:11px;font-weight:700;}
+.foto-num{position:absolute;bottom:3px;left:4px;background:rgba(0,0,0,.6);color:#fff;font-family:var(--mono);font-size:9px;border-radius:4px;padding:1px 5px;}
+
+/* ══ MISC ══ */
+.sec-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.sec-l{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--mu);text-transform:uppercase;}
+.sec-a{font-family:var(--mono);font-size:9px;color:var(--g2);cursor:pointer;}
+.divider{height:1px;background:var(--brd);margin:12px 0;}
+.tag{display:inline-block;background:var(--bg3);border:1px solid var(--brd);border-radius:6px;padding:2px 8px;font-family:var(--mono);font-size:9px;color:var(--mu);margin:2px;}
+.user-badge{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:8px 12px;margin-bottom:12px;}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--g2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0;}
+.user-name{font-weight:600;font-size:13px;}
+.user-empresa{font-family:var(--mono);font-size:9px;color:var(--mu);}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div class="auth-screen" id="loginScreen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="auth-logo-title">ZeroPaper<span class="auth-logo-tm">™</span></div>
+      <div class="auth-logo-sub">GESTIÓN PORTUARIA</div>
+    </div>
+    <div class="auth-title">Iniciar sesión</div>
+    <div class="auth-sub">OPERADOR · EMPRESA</div>
+    <div class="auth-err" id="loginErr"></div>
+    <input class="auth-inp" id="loginEmail" type="email" placeholder="correo@empresa.cl" autocomplete="email">
+    <input class="auth-inp" id="loginPass" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <button class="auth-btn" onclick="doLogin()">Entrar →</button>
+    <div class="auth-link" onclick="showRegister()">¿Primera vez? <span>Crear cuenta</span></div>
+  </div>
+</div>
+
+<!-- ══ REGISTRO ══ -->
+<div class="auth-screen" id="registerScreen" style="display:none">
+  <div class="auth-box" style="overflow-y:auto;max-height:96vh">
+    <div class="auth-logo">
+      <div class="auth-logo-title">ZeroPaper<span class="auth-logo-tm">™</span></div>
+      <div class="auth-logo-sub">NUEVA CUENTA</div>
+    </div>
+    <div class="auth-title">Crear cuenta</div>
+    <div class="auth-sub">COMPLETA TUS DATOS</div>
+    <div class="auth-err" id="registerErr"></div>
+    <input class="auth-inp" id="regNombre" placeholder="Tu nombre (ej: Juan Pérez)" autocomplete="name">
+    <input class="auth-inp" id="regEmail" type="email" placeholder="correo@empresa.cl" autocomplete="email">
+    <input class="auth-inp" id="regPass" type="password" placeholder="Contraseña (mín. 8 caracteres)">
+    <div class="auth-divider"></div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:1px;margin-bottom:10px">¿TIENES CÓDIGO DE EMPRESA?</div>
+    <input class="auth-inp" id="regCodigo" placeholder="Código (ej: ZP-A1B2) — dejar vacío para crear empresa nueva" style="text-transform:uppercase">
+    <div id="regEmpresaBox" style="display:block">
+      <input class="auth-inp" id="regEmpresa" placeholder="Nombre de tu empresa (ej: Silogport S.A.)">
+    </div>
+    <button class="auth-btn" onclick="doRegister()">Crear cuenta →</button>
+    <div class="auth-link" onclick="showLogin()">¿Ya tienes cuenta? <span>Iniciar sesión</span></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app" style="display:none">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="zp-logo">ZeroPaper™</div>
+  <select class="depto-sel" id="deptoSel" onchange="cambiarDepto(this.value)">
+    <option value="">Selecciona depto</option>
+  </select>
+  <div class="topbar-btns">
+    <div class="ico-btn" id="installBtn" style="display:none" title="Instalar app">📲</div>
+    <div class="ico-btn" onclick="goTo('temas')" title="Tema">🎨</div>
+    <div class="ico-btn" onclick="goTo('config')" title="Config">⚙</div>
+  </div>
+</div>
+
+<!-- BADGE OFFLINE -->
+<div id="offBadge">Sin conexión</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div class="scroll" id="mainScroll">
+
+  <!-- ▸ HOME ◂ -->
+  <div class="view active" id="vHome">
+    <div id="homeUserBadge"></div>
+    <div class="sec-row" style="margin-bottom:14px">
+      <div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--mu);letter-spacing:2px">DEPARTAMENTO ACTIVO</div>
+        <div style="font-weight:800;font-size:18px;margin-top:2px" id="homeDeptName">Sin departamento</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--mono);font-size:8px;color:var(--mu)">HOY</div>
+        <div style="font-weight:700;font-size:20px;color:var(--g2)" id="homeCount">0</div>
+      </div>
+    </div>
+
+    <div class="act-grid" id="actGrid">
+      <div class="act-btn ab-g" onclick="goTo('ingreso')">
+        <span class="ab-icon">📥</span>
+        <span class="ab-label">REGISTRAR</span>
+        <span class="ab-title cg">INGRESO</span>
+      </div>
+      <div class="act-btn ab-o" onclick="goTo('salida')">
+        <span class="ab-icon">📤</span>
+        <span class="ab-label">REGISTRAR</span>
+        <span class="ab-title co">SALIDA</span>
+      </div>
+    </div>
+
+    <div id="rechazoAlert" style="display:none"></div>
+    <div id="anomaliaAlert" style="display:none"></div>
+    <div id="aiSuggestions" style="display:none"></div>
+    <div class="sec-row">
+      <span class="sec-l">ÚLTIMAS OPERACIONES</span>
+      <span class="sec-a" onclick="goTo('historial')">Ver todo →</span>
+    </div>
+    <div id="homeList">
+      <div class="empty"><div class="empty-i">📋</div><div class="empty-t">Sin operaciones hoy</div></div>
+    </div>
+  </div>
+
+  <!-- ▸ INGRESO ◂ -->
+  <div class="view" id="vIngreso">
+    <div class="sec-row" style="margin-bottom:14px">
+      <span style="font-weight:700;font-size:16px">📥 Nuevo Ingreso</span>
+      <span class="sec-a" onclick="goTo('home')">✕ Cancelar</span>
+    </div>
+    <div class="fotos-zone" id="fotosZoneIn"></div>
+    <input type="file" id="camIn" accept="image/*" capture="environment" style="display:none" onchange="addFoto(event,'in')">
+    <div class="frow">
+      <div>
+        <label class="flbl">Patente</label>
+        <input class="finp" id="inPlate" placeholder="AB-CD-12" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div>
+        <label class="flbl">Folio</label>
+        <input class="finp" id="inFolio" placeholder="Nº">
+      </div>
+    </div>
+    <label class="flbl">Tipo de Documento</label>
+    <select class="fsel" id="inDocType"></select>
+    <label class="flbl">Observaciones</label>
+    <input class="finp" id="inObs" placeholder="Opcional...">
+    <button class="btn-prime btn-green" id="inBtn" onclick="confirmarOp('in')">✓ Confirmar Ingreso</button>
+  </div>
+
+  <!-- ▸ SALIDA ◂ -->
+  <div class="view" id="vSalida">
+    <div class="sec-row" style="margin-bottom:14px">
+      <span style="font-weight:700;font-size:16px">📤 Nueva Salida</span>
+      <span class="sec-a" onclick="goTo('home')">✕ Cancelar</span>
+    </div>
+    <div class="fotos-zone" id="fotosZoneOut"></div>
+    <input type="file" id="camOut" accept="image/*" capture="environment" style="display:none" onchange="addFoto(event,'out')">
+    <div class="frow">
+      <div>
+        <label class="flbl">Patente</label>
+        <input class="finp" id="outPlate" placeholder="AB-CD-12" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div>
+        <label class="flbl">Folio</label>
+        <input class="finp" id="outFolio" placeholder="Nº">
+      </div>
+    </div>
+    <label class="flbl">Tipo de Documento</label>
+    <select class="fsel" id="outDocType"></select>
+    <label class="flbl">Observaciones</label>
+    <input class="finp" id="outObs" placeholder="Opcional...">
+    <button class="btn-prime btn-orange" id="outBtn" onclick="confirmarOp('out')">✓ Confirmar Salida</button>
+  </div>
+
+  <!-- ▸ HISTORIAL ◂ -->
+  <div class="view" id="vHistorial">
+    <div class="sec-row"><span class="sec-l">HISTORIAL</span><span class="sec-a" onclick="exportarCSV()">📊 Exportar</span></div>
+    <div class="search-bar">
+      <span class="search-ico">🔍</span>
+      <input class="search-inp" id="searchInp" placeholder="Buscar por patente, empresa, folio, operador, documento..." oninput="buscarOps(this.value)">
+    </div>
+    <div class="pills" id="filterPills">
+      <span class="pill on" onclick="filtrarH('TODOS',this)">Todos</span>
+      <span class="pill" onclick="filtrarH('INGRESO',this)">↓ Ingreso</span>
+      <span class="pill" onclick="filtrarH('SALIDA',this)">↑ Salida</span>
+    </div>
+    <div id="histList"></div>
+  </div>
+
+  <!-- ▸ TURNO ◂ -->
+  <div class="view" id="vTurno">
+    <div class="sec-row" style="margin-bottom:14px">
+      <span class="sec-l">MI TURNO</span>
+      <span class="sec-a" id="turnoInicioLabel"></span>
+    </div>
+
+    <div class="turno-header">
+      <div id="turnoNombreDisplay"></div>
+      <div class="turno-empresa" id="turnoEmpresaDisplay"></div>
+      <div class="turno-time" id="turnoTimeDisplay"></div>
+    </div>
+
+    <!-- Stats rápidas -->
+    <div class="stats-grid" id="turnoStats">
+      <div class="stat-box"><div class="stat-n" id="tsI">0</div><div class="stat-l">INGRESOS HOY</div></div>
+      <div class="stat-box"><div class="stat-n" id="tsS">0</div><div class="stat-l">SALIDAS HOY</div></div>
+      <div class="stat-box"><div class="stat-n" id="tsP">0</div><div class="stat-l">EN PLANTA</div></div>
+      <div class="stat-box"><div class="stat-n" id="tsF">0</div><div class="stat-l">CON FOTO</div></div>
+    </div>
+
+    <!-- Vehículos en planta (sin salida) -->
+    <div class="sec-row">
+      <span class="sec-l">VEHÍCULOS EN PLANTA</span>
+    </div>
+    <div id="pendientesList">
+      <div class="empty"><div class="empty-i">✅</div><div class="empty-t">Sin vehículos pendientes</div></div>
+    </div>
+
+    <!-- Handover -->
+    <div class="divider"></div>
+    <div class="sec-row"><span class="sec-l">CIERRE DE TURNO</span></div>
+    <div class="handover-box">
+      <label class="flbl">Nota para el próximo operador</label>
+      <textarea class="finp" id="turnoNota" placeholder="Novedades, pendientes, instrucciones..." rows="3" style="resize:none;height:80px"></textarea>
+      <button class="btn-cerrar-turno" onclick="cerrarTurno()">🔄 CERRAR TURNO Y TRASPASAR</button>
+    </div>
+
+    <!-- Portal cliente -->
+    <div class="divider"></div>
+    <div class="sec-row"><span class="sec-l">PORTAL CLIENTE</span></div>
+    <div class="link-portal">
+      <div class="link-portal-lbl">LINK DE SEGUIMIENTO EN TIEMPO REAL</div>
+      <div class="link-portal-url" id="portalLink">—</div>
+      <button class="btn-copy" onclick="copiarLink()">📋 COPIAR LINK</button>
+    </div>
+  </div>
+
+  <!-- ▸ DEPTOS ◂ -->
+  <div class="view" id="vDeptos">
+    <div class="sec-row">
+      <span class="sec-l">DEPARTAMENTOS</span>
+      <span class="sec-a" onclick="showModalNewDepto()">+ Agregar</span>
+    </div>
+    <div id="deptosList"></div>
+    <div class="divider"></div>
+    <div class="sec-row">
+      <span class="sec-l">DOCUMENTOS DEL DEPTO</span>
+      <span class="sec-a" onclick="showModalNewDoc()">+ Agregar</span>
+    </div>
+    <div id="docsList"></div>
+  </div>
+
+  <!-- ▸ TEMAS ◂ -->
+  <div class="view" id="vTemas">
+    <div class="sec-row"><span class="sec-l">APARIENCIA</span></div>
+    <div class="theme-grid">
+      <div class="theme-btn on" onclick="setTema('oscuro',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#0d0d1a,#1a1a35)"></div>
+        OSCURO
+      </div>
+      <div class="theme-btn" onclick="setTema('claro',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#f0f4f8,#ffffff)"></div>
+        CLARO
+      </div>
+      <div class="theme-btn" onclick="setTema('azul',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#0a1628,#0d1f3c)"></div>
+        AZUL
+      </div>
+      <div class="theme-btn" onclick="setTema('contraste',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#000,#111)"></div>
+        CONTRASTE
+      </div>
+    </div>
+    <div class="sec-row" style="margin-top:8px"><span class="sec-l">TAMAÑO DE TEXTO</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn-prime btn-gray" onclick="setFontSize(14)" style="font-size:12px">A Pequeño</button>
+      <button class="btn-prime btn-gray" onclick="setFontSize(16)" style="font-size:14px">A Normal</button>
+      <button class="btn-prime btn-gray" onclick="setFontSize(18)" style="font-size:16px">A Grande</button>
+    </div>
+  </div>
+
+  <!-- ▸ CONFIG ◂ -->
+  <div class="view" id="vConfig">
+    <div class="sec-row"><span class="sec-l">CONFIGURACIÓN</span></div>
+    <div class="card" id="configUserCard">
+      <div class="card-title">MI CUENTA</div>
+      <div id="configUserInfo" style="font-family:var(--mono);font-size:11px;color:var(--mu);margin-bottom:12px"></div>
+      <label class="flbl">Nombre del operador</label>
+      <input class="finp" id="cfgOperador" placeholder="Juan Pérez">
+      <button class="btn-prime btn-green" onclick="guardarNombre()">✓ Guardar nombre</button>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-title">DATOS</div>
+      <button class="btn-prime btn-gray" style="margin-bottom:8px" onclick="exportarCSV()">📊 Exportar CSV</button>
+      <button class="btn-prime btn-gray" style="margin-bottom:8px" onclick="if(confirm('¿Borrar todos los datos locales?')){limpiarDatos()}">🗑 Limpiar datos locales</button>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-title">ADMINISTRACIÓN</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:10px">Panel de gestión y estadísticas completas.</div>
+      <a href="/zeropaper_admin.html" target="_blank" style="text-decoration:none">
+        <button class="btn-prime btn-green" style="width:100%;margin-bottom:8px">🖥 Abrir Panel Admin</button>
+      </a>
+      <button class="btn-prime btn-gray" onclick="doLogout()">🔓 Cerrar sesión</button>
+    </div>
+  </div>
+
+</div><!-- fin scroll -->
+
+<!-- NAV -->
+<nav>
+  <div class="ftab on" id="t-home" onclick="goTo('home')"><span class="ftab-i">⌂</span><span class="ftab-l">INICIO</span></div>
+  <div class="ftab" id="t-historial" onclick="goTo('historial')"><span class="ftab-i">📋</span><span class="ftab-l">HISTORIAL</span></div>
+  <div class="ftab" id="t-turno" onclick="goTo('turno')"><span class="ftab-i">🔄</span><span class="ftab-l">TURNO</span></div>
+  <div class="ftab" id="t-deptos" onclick="goTo('deptos')"><span class="ftab-i">🏗</span><span class="ftab-l">DEPTOS</span></div>
+  <div class="ftab" id="t-config" onclick="goTo('config')"><span class="ftab-i">⚙</span><span class="ftab-l">CONFIG</span></div>
+</nav>
+
+</div><!-- fin app -->
+
+<!-- TOAST -->
+<div id="toast"><div class="t-icon" id="tIco"></div><div><div class="t-title" id="tTit"></div><div class="t-sub" id="tSub"></div></div></div>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════
+   ZeroPaper™ v5.0 — Multi-Empresa + Auth
+   © 2025 ZeroPaper™
+═══════════════════════════════════════════ */
+
+// ── FIREBASE CONFIG ──
+const FB = {
+  projectId: 'zeropaper-prod',
+  apiKey:    'AIzaSyCli7F4hLi-XEmmekGZpO2KQ1SO612I85Y'
+};
+const FS_BASE = () => `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
+
+// ── CONSTANTES ──
+const DB_NAME  = 'zp5_db';
+const DB_VER   = 1;
+const K_DEPTOS = 'zp5_deptos';
+const K_DEPTO  = 'zp5_depto_activo';
+const K_TEMA   = 'zp5_tema';
+const K_SESSION= 'zp5_session';
+const K_TURNO  = 'zp5_turno_inicio';
+
+// ── DEPARTAMENTOS PREDEFINIDOS ──
+const DEPTOS_DEFAULT = [
+  { id:'guarda_almacen', nombre:'Guarda Almacén', icon:'🏭', desc:'Cabotaje nacional',
+    docs:['CONOCIMIENTO_EMBARQUE','GUIA_CABOTAJE','MANIFIESTO','LISTA_EMPAQUE','ORDEN_CARGA','RECIBO_BODEGA','AUTORIZACIÓN_SALIDA','NOTA_COBRO'] },
+  { id:'control', nombre:'Control', icon:'📦', desc:'Contenedores · Intercheck',
+    docs:['INTERCHECK','EIR','BOOKING','GATE_IN','GATE_OUT','DAMAGE_REPORT','SEAL_REPORT','CONTENEDOR_VACÍO','CONTENEDOR_LLENO','TARJA'] },
+  { id:'aduana', nombre:'Aduana', icon:'🌍', desc:'DUS · DAM · Despacho',
+    docs:['DUS','DAM','AFORO','LEVANTE','MIC_DTA','DECLARACION_INGRESO','PODER_NOTARIAL','FACTURA_COMERCIAL','CERTIFICADO_ORIGEN','CARTA_PORTE'] },
+  { id:'recepcion', nombre:'Recepción General', icon:'🚪', desc:'Entrada y salida general',
+    docs:['GUIA_DESPACHO','ORDEN_COMPRA','FACTURA','NOTA_ENTREGA','RECIBO_MERCADERIA','CONTROL_ACCESO','PASE_SALIDA'] }
+];
+
+// ── ESTADO ──
+let db         = null;
+let session    = null; // { uid, idToken, refreshToken, expiresAt, email, nombre, empresaId, empresaNombre, rol }
+let deptos     = [];
+let deptoActivo= null;
+let curFiltro  = 'TODOS';
+let fotosDir   = { in: [], out: [] };
+let toastTimer = null;
+let turnoInicio= null;
+
+// ══════════════════════════════════════
+//  AUTH PROPIO — SHA-256 + Firestore
+//  (No requiere Firebase Auth habilitado)
+// ══════════════════════════════════════
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function emailToUid(email) {
+  // uid deterministico basado en email (para lookup directo)
+  return email.toLowerCase().replace(/[^a-z0-9]/g,'_').slice(0,40);
+}
+
+function genToken() {
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// getValidToken — solo verifica expiración de sesión local (sin refresh remoto)
+function getValidToken() {
+  if (!session) return null;
+  if (Date.now() > session.expiresAt) { doLogout(); return null; }
+  return session.localToken || 'local';
+}
+
+// ══════════════════════════════════════
+//  SESIÓN
+// ══════════════════════════════════════
+
+function saveSession() {
+  localStorage.setItem(K_SESSION, JSON.stringify(session));
+}
+
+function loadSession() {
+  try {
+    const s = localStorage.getItem(K_SESSION);
+    if (s) session = JSON.parse(s);
+  } catch(e) { session = null; }
+}
+
+function doLogout() {
+  session = null;
+  localStorage.removeItem(K_SESSION);
+  document.getElementById('app').style.display = 'none';
+  showLogin();
+}
+
+// ══════════════════════════════════════
+//  FIRESTORE HELPERS
+// ══════════════════════════════════════
+
+function toFsDoc(obj) {
+  const fields = {};
+  for (const [k,v] of Object.entries(obj)) {
+    if (v === null || v === undefined) continue;
+    if (typeof v === 'number')  fields[k] = { integerValue: String(Math.round(v)) };
+    else if (typeof v === 'boolean') fields[k] = { booleanValue: v };
+    else fields[k] = { stringValue: String(v) };
+  }
+  return { fields };
+}
+
+function parseFs(doc) {
+  const out = { _id: doc.name?.split('/').pop() };
+  for (const [k,v] of Object.entries(doc.fields || {})) {
+    if (v.stringValue  !== undefined) out[k] = v.stringValue;
+    else if (v.integerValue !== undefined) out[k] = parseInt(v.integerValue);
+    else if (v.booleanValue !== undefined) out[k] = v.booleanValue;
+  }
+  return out;
+}
+
+async function fsGet(path) {
+  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+async function fsList(path) {
+  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}&pageSize=500`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+async function fsSet(path, data) {
+  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}`;
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(toFsDoc(data))
+  });
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+async function fsPost(path, data) {
+  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(toFsDoc(data))
+  });
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+// ══════════════════════════════════════
+//  PERFIL DE USUARIO
+// ══════════════════════════════════════
+
+async function cargarPerfil(uid) {
+  try {
+    const doc = await fsGet(`usuarios/${uid}`);
+    const p = parseFs(doc);
+    return p.email ? p : null;
+  } catch(e) { return null; }
+}
+
+async function crearEmpresa(empresaNombre) {
+  const empresaId = 'emp_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const codigo = empresaId.slice(4,10).toUpperCase();
+  const data = { nombre: empresaNombre, codigo, creadoEn: Date.now(), activa: true };
+  await fsSet(`empresas/${empresaId}/perfil/datos`, data);
+  await fsSet(`codigoEmpresas/${codigo}`, { empresaId, empresaNombre: empresaNombre });
+  return { empresaId, codigo };
+}
+
+async function buscarEmpresaPorCodigo(codigo) {
+  try {
+    const doc = await fsGet(`codigoEmpresas/${codigo.toUpperCase().trim()}`);
+    const data = parseFs(doc);
+    return data.empresaId ? data : null;
+  } catch(e) { return null; }
+}
+
+// ══════════════════════════════════════
+//  LOGIN / REGISTRO UI
+// ══════════════════════════════════════
+
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('registerScreen').style.display = 'none';
+}
+
+function showRegister() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('registerScreen').style.display = 'flex';
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.textContent = '';
+  if (!email || !pass) { errEl.textContent = 'Completa todos los campos'; return; }
+
+  const btn = document.querySelector('#loginScreen .auth-btn');
+  btn.textContent = '⏳ Ingresando...'; btn.disabled = true;
+
+  try {
+    const uid  = emailToUid(email);
+    const hash = await sha256(email + '::' + pass);
+
+    const doc = await fsGet(`usuarios/${uid}`);
+    const perfil = parseFs(doc);
+
+    if (!perfil.passHash || perfil.passHash !== hash) {
+      errEl.textContent = 'Correo o contraseña incorrectos';
+      btn.textContent = 'Entrar →'; btn.disabled = false;
+      return;
+    }
+
+    session = {
+      uid, email,
+      localToken:  genToken(),
+      expiresAt:   Date.now() + 12 * 3600 * 1000, // 12 horas
+      nombre:      perfil.nombre || email.split('@')[0],
+      empresaId:   perfil.empresaId,
+      empresaNombre: perfil.empresaNombre,
+      rol:         perfil.rol || 'operador'
+    };
+    saveSession();
+    // Actualizar último login en operadores
+    try {
+      await fsSet(`empresas/${perfil.empresaId}/operadores/${uid}`, {
+        nombre: perfil.nombre || email.split('@')[0],
+        email, rol: perfil.rol || 'operador',
+        creadoEn: perfil.creadoEn || Date.now()
+      });
+    } catch(e) {}
+    iniciarApp();
+  } catch(e) {
+    errEl.textContent = 'Correo o contraseña incorrectos';
+  }
+  btn.textContent = 'Entrar →'; btn.disabled = false;
+}
+
+async function doRegister() {
+  const nombre    = document.getElementById('regNombre').value.trim();
+  const email     = document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass      = document.getElementById('regPass').value;
+  const codigo    = document.getElementById('regCodigo').value.trim().toUpperCase();
+  const empNombre = document.getElementById('regEmpresa').value.trim();
+  const errEl     = document.getElementById('registerErr');
+  errEl.textContent = '';
+
+  if (!nombre || !email || pass.length < 6) {
+    errEl.textContent = 'Completa nombre, correo y contraseña (mín. 6 caracteres)'; return;
+  }
+
+  const btn = document.querySelector('#registerScreen .auth-btn');
+  btn.textContent = '⏳ Creando cuenta...'; btn.disabled = true;
+
+  try {
+    const uid  = emailToUid(email);
+    const hash = await sha256(email + '::' + pass);
+
+    // Verificar si el correo ya existe
+    try {
+      const existing = await fsGet(`usuarios/${uid}`);
+      const ex = parseFs(existing);
+      if (ex.passHash) {
+        errEl.textContent = 'Este correo ya está registrado. Inicia sesión.';
+        btn.textContent = 'Crear cuenta →'; btn.disabled = false;
+        return;
+      }
+    } catch(e) { /* no existe, OK */ }
+
+    let empresaId, empresaNombre;
+
+    if (codigo) {
+      const emp = await buscarEmpresaPorCodigo(codigo);
+      if (!emp) {
+        errEl.textContent = 'Código de empresa no válido';
+        btn.textContent = 'Crear cuenta →'; btn.disabled = false;
+        return;
+      }
+      empresaId = emp.empresaId;
+      empresaNombre = emp.empresaNombre;
+    } else {
+      if (!empNombre) {
+        errEl.textContent = 'Ingresa el nombre de tu empresa o un código de empresa';
+        btn.textContent = 'Crear cuenta →'; btn.disabled = false;
+        return;
+      }
+      const emp = await crearEmpresa(empNombre);
+      empresaId = emp.empresaId;
+      empresaNombre = empNombre;
+    }
+
+    const rol = codigo ? 'operador' : 'admin';
+
+    await fsSet(`usuarios/${uid}`, {
+      nombre, email, passHash: hash, empresaId, empresaNombre,
+      rol, creadoEn: Date.now()
+    });
+
+    await fsSet(`empresas/${empresaId}/operadores/${uid}`, {
+      nombre, email, rol, creadoEn: Date.now()
+    });
+
+    session = {
+      uid, email,
+      localToken:   genToken(),
+      expiresAt:    Date.now() + 12 * 3600 * 1000,
+      nombre, empresaId, empresaNombre, rol
+    };
+    saveSession();
+    iniciarApp();
+  } catch(e) {
+    errEl.textContent = 'Error al crear cuenta. Intenta nuevamente.';
+  }
+  btn.textContent = 'Crear cuenta →'; btn.disabled = false;
+}
+
+document.getElementById('regCodigo').addEventListener('input', function() {
+  document.getElementById('regEmpresaBox').style.display = this.value.trim() ? 'none' : 'block';
+});
+
+// ══════════════════════════════════════
+//  INDEXEDDB
+// ══════════════════════════════════════
+
+function initDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('ops')) {
+        const s = d.createObjectStore('ops', { keyPath:'id' });
+        s.createIndex('tipo','tipo',{unique:false});
+        s.createIndex('ts','ts',{unique:false});
+        s.createIndex('empresaId','empresaId',{unique:false});
+      }
+      if (!d.objectStoreNames.contains('fotos'))
+        d.createObjectStore('fotos', { keyPath:'id' });
+    };
+    req.onsuccess = e => { db = e.target.result; res(); };
+    req.onerror   = e => rej(e);
+  });
+}
+
+function dbPut(store, obj) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readwrite');
+    const req = tx.objectStore(store).put(obj);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbGet(store, key) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readonly');
+    const req = tx.objectStore(store).get(key);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbGetAll(store) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbDelete(store, key) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readwrite');
+    const req = tx.objectStore(store).delete(key);
+    req.onsuccess = () => res();
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+async function getOpsEmpresa() {
+  if (!session) return [];
+  const all = await dbGetAll('ops');
+  return all.filter(o => o.empresaId === session.empresaId).sort((a,b) => b.ts - a.ts);
+}
+
+// ══════════════════════════════════════
+//  NAVEGACIÓN
+// ══════════════════════════════════════
+
+const VIEWS = ['home','ingreso','salida','historial','turno','deptos','temas','config'];
+const TABS  = ['home','historial','turno','deptos','config'];
+
+function goTo(name) {
+  VIEWS.forEach(v => {
+    document.getElementById('v'+cap(v))?.classList.remove('active');
+    if (TABS.includes(v)) document.getElementById('t-'+v)?.classList.remove('on');
+  });
+  document.getElementById('v'+cap(name))?.classList.add('active');
+  if (TABS.includes(name)) document.getElementById('t-'+name)?.classList.add('on');
+  document.getElementById('mainScroll').scrollTop = 0;
+  if (name==='home')      renderHome();
+  if (name==='historial') renderHistorial();
+  if (name==='turno')     renderTurno();
+  if (name==='deptos')    renderDeptos();
+  if (name==='ingreso')   prepForm('in');
+  if (name==='salida')    prepForm('out');
+  if (name==='config')    cargarConfig();
+  if (name==='temas')     cargarTema();
+}
+
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ══════════════════════════════════════
+//  DEPARTAMENTOS
+// ══════════════════════════════════════
+
+function cargarDeptos() {
+  const saved = localStorage.getItem(K_DEPTOS);
+  deptos = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEPTOS_DEFAULT));
+  const deptoId = localStorage.getItem(K_DEPTO) || deptos[0]?.id;
+  deptoActivo = deptos.find(d => d.id === deptoId) || deptos[0];
+  actualizarSelectorDepto();
+}
+
+function actualizarSelectorDepto() {
+  const sel = document.getElementById('deptoSel');
+  sel.innerHTML = deptos.map(d =>
+    `<option value="${d.id}" ${d.id===deptoActivo?.id?'selected':''}>${d.icon} ${d.nombre}</option>`
+  ).join('');
+}
+
+function cambiarDepto(id) {
+  deptoActivo = deptos.find(d => d.id === id);
+  if (deptoActivo) {
+    localStorage.setItem(K_DEPTO, id);
+    renderHome();
+    showToast('🏗', 'Departamento', deptoActivo.nombre);
+  }
+}
+
+function getDocTypes() {
+  return deptoActivo?.docs || [];
+}
+
+function prepForm(dir) {
+  const docs = getDocTypes();
+  const selId = dir==='in' ? 'inDocType' : 'outDocType';
+  const sel = document.getElementById(selId);
+  sel.innerHTML = docs.map(d => `<option value="${d}">${d.replace(/_/g,' ')}</option>`).join('');
+  ['Plate','Folio','Obs'].forEach(f => {
+    const el = document.getElementById((dir==='in'?'in':'out')+f);
+    if (el) el.value = '';
+  });
+  fotosDir[dir] = [];
+  renderFotosZone(dir);
+}
+
+// ══════════════════════════════════════
+//  FOTOS MÚLTIPLES
+// ══════════════════════════════════════
+
+function renderFotosZone(dir) {
+  const zoneId = dir==='in' ? 'fotosZoneIn' : 'fotosZoneOut';
+  const zone = document.getElementById(zoneId);
+  if (!zone) return;
+  const fotos = fotosDir[dir];
+  const thumbsHtml = fotos.map((f, i) => `
+    <div class="foto-thumb" onclick="verFotoCaptura('${dir}',${i})" style="cursor:pointer">
+      <img src="${f.data}" alt="doc ${i+1}">
+      <button class="foto-remove" onclick="event.stopPropagation();removeFoto('${dir}',${i})">✕</button>
+      <span class="foto-num">${i+1}</span>
+    </div>`).join('');
+  const camId = dir==='in' ? 'camIn' : 'camOut';
+  zone.innerHTML = `
+    ${fotos.length > 0 ? `<div class="fotos-grid">${thumbsHtml}</div>` : ''}
+    <div class="foto-add-btn" onclick="document.getElementById('${camId}').click()">
+      📷 ${fotos.length === 0 ? 'Agregar foto del documento' : 'Agregar otra foto'}
+      ${fotos.length > 0 ? `<span class="foto-count">${fotos.length} foto${fotos.length>1?'s':''}</span>` : ''}
+    </div>
+    ${fotos.length > 0 ? `
+    <button class="btn-prime btn-green" style="margin-top:10px;padding:14px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;" 
+      id="ocrBtn_${dir}" onclick="runOCR('${dir}')">
+      <span>🧠</span> <span>Leer documento con IA</span>
+    </button>
+    <div id="ocrResult_${dir}" style="display:none;margin-top:10px;"></div>
+    ` : ''}`;
+}
+
+// ══════════════════════════════════════
+//  VER FOTO CAPTURADA — VISOR FULL SCREEN
+// ══════════════════════════════════════
+
+function verFotoCaptura(dir, idx) {
+  const fotos = fotosDir[dir];
+  if (!fotos || !fotos[idx]) return;
+  const prev = document.getElementById('fotoViewerModal');
+  if (prev) prev.remove();
+  const total = fotos.length;
+  const f = fotos[idx];
+  const m = document.createElement('div');
+  m.id = 'fotoViewerModal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;';
+  m.innerHTML = `
+    <div style="width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="color:#22c55e;font-family:'Space Mono',monospace;font-size:13px;">📷 Foto ${idx+1} / ${total}</span>
+        <button onclick="document.getElementById('fotoViewerModal').remove()" style="background:none;border:1px solid #444;color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+      <img src="${f.data}" alt="Documento" style="width:100%;max-height:65vh;object-fit:contain;border-radius:12px;border:1px solid #333;">
+      ${total > 1 ? `
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button onclick="verFotoCaptura('${dir}',${Math.max(0,idx-1)})" ${idx===0?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===0?'#222':'#1a6b3a'};color:#fff;font-size:13px;cursor:${idx===0?'default':'pointer'};">← Anterior</button>
+        <button onclick="verFotoCaptura('${dir}',${Math.min(total-1,idx+1)})" ${idx===total-1?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===total-1?'#222':'#22c55e'};color:#fff;font-size:13px;cursor:${idx===total-1?'default':'pointer'};">Siguiente →</button>
+      </div>` : ''}
+    </div>`;
+  m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  document.body.appendChild(m);
+}
+
+// ══════════════════════════════════════
+//  VER FOTO DE HISTORIAL — VISOR FULL SCREEN
+// ══════════════════════════════════════
+
+function verFotoHistorial(fotosArr, idx) {
+  const prev = document.getElementById('fotoHistorialModal');
+  if (prev) prev.remove();
+  const total = fotosArr.length;
+  const src = fotosArr[idx];
+  const m = document.createElement('div');
+  m.id = 'fotoHistorialModal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;';
+  m.innerHTML = `
+    <div style="width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="color:var(--g2);font-family:var(--mono);font-size:12px;letter-spacing:1px;">📄 DOC ${idx+1} / ${total}</span>
+        <button onclick="document.getElementById('fotoHistorialModal').remove()" style="background:none;border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <img src="${src}" alt="Documento" style="width:100%;max-height:70vh;object-fit:contain;border-radius:12px;border:1px solid var(--brd);">
+      ${total > 1 ? `
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('fotoHistorialModal').remove();verFotoHistorial(${JSON.stringify(fotosArr)},${Math.max(0,idx-1)})" ${idx===0?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===0?'rgba(255,255,255,.05)':'var(--g)'};color:#fff;font-size:13px;cursor:${idx===0?'default':'pointer'};opacity:${idx===0?.4:1}">← Anterior</button>
+        <button onclick="document.getElementById('fotoHistorialModal').remove();verFotoHistorial(${JSON.stringify(fotosArr)},${Math.min(total-1,idx+1)})" ${idx===total-1?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===total-1?'rgba(255,255,255,.05)':'var(--g2)'};color:#fff;font-size:13px;cursor:${idx===total-1?'default':'pointer'};opacity:${idx===total-1?.4:1}">Siguiente →</button>
+      </div>` : ''}
+      <a href="${src}" download="documento_${idx+1}.jpg" style="text-align:center;padding:10px;border-radius:10px;border:1px solid var(--brd);color:var(--mu);font-size:12px;font-family:var(--mono);text-decoration:none;letter-spacing:1px;">⬇ DESCARGAR IMAGEN</a>
+    </div>`;
+  m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  document.body.appendChild(m);
+}
+
+// ══════════════════════════════════════
+//  OCR — LECTURA INTELIGENTE
+// ══════════════════════════════════════
+
+async function runOCR(dir) {
+  const fotos = fotosDir[dir];
+  if (!fotos.length) return;
+
+  const btn = document.getElementById(`ocrBtn_${dir}`);
+  if (btn) {
+    btn.innerHTML = '<span style="animation:pulse 1s infinite">🧠</span> <span>Analizando documento...</span>';
+    btn.disabled = true;
+  }
+
+  try {
+    const res = await fetch('/api/ocr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: fotos[0].data })
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      showToast('⚠', 'OCR Error', data.error);
+      if (btn) { btn.innerHTML = '<span>🧠</span> <span>Reintentar lectura</span>'; btn.disabled = false; }
+      return;
+    }
+
+    // Auto-fill fields with detected data
+    const pre = dir === 'in' ? 'in' : 'out';
+    let filled = [];
+
+    if (data.patente) {
+      const plateEl = document.getElementById(pre + 'Plate');
+      if (plateEl) { plateEl.value = data.patente; plateEl.style.borderColor = 'var(--g2)'; }
+      filled.push('Patente');
+    }
+    if (data.folio) {
+      const folioEl = document.getElementById(pre + 'Folio');
+      if (folioEl) { folioEl.value = data.folio; folioEl.style.borderColor = 'var(--g2)'; }
+      filled.push('Folio');
+    }
+    if (data.tipoDocumento) {
+      const docEl = document.getElementById(pre + 'DocType');
+      if (docEl) {
+        const opts = Array.from(docEl.options);
+        const match = opts.find(o => o.value === data.tipoDocumento || o.value.includes(data.tipoDocumento));
+        if (match) { docEl.value = match.value; docEl.style.borderColor = 'var(--g2)'; filled.push('Tipo doc'); }
+      }
+    }
+
+    // Show result card
+    const resultEl = document.getElementById(`ocrResult_${dir}`);
+    if (resultEl) {
+      const confianza = data.confianza || {};
+      const confBadge = (val) => {
+        const v = val || 0;
+        const color = v >= 0.8 ? '#4ade80' : v >= 0.5 ? '#fbbf24' : '#f87171';
+        const label = v >= 0.8 ? 'Alta' : v >= 0.5 ? 'Media' : 'Baja';
+        return `<span style="color:${color};font-size:10px;font-weight:700">${label} ${Math.round(v*100)}%</span>`;
+      };
+      resultEl.innerHTML = `
+        <div style="background:rgba(82,183,136,.08);border:1px solid rgba(82,183,136,.25);border-radius:14px;padding:14px;">
+          <div style="font-weight:700;font-size:13px;color:var(--g2);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            ✨ IA detectó ${filled.length} campo${filled.length!==1?'s':''}
+            ${data.escritoAMano ? '<span style="font-size:10px;background:rgba(245,197,66,.15);color:#f5c542;padding:2px 8px;border-radius:6px;">✍ Escrito a mano</span>' : ''}
+          </div>
+          ${data.patente ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(82,183,136,.1)"><span>Patente: <strong>${data.patente}</strong></span>${confBadge(confianza.patente)}</div>` : ''}
+          ${data.folio ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(82,183,136,.1)"><span>Folio: <strong>${data.folio}</strong></span>${confBadge(confianza.folio)}</div>` : ''}
+          ${data.tipoDocumento ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;"><span>Documento: <strong>${data.tipoDocumento.replace(/_/g,' ')}</strong></span>${confBadge(confianza.tipoDocumento)}</div>` : ''}
+          ${data.resumen ? `<div style="font-size:11px;color:var(--mu);margin-top:8px;padding-top:8px;border-top:1px solid rgba(82,183,136,.1)">${data.resumen}</div>` : ''}
+        </div>`;
+      resultEl.style.display = 'block';
+    }
+
+    // Store OCR data for learning
+    fotosDir[dir].ocrData = data;
+
+    showToast('🧠', 'Documento leído', filled.length ? `Detectado: ${filled.join(', ')}` : 'No se detectaron campos');
+    if (btn) { btn.innerHTML = '<span>✅</span> <span>Documento analizado</span>'; btn.disabled = false; }
+
+    // Send learning data
+    registerLearning('doc_pattern', { docType: data.tipoDocumento, depto: deptoActivo?.id });
+
+  } catch(e) {
+    showToast('⚠', 'Sin conexión', 'OCR requiere internet');
+    if (btn) { btn.innerHTML = '<span>🧠</span> <span>Reintentar lectura</span>'; btn.disabled = false; }
+  }
+}
+
+// ══════════════════════════════════════
+//  LEARNING — AUTOAPRENDIZAJE
+// ══════════════════════════════════════
+
+async function registerLearning(type, data) {
+  if (!session?.empresaId) return;
+  try {
+    await fetch('/api/learn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        empresa: session.empresaId,
+        depto: deptoActivo?.id || 'global',
+        type, data
+      })
+    });
+  } catch(e) { /* offline, skip */ }
+}
+
+async function getSmartSuggestions() {
+  if (!session?.empresaId || !navigator.onLine) return null;
+  try {
+    const depto = deptoActivo?.id || '';
+    const res = await fetch(`/api/learn?empresa=${session.empresaId}&depto=${depto}`);
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+function addFoto(ev, dir) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e2 => {
+    fotosDir[dir].push({ data: e2.target.result });
+    renderFotosZone(dir);
+  };
+  reader.readAsDataURL(file);
+  ev.target.value = '';
+}
+
+function removeFoto(dir, idx) {
+  fotosDir[dir].splice(idx, 1);
+  renderFotosZone(dir);
+}
+
+// ══════════════════════════════════════
+//  CONFIRMAR OPERACIÓN
+// ══════════════════════════════════════
+
+async function confirmarOp(dir) {
+  if (!session) { doLogout(); return; }
+  const isIn  = dir === 'in';
+  const pre   = isIn ? 'in' : 'out';
+  const plate = document.getElementById(pre+'Plate').value.trim().toUpperCase();
+  const folio = document.getElementById(pre+'Folio').value.trim();
+  const docT  = document.getElementById(pre+'DocType').value;
+  const obs   = document.getElementById(pre+'Obs').value.trim();
+
+  if (!plate) { showToast('⚠','Falta patente','Ingresa la patente del vehículo'); return; }
+
+  const btn = document.getElementById(isIn?'inBtn':'outBtn');
+  btn.textContent = '⏳ Guardando...';
+  btn.disabled = true;
+
+  // ── Validar folio duplicado ──
+  if (folio) {
+    const opsPrevias = await getOpsEmpresa();
+    const dup = opsPrevias.find(o => o.folio && o.folio === folio);
+    if (dup) {
+      const ok = confirm(`⚠ Folio "${folio}" ya fue registrado\n${dup.plate} · ${(dup.docType||'').replace(/_/g,' ')} · ${dup.fecha}\n¿Continuar de todos modos?`);
+      if (!ok) {
+        btn.textContent = isIn ? '✓ Confirmar Ingreso' : '✓ Confirmar Salida';
+        btn.disabled = false;
+        return;
+      }
+    }
+  }
+
+  const now = new Date();
+  const op = {
+    id:          'op_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
+    tipo:        isIn ? 'INGRESO' : 'SALIDA',
+    plate, folio, docType: docT, obs,
+    depto:       deptoActivo?.id || '',
+    deptoNombre: deptoActivo?.nombre || '',
+    fecha:       now.toLocaleDateString('es-CL'),
+    hora:        now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),
+    ts:          now.getTime(),
+    uid:         session.uid,
+    empresaId:   session.empresaId,
+    empresaNombre: session.empresaNombre,
+    operador:    session.nombre,
+    fotoId:      null,
+    fotoIds:     [],
+    syncStatus:  'pending',
+    estado:      'PENDIENTE',
+    logs:        [{ accion:'CREADO', usuario: session.nombre, ts: now.getTime(), comentario:'' }]
+  };
+
+  const fotos = fotosDir[dir] || [];
+  if (fotos.length > 0) {
+    op.fotoIds = [];
+    for (let i = 0; i < fotos.length; i++) {
+      const fId = 'foto_' + op.id + '_' + i;
+      op.fotoIds.push(fId);
+      await dbPut('fotos', { id: fId, data: fotos[i].data, ts: op.ts });
+    }
+    op.fotoId = op.fotoIds[0]; // compatibilidad hacia atrás
+  }
+
+  await dbPut('ops', op);
+  sincronizarFirebase(op); // async, no esperar
+
+  btn.textContent = isIn ? '✓ Confirmar Ingreso' : '✓ Confirmar Salida';
+  btn.disabled = false;
+  fotosDir[dir] = [];
+
+  showToast(isIn?'📥':'📤', isIn?'Ingreso registrado':'Salida registrada', `${plate} · ${docT.replace(/_/g,' ')}`);
+
+  // Register learning patterns
+  registerLearning('plate_frequency', { plate });
+  registerLearning('doc_pattern', { docType: docT, depto: deptoActivo?.id });
+
+  // QR de seguimiento solo en INGRESO
+  if (isIn && session?.empresaId) {
+    const qrUrl = `${location.origin}/seguimiento?e=${session.empresaId}&p=${encodeURIComponent(plate)}`;
+    setTimeout(() => showQRModal(plate, qrUrl), 700);
+  } else {
+    setTimeout(() => goTo('home'), 600);
+  }
+}
+
+// ══════════════════════════════════════
+//  RENDER HOME
+// ══════════════════════════════════════
+
+async function renderHome() {
+  if (!session) return;
+  document.getElementById('homeDeptName').textContent = deptoActivo?.nombre || 'Sin departamento';
+  // User badge
+  const initials = (session.nombre||'?').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('homeUserBadge').innerHTML = `
+    <div class="user-badge">
+      <div class="user-avatar">${initials}</div>
+      <div><div class="user-name">${session.nombre||session.email}</div>
+      <div class="user-empresa">${session.empresaNombre||''} · ${session.rol||'operador'}</div></div>
+    </div>`;
+  const ops = await getOpsEmpresa();
+  const today = new Date().toLocaleDateString('es-CL');
+  const hoy = ops.filter(o => o.fecha===today);
+  document.getElementById('homeCount').textContent = hoy.length;
+
+  // ── Alerta de operaciones rechazadas ──
+  const rechazadas = ops.filter(o => o.estado==='RECHAZADO' && o.uid===session.uid).slice(0,3);
+  const alertEl = document.getElementById('rechazoAlert');
+  if (rechazadas.length && alertEl) {
+    alertEl.innerHTML = `
+      <div class="rechazo-alert">
+        <div class="rechazo-alert-title">⚠️ ${rechazadas.length} operación${rechazadas.length>1?'es':''} rechazada${rechazadas.length>1?'s':''}</div>
+        ${rechazadas.map(o => {
+          const motivo = o.logs?.slice().reverse().find(l=>l.accion==='RECHAZADO')?.comentario || 'Sin motivo';
+          return `<div class="rechazo-item">
+            <span><strong>${o.plate}</strong> · ${(o.docType||'').replace(/_/g,' ')}</span>
+            <span style="font-size:11px;color:#f87171">${motivo}</span>
+          </div>`;
+        }).join('')}
+      </div>`;
+    alertEl.style.display = 'block';
+  } else if (alertEl) alertEl.style.display = 'none';
+
+  // ── Detección de anomalías ──
+  const anomaliaEl = document.getElementById('anomaliaAlert');
+  if (anomaliaEl) {
+    const anomalias = [];
+    // Vehículos con más de 1 ingreso pendiente sin salida
+    const recientes48h = ops.filter(o => (Date.now() - (o.ts||0)) < 172800000 && o.plate);
+    const placasMap = {};
+    recientes48h.sort((a,b) => a.ts - b.ts).forEach(op => {
+      if (!placasMap[op.plate]) placasMap[op.plate] = 0;
+      if (op.tipo === 'INGRESO') placasMap[op.plate]++;
+      else if (op.tipo === 'SALIDA') placasMap[op.plate] = Math.max(0, placasMap[op.plate] - 1);
+    });
+    const atrapados = Object.entries(placasMap).filter(([,n]) => n > 1).map(([p]) => p);
+    if (atrapados.length) anomalias.push(`🔴 ${atrapados.length} patente${atrapados.length>1?'s':''} con múltiples ingresos sin salida: ${atrapados.slice(0,3).join(', ')}`);
+
+    // Últimas 10 ops sin foto
+    const sinFoto = ops.slice(0,10).filter(o => !o.fotoId && !(o.fotoIds?.length));
+    if (sinFoto.length >= 5) anomalias.push(`📷 ${sinFoto.length} de las últimas 10 operaciones sin foto de documento`);
+
+    if (anomalias.length) {
+      anomaliaEl.innerHTML = `<div class="rechazo-alert" style="border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.07)">
+        <div class="rechazo-alert-title" style="color:#fbbf24">⚡ Anomalías detectadas</div>
+        ${anomalias.map(a => `<div class="rechazo-item" style="color:#fbbf24">${a}</div>`).join('')}
+      </div>`;
+      anomaliaEl.style.display = 'block';
+    } else anomaliaEl.style.display = 'none';
+  }
+
+  // ── Sugerencias IA ──
+  const sugEl = document.getElementById('aiSuggestions');
+  if (sugEl && navigator.onLine) {
+    loadAISuggestions(sugEl, ops);
+  }
+
+  const recents = ops.slice(0,5);
+  const el = document.getElementById('homeList');
+  el.innerHTML = recents.length ? recents.map(opRow).join('') :
+    '<div class="empty"><div class="empty-i">📋</div><div class="empty-t">Sin operaciones aún</div></div>';
+}
+
+// ══════════════════════════════════════
+//  OP ROW
+// ══════════════════════════════════════
+
+function estadoBadge(est) {
+  const map = {
+    PENDIENTE:  ['est-pendiente','⏳ PEND'],
+    EN_REVISION:['est-revision', '👁 REVISIÓN'],
+    APROBADO:   ['est-aprobado', '✓ APROBADO'],
+    RECHAZADO:  ['est-rechazado','✗ RECHAZADO'],
+  };
+  const [cls, label] = map[est] || map['PENDIENTE'];
+  return `<span class="estado-badge ${cls}">${label}</span>`;
+}
+
+function opRow(op) {
+  const isIn = op.tipo === 'INGRESO';
+  const docLabel = (op.docType||'').replace(/_/g,' ');
+  const est = op.estado || 'PENDIENTE';
+  const borderColor = est==='RECHAZADO' ? 'border-color:rgba(239,68,68,.35)' :
+                      est==='APROBADO'  ? 'border-color:rgba(34,197,94,.25)'  : '';
+  return `<div class="h-item" onclick="verDetalle('${op.id}')" style="${borderColor}">
+    <div class="h-dot ${isIn?'hd-g':'hd-o'}"></div>
+    <div class="h-body">
+      <div class="h-top" style="flex-wrap:wrap;gap:4px">
+        <span class="h-tipo ${isIn?'cg':'co'}">${op.tipo}</span>
+        <span class="h-pat">${op.plate||'—'}</span>
+        <span class="h-depto">${op.deptoNombre||op.depto||''}</span>
+        ${estadoBadge(est)}
+      </div>
+      <div class="h-meta">${op.fecha} ${op.hora} · ${docLabel}</div>
+    </div>
+    <span class="h-badge">${(op.fotoIds?.length||0)>1?`📷${op.fotoIds.length}`:op.fotoId?'📷':'📋'}</span>
+  </div>`;
+}
+
+// ══════════════════════════════════════
+//  HISTORIAL
+// ══════════════════════════════════════
+
+async function renderHistorial(ops_override) {
+  const ops = ops_override || await getOpsEmpresa();
+  const filtrados = curFiltro==='TODOS' ? ops :
+    ops.filter(o => o.tipo===curFiltro || o.depto===curFiltro || o.deptoNombre===curFiltro);
+  document.getElementById('histList').innerHTML = filtrados.length ? filtrados.map(opRow).join('') :
+    '<div class="empty"><div class="empty-i">🔍</div><div class="empty-t">Sin registros</div></div>';
+  const pillsEl = document.getElementById('filterPills');
+  const deptoPills = deptos.map(d =>
+    `<span class="pill ${curFiltro===d.id?'on':''}" onclick="filtrarH('${d.id}',this)">${d.icon} ${d.nombre}</span>`
+  ).join('');
+  pillsEl.innerHTML = `
+    <span class="pill ${curFiltro==='TODOS'?'on':''}" onclick="filtrarH('TODOS',this)">Todos</span>
+    <span class="pill ${curFiltro==='INGRESO'?'on':''}" onclick="filtrarH('INGRESO',this)">↓ Ingreso</span>
+    <span class="pill ${curFiltro==='SALIDA'?'on':''}" onclick="filtrarH('SALIDA',this)">↑ Salida</span>
+    ${deptoPills}`;
+}
+
+function filtrarH(cat) { curFiltro = cat; renderHistorial(); }
+
+async function buscarOps(q) {
+  if (!q.trim()) { renderHistorial(); return; }
+  const ops = await getOpsEmpresa();
+  const t = q.toLowerCase().trim();
+  renderHistorial(ops.filter(o => {
+    const fields = [
+      o.plate, o.folio, o.fecha, o.hora,
+      o.docType, o.deptoNombre, o.depto,
+      o.operador, o.empresa, o.rut,
+      o.obs, o.tipo, o.estado,
+      o.destinatario, o.conductor, o.camion,
+      o.contenedor, o.guia, o.sello
+    ];
+    return fields.some(f => (f||'').toLowerCase().includes(t));
+  }));
+}
+
+// ══════════════════════════════════════
+//  DETALLE OPERACIÓN
+// ══════════════════════════════════════
+
+async function verDetalle(id) {
+  const ops = await dbGetAll('ops');
+  const op = ops.find(o=>o.id===id);
+  if (!op) return;
+  const isIn = op.tipo==='INGRESO';
+  let fotoHtml = '<div style="background:var(--bg3);border-radius:12px;padding:24px;text-align:center;margin-bottom:14px;color:var(--mu);font-family:var(--mono);font-size:12px">📷 Sin fotos adjuntas</div>';
+  // Soporte multi-foto: fotoIds[] tiene prioridad, sino usa fotoId legacy
+  const fotoIds = op.fotoIds?.length ? op.fotoIds : (op.fotoId ? [op.fotoId] : []);
+  if (fotoIds.length > 0) {
+    const fotosData = [];
+    for (const fId of fotoIds) {
+      try {
+        const f = await dbGet('fotos', fId);
+        if (f?.data) fotosData.push(f.data);
+      } catch(e){}
+    }
+    if (fotosData.length > 0) {
+      if (fotosData.length === 1) {
+        fotoHtml = `<img src="${fotosData[0]}" class="modal-foto" alt="Documento" style="cursor:pointer" onclick="verFotoHistorial(${JSON.stringify(fotosData)},0)" title="Toca para ver en pantalla completa">`;
+      } else {
+        const thumbs = fotosData.map((d, i) => `
+          <div style="position:relative;cursor:pointer" onclick="verFotoHistorial(${JSON.stringify(fotosData)},${i})">
+            <img src="${d}" style="width:100%;border-radius:8px;border:1px solid var(--brd);display:block" alt="Foto ${i+1}">
+            <span style="position:absolute;top:4px;left:6px;background:rgba(0,0,0,.65);color:#fff;font-family:var(--mono);font-size:9px;border-radius:4px;padding:1px 6px">Foto ${i+1}</span>
+            <span style="position:absolute;bottom:4px;right:6px;background:rgba(0,0,0,.65);color:#52b788;font-family:var(--mono);font-size:9px;border-radius:4px;padding:1px 6px">👁 VER</span>
+          </div>`).join('');
+        fotoHtml = `
+          <div style="margin-bottom:14px">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:1px;margin-bottom:8px">📷 ${fotosData.length} FOTOS ADJUNTAS</div>
+            <div style="display:grid;grid-template-columns:${fotosData.length===2?'1fr 1fr':fotosData.length>=3?'1fr 1fr 1fr':'1fr'};gap:6px">
+              ${thumbs}
+            </div>
+          </div>`;
+      }
+    }
+  }
+  const existing = document.getElementById('opModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-ov'; modal.id = 'opModal';
+  const colorVar = isIn ? 'var(--g2)' : 'var(--o2)';
+  modal.innerHTML = `<div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title">Detalle Operación</div>
+      <button class="modal-x" onclick="document.getElementById('opModal').remove()">✕</button>
+    </div>
+    ${fotoHtml}
+    <div class="modal-row"><span class="modal-lbl">ESTADO</span>${estadoBadge(op.estado||'PENDIENTE')}</div>
+    <div class="modal-row"><span class="modal-lbl">TIPO</span><span class="badge" style="background:${isIn?'rgba(74,124,89,.2)':'rgba(255,109,0,.2)'};color:${colorVar}">${op.tipo}</span></div>
+    <div class="modal-row"><span class="modal-lbl">DEPTO</span><span class="modal-val">${op.deptoNombre||op.depto||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">PATENTE</span><span class="modal-val">${op.plate||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">DOCUMENTO</span><span class="modal-val">${(op.docType||'—').replace(/_/g,' ')}</span></div>
+    <div class="modal-row"><span class="modal-lbl">FOLIO</span><span class="modal-val">${op.folio||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">FECHA</span><span class="modal-val">${op.fecha} ${op.hora}</span></div>
+    <div class="modal-row"><span class="modal-lbl">OPERADOR</span><span class="modal-val">${op.operador||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">OBS</span><span class="modal-val">${op.obs||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">SYNC</span><span class="modal-val">${op.syncStatus==='synced'?'✅ Sincronizado':'⏳ Pendiente'}</span></div>
+    ${(op.logs||[]).length > 0 ? `
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--brd)">
+      <div class="modal-lbl" style="margin-bottom:8px">TRAZABILIDAD</div>
+      <div class="log-list">
+        ${(op.logs||[]).map(l => {
+          const dotCls = l.accion==='CREADO'?'log-ld-c':l.accion==='APROBADO'?'log-ld-a':l.accion==='RECHAZADO'?'log-ld-r':'log-ld-v';
+          const d = new Date(l.ts);
+          const ts = d.toLocaleDateString('es-CL')+' '+d.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+          return `<div class="log-item">
+            <div class="log-dot ${dotCls}"></div>
+            <div>
+              <span style="font-weight:700;font-size:12px">${l.accion}</span>
+              <span style="color:var(--mu);font-size:12px"> · ${l.usuario||'—'}</span>
+              ${l.comentario?`<span style="color:#f87171;font-size:11px"> · "${l.comentario}"</span>`:''}
+              <div class="log-ts">${ts}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : ''}
+    <button class="btn-prime btn-gray" style="margin-top:14px" onclick="document.getElementById('opModal').remove()">Cerrar</button>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+// ══════════════════════════════════════
+//  TURNO
+// ══════════════════════════════════════
+
+async function renderTurno() {
+  if (!session) return;
+
+  // Header turno
+  const initials = (session.nombre||'?').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('turnoNombreDisplay').innerHTML = `<div style="display:flex;align-items:center;gap:10px"><div class="user-avatar">${initials}</div><div class="turno-op-name">${session.nombre||session.email}</div></div>`;
+  document.getElementById('turnoEmpresaDisplay').textContent = session.empresaNombre || '';
+
+  turnoInicio = localStorage.getItem(K_TURNO);
+  if (!turnoInicio) {
+    turnoInicio = new Date().toISOString();
+    localStorage.setItem(K_TURNO, turnoInicio);
+  }
+  const inicioDate = new Date(turnoInicio);
+  const ahora = new Date();
+  const diffMs = ahora - inicioDate;
+  const diffH = Math.floor(diffMs / 3600000);
+  const diffM = Math.floor((diffMs % 3600000) / 60000);
+  document.getElementById('turnoTimeDisplay').textContent =
+    `Turno iniciado: ${inicioDate.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})} · Duración: ${diffH}h ${diffM}m`;
+  document.getElementById('turnoInicioLabel').textContent = inicioDate.toLocaleDateString('es-CL');
+
+  const ops = await getOpsEmpresa();
+  const today = new Date().toLocaleDateString('es-CL');
+  const hoy   = ops.filter(o => o.fecha === today);
+  const ingresos = hoy.filter(o => o.tipo === 'INGRESO');
+  const salidas  = hoy.filter(o => o.tipo === 'SALIDA');
+  const conFoto  = hoy.filter(o => o.fotoId || o.fotoIds?.length);
+
+  // Vehículos en planta = ingresos sin salida correspondiente (última 48h)
+  const limite48h = Date.now() - 48 * 3600 * 1000;
+  const recentOps = ops.filter(o => o.ts > limite48h && o.plate && o.plate !== '—');
+  const inPlanta  = calcularEnPlanta(recentOps);
+
+  document.getElementById('tsI').textContent = ingresos.length;
+  document.getElementById('tsS').textContent = salidas.length;
+  document.getElementById('tsP').textContent = inPlanta.length;
+  document.getElementById('tsF').textContent = conFoto.length;
+
+  // Lista pendientes
+  const pendEl = document.getElementById('pendientesList');
+  if (inPlanta.length === 0) {
+    pendEl.innerHTML = '<div class="empty"><div class="empty-i">✅</div><div class="empty-t">No hay vehículos en planta</div></div>';
+  } else {
+    pendEl.innerHTML = inPlanta.map(op => {
+      const tiempoEnPlanta = calcularTiempoTranscurrido(op.ts);
+      return `<div class="pendiente-item">
+        <span class="pendiente-icon">🚛</span>
+        <div class="pendiente-body">
+          <div class="pendiente-plate">${op.plate}</div>
+          <div class="pendiente-meta">${(op.docType||'').replace(/_/g,' ')} · ${op.deptoNombre||''}</div>
+        </div>
+        <div class="pendiente-time">${tiempoEnPlanta}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Portal link
+  const baseUrl = window.location.origin;
+  const portalUrl = `${baseUrl}/seguimiento?e=${session.empresaId}`;
+  document.getElementById('portalLink').textContent = portalUrl;
+}
+
+function calcularEnPlanta(ops) {
+  const placas = {};
+  ops.sort((a,b) => a.ts - b.ts).forEach(op => {
+    if (!placas[op.plate]) placas[op.plate] = { ingresos: [], salidas: [] };
+    if (op.tipo === 'INGRESO') placas[op.plate].ingresos.push(op);
+    else placas[op.plate].salidas.push(op);
+  });
+  const enPlanta = [];
+  for (const [placa, data] of Object.entries(placas)) {
+    let pendientes = data.ingresos.length - data.salidas.length;
+    if (pendientes > 0) {
+      // El último ingreso sin salida
+      const ings = data.ingresos.sort((a,b)=>b.ts-a.ts);
+      enPlanta.push(ings[0]);
+    }
+  }
+  return enPlanta.sort((a,b) => a.ts - b.ts);
+}
+
+function calcularTiempoTranscurrido(ts) {
+  const diff = Date.now() - ts;
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+async function cerrarTurno() {
+  if (!session) return;
+  const nota = document.getElementById('turnoNota').value.trim();
+  const ops  = await getOpsEmpresa();
+  const today = new Date().toLocaleDateString('es-CL');
+  const hoyOps = ops.filter(o => o.fecha === today);
+  const limite48h = Date.now() - 48 * 3600 * 1000;
+  const recentOps = ops.filter(o => o.ts > limite48h && o.plate && o.plate !== '—');
+  const enPlanta  = calcularEnPlanta(recentOps);
+
+  const turno = {
+    empresaId:     session.empresaId,
+    operadorUid:   session.uid,
+    operadorNombre:session.nombre,
+    inicioTs:      new Date(turnoInicio).getTime(),
+    finTs:         Date.now(),
+    totalOps:      hoyOps.length,
+    enPlantaCount: enPlanta.length,
+    enPlantaPlacas:enPlanta.map(o=>o.plate).join(','),
+    nota,
+    fecha:         today
+  };
+
+  try {
+    await fsPost(`empresas/${session.empresaId}/turnos`, turno);
+    localStorage.removeItem(K_TURNO);
+    turnoInicio = null;
+    showToast('✅','Turno cerrado','Traspaso registrado en la nube');
+    setTimeout(() => renderTurno(), 500);
+  } catch(e) {
+    showToast('⚠','Sin conexión','Turno guardado localmente');
+    localStorage.removeItem(K_TURNO);
+    turnoInicio = null;
+    setTimeout(() => renderTurno(), 500);
+  }
+}
+
+function copiarLink() {
+  const url = document.getElementById('portalLink').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast('📋','Link copiado','Envíalo a tu cliente'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('📋','Link copiado','Envíalo a tu cliente');
+  }
+}
+
+// ══════════════════════════════════════
+//  DEPARTAMENTOS MANAGER
+// ══════════════════════════════════════
+
+function renderDeptos() {
+  const el = document.getElementById('deptosList');
+  el.innerHTML = deptos.map(d => `
+    <div class="depto-card">
+      <div class="depto-icon-big">${d.icon}</div>
+      <div class="depto-info">
+        <div class="depto-name">${d.nombre}</div>
+        <div class="depto-docs">${d.docs.length} tipos de doc · ${d.desc||''}</div>
+      </div>
+      ${d.id===deptoActivo?.id ? '<span class="depto-badge-act">ACTIVO</span>' :
+        `<button onclick="cambiarDepto('${d.id}')" style="background:none;border:1px solid var(--brd);border-radius:6px;padding:3px 8px;color:var(--mu);cursor:pointer;font-family:var(--mono);font-size:9px">Activar</button>`}
+    </div>`).join('');
+  const docsEl = document.getElementById('docsList');
+  if (deptoActivo) {
+    docsEl.innerHTML = `<div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:8px">${deptoActivo.icon} ${deptoActivo.nombre}</div>` +
+      deptoActivo.docs.map(d => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--brd)">
+          <span class="tag">${d.replace(/_/g,' ')}</span>
+          <button onclick="eliminarDoc('${d}')" style="background:none;border:none;color:var(--mu);cursor:pointer">✕</button>
+        </div>`).join('');
+  }
+}
+
+function showModalNewDepto() {
+  const existing = document.getElementById('newDeptoModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-ov'; modal.id = 'newDeptoModal';
+  modal.innerHTML = `<div class="modal-box">
+    <div class="modal-hdr"><div class="modal-title">Nuevo Departamento</div>
+    <button class="modal-x" onclick="document.getElementById('newDeptoModal').remove()">✕</button></div>
+    <label class="flbl">Nombre</label>
+    <input class="finp" id="newDeptoNombre" placeholder="Ej: Operaciones">
+    <label class="flbl">Ícono (emoji)</label>
+    <input class="finp" id="newDeptoIcon" placeholder="🏗" maxlength="4">
+    <label class="flbl">Tipos de documento (comas)</label>
+    <input class="finp" id="newDeptoDocs" placeholder="GUIA,FACTURA,ORDEN">
+    <button class="btn-prime btn-green" onclick="crearDepto()">✓ Crear</button>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+function crearDepto() {
+  const nombre  = document.getElementById('newDeptoNombre').value.trim();
+  const icon    = document.getElementById('newDeptoIcon').value.trim() || '🏗';
+  const docsRaw = document.getElementById('newDeptoDocs').value.trim();
+  if (!nombre) { showToast('⚠','Falta nombre',''); return; }
+  const docs = docsRaw ? docsRaw.split(',').map(d=>d.trim().toUpperCase().replace(/ /g,'_')) : [];
+  const id = nombre.toLowerCase().replace(/ /g,'_') + '_' + Date.now();
+  deptos.push({ id, nombre, icon, desc:'', color:'g', docs });
+  localStorage.setItem(K_DEPTOS, JSON.stringify(deptos));
+  actualizarSelectorDepto();
+  renderDeptos();
+  document.getElementById('newDeptoModal').remove();
+  showToast('🏗','Departamento creado', nombre);
+}
+
+function showModalNewDoc() {
+  if (!deptoActivo) { showToast('⚠','Sin depto','Selecciona un departamento'); return; }
+  const existing = document.getElementById('newDocModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-ov'; modal.id = 'newDocModal';
+  modal.innerHTML = `<div class="modal-box">
+    <div class="modal-hdr"><div class="modal-title">Nuevo Documento</div>
+    <button class="modal-x" onclick="document.getElementById('newDocModal').remove()">✕</button></div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:10px">Para: ${deptoActivo.icon} ${deptoActivo.nombre}</div>
+    <label class="flbl">Nombre del documento</label>
+    <input class="finp" id="newDocNombre" placeholder="Ej: CARTA PORTE" oninput="this.value=this.value.toUpperCase()">
+    <button class="btn-prime btn-green" onclick="crearDoc()">✓ Agregar</button>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+function crearDoc() {
+  const nombre = document.getElementById('newDocNombre').value.trim().toUpperCase().replace(/ /g,'_');
+  if (!nombre) return;
+  if (!deptoActivo.docs.includes(nombre)) {
+    deptoActivo.docs.push(nombre);
+    localStorage.setItem(K_DEPTOS, JSON.stringify(deptos));
+    renderDeptos();
+    showToast('📄','Documento agregado', nombre.replace(/_/g,' '));
+  }
+  document.getElementById('newDocModal').remove();
+}
+
+function eliminarDoc(doc) {
+  if (!deptoActivo) return;
+  deptoActivo.docs = deptoActivo.docs.filter(d=>d!==doc);
+  localStorage.setItem(K_DEPTOS, JSON.stringify(deptos));
+  renderDeptos();
+}
+
+// ══════════════════════════════════════
+//  TEMAS
+// ══════════════════════════════════════
+
+function setTema(tema, btn) {
+  document.documentElement.setAttribute('data-theme', tema==='oscuro'?'':tema);
+  localStorage.setItem(K_TEMA, tema);
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  showToast('🎨','Tema aplicado','');
+}
+
+function setFontSize(size) {
+  document.body.style.fontSize = size+'px';
+  localStorage.setItem('zp5_font', size);
+}
+
+function cargarTema() {
+  const tema = localStorage.getItem(K_TEMA) || 'oscuro';
+  const idx = ['oscuro','claro','azul','contraste'].indexOf(tema);
+  document.querySelectorAll('.theme-btn').forEach((b,i) => b.classList.toggle('on', i===idx));
+}
+
+// ══════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════
+
+function cargarConfig() {
+  if (!session) return;
+  const infoEl = document.getElementById('configUserInfo');
+  infoEl.innerHTML = `Email: ${session.email}<br>Empresa: ${session.empresaNombre}<br>Rol: ${session.rol}`;
+  const inpEl = document.getElementById('cfgOperador');
+  if (inpEl) inpEl.value = session.nombre || '';
+}
+
+async function guardarNombre() {
+  const nombre = document.getElementById('cfgOperador').value.trim();
+  if (!nombre) return;
+  session.nombre = nombre;
+  saveSession();
+  try {
+    await fsSet(`usuarios/${session.uid}`, { nombre });
+    showToast('✅','Nombre guardado','');
+  } catch(e) {
+    showToast('✅','Guardado localmente','');
+  }
+}
+
+// ══════════════════════════════════════
+//  FIREBASE SYNC
+// ══════════════════════════════════════
+
+async function sincronizarFirebase(op) {
+  if (!session?.empresaId) return;
+  try {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 8000);
+    const token = await getValidToken();
+    const headers = { 'Content-Type':'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const url = `${FS_BASE()}/empresas/${session.empresaId}/ops?key=${FB.apiKey}`;
+
+    // Flatten arrays (Firestore REST no soporta arrays con toFsDoc básico)
+    const flat = {};
+    for (const [k,v] of Object.entries(op)) {
+      if (Array.isArray(v)) continue;
+      flat[k] = v;
+    }
+    flat.logsJson    = JSON.stringify(op.logs    || []);
+    flat.fotoIdsJson = JSON.stringify(op.fotoIds || []);
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(toFsDoc(flat)),
+      signal: ctrl.signal
+    });
+    if (res.ok) {
+      const data = await res.json();
+      op._id = data.name?.split('/').pop(); // Guardar ID de Firestore para polling
+      op.syncStatus = 'synced';
+      await dbPut('ops', op);
+    }
+  } catch(e) { /* offline - op saved locally */ }
+}
+
+// Sync cola de pendientes al volver online
+async function syncPendientes() {
+  if (!session || !navigator.onLine) return;
+  try {
+    const ops = await dbGetAll('ops');
+    const pendientes = ops.filter(o => o.syncStatus === 'pending' && o.empresaId === session.empresaId);
+    for (const op of pendientes) {
+      await sincronizarFirebase(op);
+    }
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════
+//  EXPORTAR CSV
+// ══════════════════════════════════════
+
+async function exportarCSV() {
+  const ops = await getOpsEmpresa();
+  if (!ops.length) { showToast('⚠','Sin datos',''); return; }
+  const header = 'ID,Tipo,Patente,Departamento,Documento,Folio,Fecha,Hora,Operador,Empresa,Observaciones,Sync\n';
+  const rows = ops.map(o =>
+    [o.id,o.tipo,o.plate||'',o.deptoNombre||'',o.docType||'',o.folio||'',o.fecha||'',o.hora||'',o.operador||'',o.empresaNombre||'',o.obs||'',o.syncStatus||''].join(',')
+  ).join('\n');
+  const blob = new Blob([header+rows], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ZeroPaper_${session.empresaNombre||'export'}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('📊','Exportado',`${ops.length} registros`);
+}
+
+async function limpiarDatos() {
+  const ops = await dbGetAll('ops');
+  for (const op of ops) if (op.empresaId === session?.empresaId) await dbDelete('ops', op.id);
+  const fotos = await dbGetAll('fotos');
+  for (const f of fotos) await dbDelete('fotos', f.id);
+  renderHome();
+  showToast('🗑','Datos eliminados','');
+}
+
+// ══════════════════════════════════════
+//  POLLING — actualizaciones de estado
+// ══════════════════════════════════════
+
+let pollingTimer = null;
+
+async function pollEstados() {
+  if (!session?.empresaId || !navigator.onLine) return;
+  try {
+    const res = await fsList(`empresas/${session.empresaId}/ops`);
+    const remoteOps = (res.documents || []).map(parseFs);
+    // Filtrar ops propias con estado terminal
+    const actualizadas = remoteOps.filter(o =>
+      o.uid === session.uid &&
+      (o.estado === 'APROBADO' || o.estado === 'RECHAZADO')
+    );
+    if (!actualizadas.length) return;
+
+    const localOps = await dbGetAll('ops');
+    let cambios = false;
+
+    for (const remote of actualizadas) {
+      // Buscar local por id o _id
+      const local = localOps.find(o =>
+        o.id === remote.id || (remote._id && o._id === remote._id)
+      );
+      if (!local || local.estado === remote.estado) continue;
+
+      local.estado = remote.estado;
+      if (remote.logsJson) {
+        try { local.logs = JSON.parse(remote.logsJson); } catch(e) {}
+      }
+      if (remote.motivoRechazo) local.motivoRechazo = remote.motivoRechazo;
+      await dbPut('ops', local);
+      cambios = true;
+
+      if (remote.estado === 'RECHAZADO') {
+        const motivo = local.logs?.slice().reverse().find(l => l.accion === 'RECHAZADO')?.comentario
+          || remote.motivoRechazo || '';
+        showToast('⚠', `${local.plate}: Rechazada`, motivo.slice(0, 45));
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      } else if (remote.estado === 'APROBADO') {
+        showToast('✅', `${local.plate}: Aprobada`, 'Operación aprobada');
+        if (navigator.vibrate) navigator.vibrate([100]);
+      }
+    }
+    if (cambios) renderHome();
+  } catch(e) { /* offline o error de red */ }
+}
+
+function startPolling() {
+  if (pollingTimer) return;
+  pollEstados(); // poll inmediato al iniciar
+  pollingTimer = setInterval(() => {
+    if (document.visibilityState !== 'hidden') pollEstados();
+  }, 90000); // cada 90 segundos
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') pollEstados();
+  }, { passive: true });
+}
+
+// ══════════════════════════════════════
+//  SYNC DEPTOS DESDE FIRESTORE
+// ══════════════════════════════════════
+
+async function sincronizarDeptos() {
+  if (!session?.empresaId || !navigator.onLine) return;
+  try {
+    const doc = await fsGet(`empresas/${session.empresaId}/config/deptos`);
+    const data = parseFs(doc);
+    if (data.deptosJson) {
+      const remotos = JSON.parse(data.deptosJson);
+      if (Array.isArray(remotos) && remotos.length > 0) {
+        localStorage.setItem(K_DEPTOS, JSON.stringify(remotos));
+        deptos = remotos;
+        const activeId = localStorage.getItem(K_DEPTO);
+        deptoActivo = deptos.find(d => d.id === activeId) || deptos[0];
+        actualizarSelectorDepto();
+      }
+    }
+  } catch(e) { /* usar deptos locales */ }
+}
+
+// ══════════════════════════════════════
+//  QR DE SEGUIMIENTO
+// ══════════════════════════════════════
+
+function showQRModal(plate, url) {
+  const existing = document.getElementById('qrModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-ov'; modal.id = 'qrModal';
+  modal.innerHTML = `<div class="modal-box" style="text-align:center;max-width:300px;padding:20px">
+    <div class="modal-hdr">
+      <div class="modal-title">📷 QR Seguimiento</div>
+      <button class="modal-x" onclick="document.getElementById('qrModal').remove()">✕</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:26px;font-weight:800;letter-spacing:4px;margin:10px 0;color:var(--fg)">${plate}</div>
+    <div id="qrCanvas" style="display:flex;justify-content:center;align-items:center;min-height:200px;margin:12px 0"></div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:14px;letter-spacing:1px">SEGUIMIENTO EN TIEMPO REAL</div>
+    <button class="btn-prime btn-gray" style="margin:0" onclick="document.getElementById('qrModal').remove()">Cerrar</button>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+
+  // Generar QR
+  const canvas = document.getElementById('qrCanvas');
+  if (typeof QRCode !== 'undefined') {
+    try {
+      new QRCode(canvas, {
+        text: url, width: 200, height: 200,
+        colorDark: '#e8e8f0', colorLight: '#13132a',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch(e) { canvas.innerHTML = fallbackQR(url); }
+  } else {
+    canvas.innerHTML = fallbackQR(url);
+  }
+}
+
+function fallbackQR(url) {
+  const enc = encodeURIComponent(url);
+  return `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&bgcolor=13132a&color=e8e8f0&data=${enc}" style="border-radius:8px;width:200px;height:200px" alt="QR">`;
+}
+
+// ══════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════
+
+function showToast(icon, titulo, sub) {
+  document.getElementById('tIco').textContent = icon;
+  document.getElementById('tTit').textContent = titulo;
+  document.getElementById('tSub').textContent = sub||'';
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ══════════════════════════════════════
+//  ONLINE / OFFLINE
+// ══════════════════════════════════════
+
+function checkOnline() {
+  document.getElementById('offBadge').classList.toggle('show', !navigator.onLine);
+  if (navigator.onLine) syncPendientes();
+}
+
+// ══════════════════════════════════════
+//  PWA INSTALL
+// ══════════════════════════════════════
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'flex';
+});
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('installBtn').style.display = 'none';
+});
+
+// ══════════════════════════════════════
+//  SUGERENCIAS IA
+// ══════════════════════════════════════
+
+async function loadAISuggestions(el, ops) {
+  try {
+    const knowledge = await getSmartSuggestions();
+    if (!knowledge) { el.style.display = 'none'; return; }
+
+    const tips = [];
+    const patterns = knowledge.patterns || {};
+    const freqPlates = knowledge.frequentPlates || {};
+
+    // Detect peak hours
+    const hour = new Date().getHours();
+    let peakDocs = [];
+    for (const [key, count] of Object.entries(patterns)) {
+      if (key.includes(`_h${hour}`) && count > 3) {
+        peakDocs.push(key.split('_h')[0].replace(/_/g, ' '));
+      }
+    }
+    if (peakDocs.length) {
+      tips.push(`📊 A esta hora sueles registrar: <strong>${peakDocs.slice(0,3).join(', ')}</strong>`);
+    }
+
+    // Top frequent plates
+    const topPlates = Object.entries(freqPlates).sort((a,b) => b[1] - a[1]).slice(0, 3);
+    if (topPlates.length >= 2) {
+      tips.push(`🚛 Vehículos frecuentes: <strong>${topPlates.map(([p]) => p).join(', ')}</strong>`);
+    }
+
+    // Ops velocity insight
+    const today = new Date().toLocaleDateString('es-CL');
+    const todayOps = ops.filter(o => o.fecha === today);
+    if (todayOps.length > 10) {
+      tips.push(`⚡ Ritmo alto hoy: <strong>${todayOps.length} operaciones</strong> registradas`);
+    }
+
+    if (!tips.length) { el.style.display = 'none'; return; }
+
+    el.innerHTML = `
+      <div style="background:rgba(79,143,247,.06);border:1px solid rgba(79,143,247,.2);border-radius:14px;padding:14px;margin-bottom:12px;">
+        <div style="font-weight:700;font-size:12px;color:var(--b);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+          💡 Sugerencias IA
+          <span style="font-size:9px;font-weight:600;background:rgba(79,143,247,.15);padding:2px 8px;border-radius:6px;">Aprendido</span>
+        </div>
+        ${tips.map(t => `<div style="font-size:12px;color:var(--fg2);padding:3px 0;">${t}</div>`).join('')}
+      </div>`;
+    el.style.display = 'block';
+  } catch(e) { el.style.display = 'none'; }
+}
+
+// ══════════════════════════════════════
+//  INICIO DE APP
+// ══════════════════════════════════════
+
+function iniciarApp() {
+  document.getElementById('loginScreen').style.display    = 'none';
+  document.getElementById('registerScreen').style.display = 'none';
+  document.getElementById('app').style.display            = 'flex';
+}
+
+async function init() {
+  // Tema + font
+  const tema = localStorage.getItem(K_TEMA);
+  if (tema && tema!=='oscuro') document.documentElement.setAttribute('data-theme', tema);
+  const font = localStorage.getItem('zp5_font');
+  if (font) document.body.style.fontSize = font+'px';
+
+  // DB
+  await initDB();
+
+  // Cargar deptos
+  cargarDeptos();
+
+  // Sesión
+  loadSession();
+
+  if (session) {
+    // Verificar que el token no esté muy expirado
+    if (Date.now() > session.expiresAt + 7 * 24 * 3600 * 1000) {
+      doLogout(); return;
+    }
+    iniciarApp();
+    await renderHome();
+    turnoInicio = localStorage.getItem(K_TURNO);
+    if (!turnoInicio) {
+      turnoInicio = new Date().toISOString();
+      localStorage.setItem(K_TURNO, turnoInicio);
+    }
+    // Sincronizar deptos y arrancar polling de estados
+    sincronizarDeptos();
+    startPolling();
+  } else {
+    showLogin();
+  }
+
+  // Events
+  checkOnline();
+  window.addEventListener('online',  checkOnline);
+  window.addEventListener('offline', checkOnline);
+
+  // Enter en login
+  document.getElementById('loginPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  document.getElementById('loginEmail').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('loginPass').focus();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
+</script>
+
+<!-- ZeroPaper™ Soporte IA Widget -->
+<div id="zp-support-btn" onclick="window.open('/soporte','_blank')" title="Soporte Técnico IA"
+  style="position:fixed;bottom:24px;right:24px;z-index:9999;width:52px;height:52px;border-radius:50%;
+  background:#1B4332;color:white;font-size:22px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 4px 20px rgba(27,67,50,0.35);transition:transform .2s,box-shadow .2s"
+  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(27,67,50,0.5)'"
+  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(27,67,50,0.35)'">💬</div>
+<div style="position:fixed;bottom:82px;right:18px;z-index:9998;background:#1B4332;color:white;
+  font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;white-space:nowrap;
+  pointer-events:none;opacity:0;transition:opacity .3s" id="zp-support-tooltip">Soporte IA</div>
+<script>
+(function(){
+  const btn = document.getElementById('zp-support-btn');
+  const tip = document.getElementById('zp-support-tooltip');
+  setTimeout(()=>{ tip.style.opacity='1'; setTimeout(()=>tip.style.opacity='0', 3000); }, 2000);
+  btn.addEventListener('mouseover',()=>tip.style.opacity='1');
+  btn.addEventListener('mouseout',()=>tip.style.opacity='0');
+})();
+</script>
+</body>
+</html>
