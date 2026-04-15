@@ -274,7 +274,7 @@ nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px
 .theme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
 .theme-btn{border:2px solid var(--brd);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;font-size:9px;font-family:var(--mono);color:var(--mu);transition:border-color .2s;}
 .theme-btn.on{border-color:var(--g2);color:var(--g2);}
-.theme-preview{width:24px;height:24px;border-radius:6px;margin:0 auto 4px;}
+.theme-preview{width:24px;height:24px;border-radius:6px;margin:0 auto 4px;pointer-events:none;}
 
 /* ══ DEPTOS MANAGER ══ */
 .depto-card{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
@@ -1280,24 +1280,41 @@ async function runOCR(dir) {
 async function registerLearning(type, data) {
   if (!session?.empresaId) return;
   try {
-    await fetch('/api/learn', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        empresa: session.empresaId,
-        depto: deptoActivo?.id || 'global',
-        type, data
-      })
-    });
-  } catch(e) { /* offline, skip */ }
+    const key = `zp5_learn_${session.empresaId}`;
+    const existing = JSON.parse(localStorage.getItem(key) || '{"plates":{},"docs":{},"hours":{}}');
+    if (type === 'plate_frequency' && data.plate) {
+      existing.plates[data.plate] = (existing.plates[data.plate] || 0) + 1;
+    }
+    if (type === 'doc_pattern' && data.docType) {
+      const h = new Date().getHours();
+      const k = `${data.docType}_h${h}`;
+      existing.docs[k] = (existing.docs[k] || 0) + 1;
+    }
+    localStorage.setItem(key, JSON.stringify(existing));
+  } catch(e) {}
 }
 
 async function getSmartSuggestions() {
-  if (!session?.empresaId || !navigator.onLine) return null;
+  if (!session?.empresaId) return null;
   try {
-    const depto = deptoActivo?.id || '';
-    const res = await fetch(`/api/learn?empresa=${session.empresaId}&depto=${depto}`);
-    return await res.json();
+    // Calcular desde datos locales — sin necesidad de backend
+    const ops = await dbGetAll('ops');
+    const myOps = ops.filter(o => o.empresaId === session.empresaId);
+    const patterns = {};
+    const freqPlates = {};
+    myOps.forEach(op => {
+      if (op.ts && op.docType) {
+        const h = new Date(op.ts).getHours();
+        const k = `${op.docType}_h${h}`;
+        patterns[k] = (patterns[k] || 0) + 1;
+      }
+      if (op.plate) freqPlates[op.plate] = (freqPlates[op.plate] || 0) + 1;
+    });
+    // Complementar con datos aprendidos localmente
+    const stored = JSON.parse(localStorage.getItem(`zp5_learn_${session.empresaId}`) || '{}');
+    Object.entries(stored.docs || {}).forEach(([k,v]) => patterns[k] = (patterns[k]||0)+v);
+    Object.entries(stored.plates || {}).forEach(([k,v]) => freqPlates[k] = (freqPlates[k]||0)+v);
+    return { patterns, frequentPlates: freqPlates };
   } catch(e) { return null; }
 }
 
@@ -1895,16 +1912,22 @@ function eliminarDoc(doc) {
 // ══════════════════════════════════════
 
 function setTema(tema, btn) {
-  document.documentElement.setAttribute('data-theme', tema==='oscuro'?'':tema);
+  const root = document.documentElement;
+  root.removeAttribute('data-theme');
+  if (tema !== 'oscuro') root.setAttribute('data-theme', tema);
   localStorage.setItem(K_TEMA, tema);
-  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  showToast('🎨','Tema aplicado','');
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('on'));
+  // btn puede ser el hijo — subir al .theme-btn si hace falta
+  const themeBtn = btn.closest ? btn.closest('.theme-btn') || btn : btn;
+  themeBtn.classList.add('on');
+  showToast('🎨', 'Tema ' + tema, '');
 }
 
 function setFontSize(size) {
-  document.body.style.fontSize = size+'px';
+  const scale = size === 14 ? 0.88 : size === 18 ? 1.13 : 1.0;
+  document.getElementById('app').style.zoom = scale;
   localStorage.setItem('zp5_font', size);
+  showToast('🔤', size===14?'Texto pequeño':size===18?'Texto grande':'Texto normal','');
 }
 
 function cargarTema() {
@@ -2249,7 +2272,11 @@ async function init() {
   const tema = localStorage.getItem(K_TEMA);
   if (tema && tema!=='oscuro') document.documentElement.setAttribute('data-theme', tema);
   const font = localStorage.getItem('zp5_font');
-  if (font) document.body.style.fontSize = font+'px';
+  if (font) {
+    const scale = +font === 14 ? 0.88 : +font === 18 ? 1.13 : 1.0;
+    const appEl = document.getElementById('app');
+    if (appEl) appEl.style.zoom = scale;
+  }
 
   // DB
   await initDB();
