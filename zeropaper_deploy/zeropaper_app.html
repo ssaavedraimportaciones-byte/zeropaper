@@ -602,7 +602,7 @@ nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px
     <div class="card" style="margin-top:10px">
       <div class="card-title">ADMINISTRACIÓN</div>
       <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:10px">Panel de gestión y estadísticas completas.</div>
-      <a href="/zeropaper_admin.html" target="_blank" style="text-decoration:none">
+      <a href="./zeropaper_admin.html" target="_blank" style="text-decoration:none">
         <button class="btn-prime btn-green" style="width:100%;margin-bottom:8px">🖥 Abrir Panel Admin</button>
       </a>
       <button class="btn-prime btn-gray" onclick="doLogout()">🔓 Cerrar sesión</button>
@@ -669,6 +669,7 @@ let curFiltro  = 'TODOS';
 let fotosDir   = { in: [], out: [] };
 let toastTimer = null;
 let turnoInicio= null;
+let _zpFotoArr = null; // cache global para visor de fotos
 
 // ══════════════════════════════════════
 //  AUTH PROPIO — SHA-256 + Firestore
@@ -1158,6 +1159,7 @@ function verFotoCaptura(dir, idx) {
 // ══════════════════════════════════════
 
 function verFotoHistorial(fotosArr, idx) {
+  _zpFotoArr = fotosArr; // guardar en cache global
   const prev = document.getElementById('fotoHistorialModal');
   if (prev) prev.remove();
   const total = fotosArr.length;
@@ -1174,8 +1176,8 @@ function verFotoHistorial(fotosArr, idx) {
       <img src="${src}" alt="Documento" style="width:100%;max-height:70vh;object-fit:contain;border-radius:12px;border:1px solid var(--brd);">
       ${total > 1 ? `
       <div style="display:flex;gap:8px;">
-        <button onclick="document.getElementById('fotoHistorialModal').remove();verFotoHistorial(${JSON.stringify(fotosArr)},${Math.max(0,idx-1)})" ${idx===0?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===0?'rgba(255,255,255,.05)':'var(--g)'};color:#fff;font-size:13px;cursor:${idx===0?'default':'pointer'};opacity:${idx===0?.4:1}">← Anterior</button>
-        <button onclick="document.getElementById('fotoHistorialModal').remove();verFotoHistorial(${JSON.stringify(fotosArr)},${Math.min(total-1,idx+1)})" ${idx===total-1?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===total-1?'rgba(255,255,255,.05)':'var(--g2)'};color:#fff;font-size:13px;cursor:${idx===total-1?'default':'pointer'};opacity:${idx===total-1?.4:1}">Siguiente →</button>
+        <button onclick="document.getElementById('fotoHistorialModal').remove();verFotoHistorial(_zpFotoArr,${Math.max(0,idx-1)})" ${idx===0?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===0?'rgba(255,255,255,.05)':'var(--g)'};color:#fff;font-size:13px;cursor:${idx===0?'default':'pointer'};opacity:${idx===0?.4:1}">← Anterior</button>
+        <button onclick="document.getElementById('fotoHistorialModal').remove();verFotoHistorial(_zpFotoArr,${Math.min(total-1,idx+1)})" ${idx===total-1?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===total-1?'rgba(255,255,255,.05)':'var(--g2)'};color:#fff;font-size:13px;cursor:${idx===total-1?'default':'pointer'};opacity:${idx===total-1?.4:1}">Siguiente →</button>
       </div>` : ''}
       <a href="${src}" download="documento_${idx+1}.jpg" style="text-align:center;padding:10px;border-radius:10px;border:1px solid var(--brd);color:var(--mu);font-size:12px;font-family:var(--mono);text-decoration:none;letter-spacing:1px;">⬇ DESCARGAR IMAGEN</a>
     </div>`;
@@ -1203,6 +1205,11 @@ async function runOCR(dir) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: fotos[0].data })
     });
+    if (!res.ok) {
+      showToast('⚠', 'OCR no disponible', 'Rellena los campos manualmente');
+      if (btn) { btn.innerHTML = '<span>🧠</span> <span>Reintentar lectura</span>'; btn.disabled = false; }
+      return;
+    }
     const data = await res.json();
 
     if (data.error) {
@@ -1597,11 +1604,12 @@ async function verDetalle(id) {
       } catch(e){}
     }
     if (fotosData.length > 0) {
+      _zpFotoArr = fotosData; // cache global para evitar JSON.stringify en onclick
       if (fotosData.length === 1) {
-        fotoHtml = `<img src="${fotosData[0]}" class="modal-foto" alt="Documento" style="cursor:pointer" onclick="verFotoHistorial(${JSON.stringify(fotosData)},0)" title="Toca para ver en pantalla completa">`;
+        fotoHtml = `<img src="${fotosData[0]}" class="modal-foto" alt="Documento" style="cursor:pointer" onclick="verFotoHistorial(_zpFotoArr,0)" title="Toca para ver en pantalla completa">`;
       } else {
         const thumbs = fotosData.map((d, i) => `
-          <div style="position:relative;cursor:pointer" onclick="verFotoHistorial(${JSON.stringify(fotosData)},${i})">
+          <div style="position:relative;cursor:pointer" onclick="verFotoHistorial(_zpFotoArr,${i})">
             <img src="${d}" style="width:100%;border-radius:8px;border:1px solid var(--brd);display:block" alt="Foto ${i+1}">
             <span style="position:absolute;top:4px;left:6px;background:rgba(0,0,0,.65);color:#fff;font-family:var(--mono);font-size:9px;border-radius:4px;padding:1px 6px">Foto ${i+1}</span>
             <span style="position:absolute;bottom:4px;right:6px;background:rgba(0,0,0,.65);color:#52b788;font-family:var(--mono);font-size:9px;border-radius:4px;padding:1px 6px">👁 VER</span>
