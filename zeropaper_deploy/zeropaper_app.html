@@ -609,14 +609,40 @@ nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px
     </div>
   </div>
 
+  <!-- ▸ IA ASISTENTE ◂ -->
+  <div class="view" id="vIa">
+    <div class="sec-row" style="margin-bottom:0">
+      <span class="sec-l">🤖 ASISTENTE IA</span>
+      <span class="sec-a" onclick="zpClearChat()">Limpiar</span>
+    </div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--mu);margin:4px 0 12px;letter-spacing:.5px">Busca operaciones, documentos o haz preguntas sobre el sistema.</div>
+    <!-- Chips sugeridos -->
+    <div id="zpChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+      <button class="pill" onclick="zpAsk('Operaciones de hoy')">📅 Hoy</button>
+      <button class="pill" onclick="zpAsk('¿Qué es un EIR?')">📄 ¿Qué es EIR?</button>
+      <button class="pill" onclick="zpAsk('¿Cómo busco por patente?')">🔍 Buscar patente</button>
+      <button class="pill" onclick="zpAsk('¿Qué es DAM?')">📋 ¿Qué es DAM?</button>
+      <button class="pill" onclick="zpAsk('Resumen del turno')">🔄 Mi turno</button>
+      <button class="pill" onclick="zpAsk('¿Cómo exporto datos?')">📊 Exportar</button>
+    </div>
+    <!-- Mensajes -->
+    <div id="zpMsgs" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;min-height:200px"></div>
+    <!-- Input -->
+    <div style="display:flex;gap:8px;position:sticky;bottom:0;background:var(--bg);padding:8px 0">
+      <input id="zpInput" class="finp" placeholder="Pregunta o escribe una patente/empresa/folio..." style="flex:1"
+        onkeydown="if(event.key==='Enter')zpSend()">
+      <button class="btn-prime btn-green" onclick="zpSend()" style="width:56px;padding:0;font-size:20px">➤</button>
+    </div>
+  </div>
+
 </div><!-- fin scroll -->
 
 <!-- NAV -->
 <nav>
   <div class="ftab on" id="t-home" onclick="goTo('home')"><span class="ftab-i">⌂</span><span class="ftab-l">INICIO</span></div>
   <div class="ftab" id="t-historial" onclick="goTo('historial')"><span class="ftab-i">📋</span><span class="ftab-l">HISTORIAL</span></div>
+  <div class="ftab" id="t-ia" onclick="goTo('ia')"><span class="ftab-i">🤖</span><span class="ftab-l">IA</span></div>
   <div class="ftab" id="t-turno" onclick="goTo('turno')"><span class="ftab-i">🔄</span><span class="ftab-l">TURNO</span></div>
-  <div class="ftab" id="t-deptos" onclick="goTo('deptos')"><span class="ftab-i">🏗</span><span class="ftab-l">DEPTOS</span></div>
   <div class="ftab" id="t-config" onclick="goTo('config')"><span class="ftab-i">⚙</span><span class="ftab-l">CONFIG</span></div>
 </nav>
 
@@ -1024,8 +1050,8 @@ async function getOpsEmpresa() {
 //  NAVEGACIÓN
 // ══════════════════════════════════════
 
-const VIEWS = ['home','ingreso','salida','historial','turno','deptos','temas','config'];
-const TABS  = ['home','historial','turno','deptos','config'];
+const VIEWS = ['home','ingreso','salida','historial','turno','deptos','temas','config','ia'];
+const TABS  = ['home','historial','ia','turno','config'];
 
 function goTo(name) {
   VIEWS.forEach(v => {
@@ -1043,6 +1069,7 @@ function goTo(name) {
   if (name==='salida')    prepForm('out');
   if (name==='config')    cargarConfig();
   if (name==='temas')     cargarTema();
+  if (name==='ia')        renderIA();
 }
 
 function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -1330,11 +1357,87 @@ function addFoto(ev, dir) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e2 => {
-    fotosDir[dir].push({ data: e2.target.result });
-    renderFotosZone(dir);
+    abrirScannerModal(e2.target.result, dir);
   };
   reader.readAsDataURL(file);
   ev.target.value = '';
+}
+
+// ── SCANNER MODAL ── procesamiento de imagen con canvas
+let _scanDir = null, _scanImg = null, _scanRotate = 0, _scanContrast = 1.4, _scanBrightness = 1.1;
+
+function abrirScannerModal(src, dir) {
+  _scanDir = dir; _scanRotate = 0; _scanContrast = 1.4; _scanBrightness = 1.1;
+  const prev = document.getElementById('scannerModal');
+  if (prev) prev.remove();
+
+  const m = document.createElement('div');
+  m.id = 'scannerModal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9998;display:flex;flex-direction:column;align-items:center;padding:16px;overflow-y:auto;';
+  m.innerHTML = `
+    <div style="width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="color:var(--g2);font-family:var(--mono);font-size:13px;letter-spacing:1px">📷 ESCANEAR DOCUMENTO</span>
+        <button onclick="document.getElementById('scannerModal').remove()" style="background:none;border:1px solid #444;color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <canvas id="scanCanvas" style="width:100%;border-radius:12px;border:2px solid var(--g1);background:#000;display:block;"></canvas>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button onclick="scanRotate()" style="padding:12px;border-radius:10px;border:1px solid #444;background:#1a1a1a;color:#fff;font-size:13px;cursor:pointer;">↺ Rotar 90°</button>
+        <button onclick="scanEnhance()" style="padding:12px;border-radius:10px;border:1px solid #444;background:#1a1a1a;color:#fff;font-size:13px;cursor:pointer;">✨ Auto-mejorar</button>
+        <button onclick="scanReset()" style="padding:12px;border-radius:10px;border:1px solid #333;background:#111;color:#888;font-size:12px;cursor:pointer;">↩ Restablecer</button>
+        <button onclick="scanConfirm()" style="padding:12px;border-radius:10px;border:none;background:var(--g1);color:#fff;font-size:13px;font-weight:700;cursor:pointer;">✓ Usar imagen</button>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--mu);text-align:center;letter-spacing:.5px">
+        Rotar hasta que el documento quede vertical · Mejorar contraste para mejor legibilidad
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+
+  _scanImg = new Image();
+  _scanImg.onload = () => scanDraw();
+  _scanImg.src = src;
+}
+
+function scanDraw() {
+  const canvas = document.getElementById('scanCanvas');
+  if (!canvas || !_scanImg) return;
+  const ctx = canvas.getContext('2d');
+  const r = _scanRotate;
+  const w = _scanImg.naturalWidth, h = _scanImg.naturalHeight;
+  const swapped = r === 90 || r === 270;
+  canvas.width  = swapped ? h : w;
+  canvas.height = swapped ? w : h;
+
+  ctx.save();
+  ctx.translate(canvas.width/2, canvas.height/2);
+  ctx.rotate((r * Math.PI) / 180);
+  ctx.drawImage(_scanImg, -w/2, -h/2);
+  ctx.restore();
+
+  // Contraste + brillo via pixel manipulation
+  const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d = id.data;
+  const c = _scanContrast, b = _scanBrightness;
+  for (let i = 0; i < d.length; i += 4) {
+    d[i]   = Math.min(255, Math.max(0, ((d[i]   / 255 - 0.5) * c + 0.5) * 255 * b));
+    d[i+1] = Math.min(255, Math.max(0, ((d[i+1] / 255 - 0.5) * c + 0.5) * 255 * b));
+    d[i+2] = Math.min(255, Math.max(0, ((d[i+2] / 255 - 0.5) * c + 0.5) * 255 * b));
+  }
+  ctx.putImageData(id, 0, 0);
+}
+
+function scanRotate() { _scanRotate = (_scanRotate + 90) % 360; scanDraw(); }
+function scanEnhance() { _scanContrast = _scanContrast < 2 ? 2.2 : 1.4; _scanBrightness = _scanBrightness < 1.2 ? 1.15 : 1.1; scanDraw(); }
+function scanReset()  { _scanRotate = 0; _scanContrast = 1.4; _scanBrightness = 1.1; scanDraw(); }
+
+function scanConfirm() {
+  const canvas = document.getElementById('scanCanvas');
+  if (!canvas || !_scanDir) return;
+  const data = canvas.toDataURL('image/jpeg', 0.88);
+  fotosDir[_scanDir].push({ data });
+  renderFotosZone(_scanDir);
+  document.getElementById('scannerModal').remove();
+  showToast('📷','Foto agregada','Imagen procesada y guardada');
 }
 
 function removeFoto(dir, idx) {
@@ -2263,6 +2366,164 @@ async function loadAISuggestions(el, ops) {
       </div>`;
     el.style.display = 'block';
   } catch(e) { el.style.display = 'none'; }
+}
+
+// ══════════════════════════════════════
+//  ASISTENTE IA — ZeroAI APP
+// ══════════════════════════════════════
+
+const ZP_KB = [
+  {k:['eir'],r:'📄 **EIR — Equipment Interchange Receipt**\n\nRecibo de intercambio de equipo (contenedor). Documento que certifica la transferencia física de un contenedor entre una terminal y un transportista. Incluye descripción del estado del equipo al momento del intercambio.'},
+  {k:['intercheck'],r:'✅ **Intercheck**\n\nInspección de integridad del contenedor antes de ingreso o salida. Verifica: número de sello, estado exterior, daños visibles. Es obligatorio en operaciones de Gate IN/OUT.'},
+  {k:['booking'],r:'📋 **Booking**\n\nReserva de espacio en un buque o almacén. Confirma que hay lugar reservado para una carga específica. Es el primer documento en la cadena de exportación.'},
+  {k:['dus','documento único de salida'],r:'📤 **DUS — Documento Único de Salida**\n\nFormulario aduanero obligatorio en Chile que respalda la exportación de mercancías. Lo exige el Servicio Nacional de Aduanas (SAG/Aduana).'},
+  {k:['dam','declaración de importación','declaracion de importacion'],r:'📥 **DAM — Declaración de Aceptación de Mercancías**\n\nDocumento oficial de Aduana que acredita el ingreso legal de mercancías al país. Requerido para levante de mercadería.'},
+  {k:['aforo'],r:'🔎 **Aforo Aduanero**\n\nProceso de verificación física que realiza Aduana sobre una mercancía para confirmar que los datos declarados coincidan con la realidad (peso, cantidad, descripción).'},
+  {k:['levante'],r:'✅ **Levante**\n\nAutorización de Aduana que permite retirar la mercancía de la zona primaria. Solo se otorga una vez que el DAM o DUS está aprobado y los impuestos pagados.'},
+  {k:['mic','dta','mic/dta','manifiesto internacional'],r:'🚛 **MIC/DTA — Manifiesto Internacional de Carga**\n\nDocumento de tránsito aduanero internacional de carretera. Acompaña la carga en transporte terrestre entre países de la región (Chile, Argentina, Bolivia, Perú).'},
+  {k:['conocimiento de embarque','bill of lading','b/l','bl'],r:'🚢 **Conocimiento de Embarque (B/L)**\n\nContrato entre el exportador y la naviera. Certifica que la mercancía fue recibida a bordo del buque. Documento clave en comercio exterior marítimo.'},
+  {k:['gate in','gatein'],r:'📥 **Gate IN**\n\nRegistro de ingreso de un vehículo o contenedor a la terminal. Incluye datos del conductor, patente, contenedor, sello y tipo de carga.'},
+  {k:['gate out','gateout'],r:'📤 **Gate OUT**\n\nRegistro de salida de un vehículo o contenedor desde la terminal. Debe coincidir con el Gate IN correspondiente. Cierra el ciclo de la operación.'},
+  {k:['guía de despacho','guia de despacho'],r:'📦 **Guía de Despacho**\n\nDocumento tributario que acompaña el traslado de mercancías sin factura. Obligatorio en Chile para movimientos de mercadería entre bodegas o hacia clientes.'},
+  {k:['buscar','como busco','cómo busco','encontrar','historial','patente'],r:'🔍 **Cómo buscar en ZeroPaper**\n\nVe a la pestaña **HISTORIAL** y escribe en el buscador:\n• Patente del camión (ej: HJKL-72)\n• Nombre de la empresa\n• Número de folio\n• Tipo de documento\n• Nombre del operador\n• Fecha\n\nO escríbeme directamente aquí: _"Buscar [patente o empresa]"_ y te busco en tu historial.'},
+  {k:['exportar','excel','csv','reporte','informe'],r:'📊 **Exportar datos**\n\nVe a **HISTORIAL** → botón **📊 Exportar** (esquina superior derecha). Descarga un CSV con todas las operaciones, compatible con Excel, SAP u otros sistemas.\n\nTambién puedes ir a **CONFIG** → Exportar CSV.'},
+  {k:['turno','cambio de turno','cierre de turno'],r:'🔄 **Gestión de turnos**\n\nVe a la pestaña **TURNO**. Puedes:\n• Ver el resumen del turno actual\n• Iniciar / cerrar turno\n• Ver quién registró cada operación\n\nAl cerrar el turno, el historial queda disponible para el turno siguiente.'},
+  {k:['tema','color','oscuro','azul','verde','apariencia'],r:'🎨 **Cambiar tema de color**\n\nVe a **CONFIG** → sección Apariencia → elige entre tema Verde, Azul u Oscuro. También puedes ajustar el tamaño del texto (S/M/L).'},
+  {k:['foto','fotografia','fotografía','imagen','escanear','scanner'],r:'📷 **Captura de documentos**\n\nEn la pestaña de Ingreso o Salida, toca el botón **📷 Añadir foto**. Puedes:\n• Tomar foto con la cámara del celular\n• Seleccionar desde galería\n• Después de capturar: rotar, mejorar contraste y recortar\n\nLas fotos se asocian al registro y quedan en el historial.'},
+  {k:['sync','sincronizar','nube','offline','sin internet'],r:'☁️ **Sincronización**\n\nZeroPaper guarda todo localmente en el dispositivo. Cuando hay conexión, sincroniza automáticamente con Firebase. Si no hay internet, sigue funcionando — se sube cuando vuelve la señal.'},
+  {k:['hola','buenos','buenas','hey'],r:'¡Hola! Soy el asistente IA de ZeroPaper 🤖\n\nPuedo ayudarte a:\n• **Buscar** operaciones por patente, empresa o folio\n• **Explicar** términos portuarios (EIR, DAM, DUS, Intercheck...)\n• **Guiarte** en el uso de la app\n\n¿Qué necesitas?'},
+];
+
+let _zpChatHistory = [];
+
+function renderIA() {
+  const msgs = document.getElementById('zpMsgs');
+  if (!msgs) return;
+  if (_zpChatHistory.length === 0) {
+    zpAddMsg('bot', '¡Hola! Soy el asistente IA de ZeroPaper 🤖\n\nPuedo buscar operaciones en tu historial, explicar términos portuarios o ayudarte con la app.\n\n¿Qué necesitas?');
+  } else {
+    msgs.innerHTML = '';
+    _zpChatHistory.forEach(m => zpRenderMsg(m.role, m.text));
+  }
+}
+
+function zpAddMsg(role, text) {
+  _zpChatHistory.push({ role, text });
+  zpRenderMsg(role, text);
+}
+
+function zpRenderMsg(role, text) {
+  const msgs = document.getElementById('zpMsgs');
+  if (!msgs) return;
+  const d = document.createElement('div');
+  const isBot = role === 'bot';
+  d.style.cssText = `align-self:${isBot?'flex-start':'flex-end'};max-width:90%;background:${isBot?'var(--bg3)':'var(--g1)'};color:var(--fg);border-radius:${isBot?'4px 14px 14px 14px':'14px 14px 4px 14px'};padding:10px 14px;font-size:13px;line-height:1.6;white-space:pre-wrap;border:1px solid ${isBot?'var(--brd)':'transparent'}`;
+  d.innerHTML = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/_(.*?)_/g,'<em>$1</em>');
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function zpSend() {
+  const inp = document.getElementById('zpInput');
+  const q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+  zpAsk(q);
+}
+
+async function zpAsk(q) {
+  zpAddMsg('user', q);
+  const ql = q.toLowerCase();
+
+  // ── 1. Detectar búsqueda por patente (ej: HJKL-72, AB1234, ABCD·12)
+  const plateMatch = q.match(/\b([A-ZÁÉÍÓÚ]{2,4}[-·\s]?\d{2,4})\b/i);
+  if (plateMatch || ql.includes('buscar') || ql.includes('patente') || ql.includes('busca ') || ql.includes('busco ')) {
+    const term = plateMatch ? plateMatch[1].toUpperCase() : q.replace(/buscar?|busco|patente/gi,'').trim();
+    if (term.length >= 3) { await zpSearchOps(term); return; }
+  }
+
+  // ── 2. Detectar búsqueda por empresa (palabras en mayúscula o con 'empresa')
+  if (ql.includes('empresa') || ql.includes('operaciones de ') || ql.includes('registros de ')) {
+    const term = q.replace(/empresa|operaciones de|registros de/gi,'').trim();
+    if (term.length >= 3) { await zpSearchOps(term); return; }
+  }
+
+  // ── 3. Detectar "operaciones de hoy"
+  if (ql.includes('hoy') || ql.includes('operaciones de hoy') || ql.includes('hoy cuántos') || ql.includes('resumen')) {
+    await zpResumenHoy(); return;
+  }
+
+  // ── 4. Detectar "resumen del turno"
+  if (ql.includes('turno') && (ql.includes('resumen') || ql.includes('cuánto') || ql.includes('cuantos'))) {
+    await zpResumenHoy(); return;
+  }
+
+  // ── 5. KB de términos portuarios
+  for (const entry of ZP_KB) {
+    if (entry.k.some(kw => ql.includes(kw))) {
+      zpAddMsg('bot', entry.r); return;
+    }
+  }
+
+  // ── 6. Fallback: buscar directamente en historial como texto libre
+  if (q.length >= 3) {
+    await zpSearchOps(q); return;
+  }
+
+  zpAddMsg('bot', 'No encontré información para esa consulta.\n\nPuedes preguntarme sobre términos portuarios (EIR, DAM, DUS...) o escribir una patente, empresa o folio para que lo busque en tu historial.');
+}
+
+async function zpSearchOps(term) {
+  zpAddMsg('bot', `🔍 Buscando "${term}" en el historial...`);
+  try {
+    const ops = await dbGetAll('ops');
+    const t = term.toLowerCase().replace(/[-·\s]/g,'');
+    const found = ops.filter(o => {
+      const fields = [o.plate,o.empresa,o.empresaNombre,o.folio,o.docType,o.operador,o.destinatario,o.conductor,o.contenedor,o.guia,o.sello,o.obs,o.depto,o.deptoNombre,o.fecha].filter(Boolean);
+      return fields.some(f => f.toString().toLowerCase().replace(/[-·\s]/g,'').includes(t));
+    }).sort((a,b) => (b.ts||0)-(a.ts||0)).slice(0,8);
+
+    if (!found.length) {
+      zpAddMsg('bot', `No encontré operaciones con "${term}".\n\nVerifica que el texto esté correcto o ve al **HISTORIAL** para buscar manualmente.`);
+      return;
+    }
+
+    const lines = found.map(o =>
+      `• **${o.tipo}** · ${o.plate||'?'} · ${(o.docType||'').replace(/_/g,' ')} · ${o.fecha||''} ${o.hora||''}\n  Empresa: ${o.empresaNombre||o.empresa||'—'} · Op: ${o.operador||'—'}${o.folio?' · Folio: '+o.folio:''}`
+    ).join('\n\n');
+
+    zpAddMsg('bot', `✅ ${found.length} operación(es) encontrada(s) para "${term}":\n\n${lines}\n\nVe al **HISTORIAL** para ver detalles y fotos.`);
+  } catch(e) {
+    zpAddMsg('bot', 'Error al acceder al historial. Intenta desde la pestaña HISTORIAL.');
+  }
+}
+
+async function zpResumenHoy() {
+  try {
+    const ops = await dbGetAll('ops');
+    const hoy = new Date().toLocaleDateString('es-CL');
+    const todayOps = ops.filter(o => o.fecha === hoy);
+    if (!todayOps.length) {
+      zpAddMsg('bot', `📅 **Hoy (${hoy})** no hay operaciones registradas aún.`);
+      return;
+    }
+    const ingresos = todayOps.filter(o=>o.tipo==='INGRESO').length;
+    const salidas  = todayOps.filter(o=>o.tipo==='SALIDA').length;
+    const conFoto  = todayOps.filter(o=>o.fotoIds?.length||o.fotoId).length;
+    const docs = {};
+    todayOps.forEach(o => { if(o.docType) docs[o.docType]=(docs[o.docType]||0)+1; });
+    const topDoc = Object.entries(docs).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([d,n])=>`${d.replace(/_/g,' ')} (${n})`).join(', ');
+    zpAddMsg('bot', `📅 **Resumen de hoy — ${hoy}**\n\n📥 Ingresos: **${ingresos}**\n📤 Salidas: **${salidas}**\n📷 Con foto: ${conFoto}\n📊 Total: **${todayOps.length}**\n\n📋 Documentos más registrados: ${topDoc||'—'}`);
+  } catch(e) {
+    zpAddMsg('bot', 'No pude cargar el resumen. Intenta de nuevo.');
+  }
+}
+
+function zpClearChat() {
+  _zpChatHistory = [];
+  const msgs = document.getElementById('zpMsgs');
+  if (msgs) msgs.innerHTML = '';
+  zpAddMsg('bot', '¡Hola de nuevo! ¿En qué puedo ayudarte?');
 }
 
 // ══════════════════════════════════════

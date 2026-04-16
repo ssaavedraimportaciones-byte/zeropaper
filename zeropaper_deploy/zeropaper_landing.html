@@ -607,7 +607,7 @@ footer{
       <div class="avd-item g">Registro digital en 30 segundos desde el celular, con foto del documento</div>
       <div class="avd-item g">Búsqueda instantánea por patente, empresa, fecha, tipo de documento o cualquier dato</div>
       <div class="avd-item g">Cambio de turno automático: el sistema guarda todo, sin notas de papel</div>
-      <div class="avd-item g">Clientes revisan el estado de su carga en tiempo real desde su teléfono</div>
+      <div class="avd-item g">Reportes automáticos por turno: quién registró qué, cuándo y con qué documento</div>
       <div class="avd-item g">Todos los documentos respaldados en la nube, nunca se pierden</div>
       <div class="avd-item g">Trazabilidad completa: quién registró, qué documento, a qué hora</div>
       <div class="avd-item g">En caso de auditoría, toda la información lista en segundos</div>
@@ -646,10 +646,10 @@ footer{
     </div>
     <div class="feat-item">
       <div class="feat-num">04</div>
-      <div class="feat-icon">🏢</div>
-      <div class="feat-title">Portal de seguimiento para tus clientes</div>
-      <div class="feat-desc">Cada cliente tiene acceso a un portal propio donde puede ver el estado de su carga en tiempo real, sin necesidad de llamar ni escribir. Tú te concentras en operar; ellos tienen la información que necesitan.</div>
-      <div class="feat-why">Reduce las llamadas de consulta en más del 80% — menos interrupciones, más foco.</div>
+      <div class="feat-icon">📊</div>
+      <div class="feat-title">Reportes y trazabilidad completa</div>
+      <div class="feat-desc">Cada operación queda registrada con fecha, hora, operador responsable, tipo de documento y fotos. Con un clic exportas el historial completo en Excel. En caso de auditoría, tienes todo listo en segundos — sin buscar carpetas físicas.</div>
+      <div class="feat-why">Trazabilidad total: quién hizo qué, cuándo y con qué documento — siempre disponible.</div>
     </div>
     <div class="feat-item">
       <div class="feat-num">05</div>
@@ -865,8 +865,8 @@ footer{
     </div>
     <div class="how-step">
       <div class="how-num">5</div>
-      <div class="how-title">Cliente ve su carga</div>
-      <div class="how-desc">Panel de seguimiento en tiempo real sin llamadas.</div>
+      <div class="how-title">Supervisión en tiempo real</div>
+      <div class="how-desc">El supervisor o administrador ve todas las operaciones del turno en tiempo real desde cualquier dispositivo.</div>
     </div>
   </div>
 </section>
@@ -973,7 +973,7 @@ footer{
       <div class="nube-ico">🔒</div>
       <div class="nube-title">Acceso con Roles</div>
       <div class="nube-val">100%</div>
-      <div class="nube-desc">Cada usuario solo puede ver lo que le corresponde. El operador ve sus registros. El administrador ve todo. El cliente ve solo su carga. Sin mezclas, sin filtros manuales.</div>
+      <div class="nube-desc">Cada usuario solo puede ver lo que le corresponde. El operador registra y consulta su turno. El supervisor ve todo su departamento. El administrador tiene visibilidad total de la empresa. Sin mezclas, sin filtros manuales.</div>
     </div>
     <div class="nube-card">
       <div class="nube-ico">📜</div>
@@ -1343,7 +1343,7 @@ footer{
 <script>
 const ZAI_KB = [
   {k:['hola','buenas','buenos','hey','saludos','buen día','buen dia'],r:'¡Hola! Soy ZeroAI, el asistente de ZeroPaper 🤖\n\nPuedo responder preguntas sobre la plataforma: cómo funciona, cómo buscar documentos, qué significa cada término, cómo se implementa y más. ¿En qué te ayudo?'},
-  {k:['que es','qué es','zeropaper','plataforma','sistema'],r:'ZeroPaper es una plataforma de gestión documental portuaria 100% digital. Permite registrar ingresos y salidas desde el celular en 30 segundos, fotografiar documentos físicos, buscar cualquier registro por patente o empresa, y dar acceso a clientes para ver su carga en tiempo real.\n\nFunciona sin internet y sincroniza automáticamente con la nube cuando vuelve la señal.'},
+  {k:['que es','qué es','zeropaper','plataforma','sistema'],r:'ZeroPaper es una plataforma de gestión documental portuaria 100% digital para empresas y operadores.\n\nPermite registrar ingresos y salidas desde el celular en 30 segundos, fotografiar documentos físicos con OCR automático, buscar cualquier registro por patente/empresa/folio en tiempo real, y exportar reportes completos.\n\nFunciona sin internet y sincroniza automáticamente con la nube cuando vuelve la señal.'},
   {k:['precio','costo','cuanto','cuánto','valor','mensual','tarifa','pago','plan'],r:'El valor de implementación se define según el tamaño de tu operación, número de departamentos y funcionalidades requeridas. Tenemos 3 planes:\n\n• **Piloto**: 30 días gratis para probar\n• **Profesional**: implementación + mensualidad según uso\n• **Enterprise**: multi-empresa, SLA garantizado, a convenir\n\nPara una cotización personalizada escribe a contacto@zeropaper.cl o al WhatsApp +56 9 9585 4721.'},
   {k:['implementacion','implementación','cuanto demora','cuánto demora','tiempo instalar','cuando funciona','cuándo funciona'],r:'La implementación toma entre 48 y 72 horas. No requiere instalar software ni configurar servidores. Los operadores se capacitan en menos de 30 minutos. El día 3 ya están registrando operaciones en producción.'},
   {k:['documento','documentos','eir','intercheck','booking','dus','dam','aforo','levante','conocimiento embarque','guia despacho','guía despacho'],r:'ZeroPaper maneja todos los documentos portuarios estándar:\n\nOperaciones: EIR, Intercheck, Booking, Gate IN/OUT, Damage Report\nAduana: DUS, DAM, Aforo, Levante, MIC/DTA, Carta Porte\nCabotaje: Conocimiento de Embarque, Guía Cabotaje, Manifiesto\nRecepción: Guía Despacho, Orden Compra, Pase Salida\n\nTodos escaneables y clasificados automáticamente.'},
@@ -1356,7 +1356,7 @@ const ZAI_KB = [
   {k:['roi','retorno','ahorro','ahorra','ahorrar','cuanto ahorro','cuánto ahorro','beneficio','rentable'],r:'En promedio nuestros clientes logran:\n\n• 340% ROI en el primer año\n• 80% reducción en costos de papelería\n• 70% menos horas administrativas\n• Payback period menor a 6 meses\n\nEl ahorro viene de eliminar papel, impresoras, archivadores, horas de búsqueda manual y errores de transcripción.'},
   {k:['pwa','instalar','app store','play store','celular','movil','móvil','android','iphone','ios'],r:'ZeroPaper es una PWA (Progressive Web App). Se instala desde el navegador directamente en cualquier celular — Android o iPhone — sin pasar por App Store ni Play Store. Sin actualizaciones manuales, sin almacenamiento adicional.'},
   {k:['turno','turnos','cambio turno','traspaso'],r:'El cierre de turno es automático. Al terminar el turno, el sistema genera un resumen de todas las operaciones y lo traspasa al turno siguiente con historial completo. Sin cuadernos, sin Excel, sin llamadas entre turnos.'},
-  {k:['cliente','clientes','seguimiento','portal','acceso cliente','rastreo','carga'],r:'Cada cliente tiene su propio portal de seguimiento en tiempo real. Pueden ver el estado de su carga sin llamar ni escribir. Esto reduce las consultas telefónicas en más del 80% y mejora la percepción de servicio.'},
+  {k:['cliente','clientes','seguimiento','portal','acceso cliente','rastreo','carga'],r:'ZeroPaper es una plataforma B2B orientada a los operadores y empresas portuarias — no a los clientes finales.\n\nLo que sí obtienes: historial completo de todas las operaciones, búsqueda instantánea, exportación a Excel, y trazabilidad total. El equipo operativo siempre sabe qué se registró, cuándo y quién lo hizo — sin depender de cuadernos ni llamadas internas.'},
   {k:['capacitacion','capacitación','entrenamiento','aprender','como usar','cómo usar','dificil','difícil','fácil'],r:'La capacitación es mínima. Los operadores aprenden la app en menos de 30 minutos. La interfaz está diseñada para ser usada con guantes, en condiciones de luz variable, con una sola mano. Sin manuales, sin cursos.'},
   {k:['competencia','competidor','alternativa','otros sistemas','tos','navis','portbase'],r:'A diferencia de sistemas TOS tradicionales que cuestan $50K-200K+ en implementación, ZeroPaper cuesta una fracción con la misma funcionalidad. Más ágil, más fácil de usar, adaptado al mercado portuario chileno.'},
   {k:['soporte','ayuda','problema','error','falla','contacto'],r:'El soporte está incluido en todos los planes:\n• Plan Piloto: soporte por email\n• Plan Profesional: respuesta en menos de 12 horas\n• Plan Enterprise: SLA garantizado 99.9%, soporte dedicado\n\nTambién puedes escribirnos directo al WhatsApp +56 9 9585 4721'},
