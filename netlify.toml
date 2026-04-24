@@ -8,5 +8,15 @@
   to = "/dashboard.html"
   status = 200
 
+[[redirects]]
+  from = "/app"
+  to = "/zeropaper_deploy/zeropaper_app.html"
+  status = 200
+
+[[redirects]]
+  from = "/zeropaper_app.html"
+  to = "/zeropaper_deploy/zeropaper_app.html"
+  status = 200
+
 [build]
   publish = "."
