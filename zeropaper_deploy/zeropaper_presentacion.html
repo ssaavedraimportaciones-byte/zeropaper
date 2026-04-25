@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZeroPaper™ — Presentación Gerencial</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060b09;--bg2:#0b1410;--bg3:#0f1a12;
+  --fg:#e8f0ea;--mu:#6b8070;--brd:rgba(255,255,255,.07);
+  --g:#22c55e;--g2:#4ade80;--g3:#86efac;
+  --cyan:#00d4ff;--amber:#f59e0b;--red:#ef4444;
+  --display:'Bebas Neue',sans-serif;
+  --body:'Outfit',sans-serif;
+  --mono:'Space Mono',monospace;
+}
+html{scroll-behavior:smooth;scroll-snap-type:y mandatory}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);overflow-x:hidden}
+
+/* SLIDES */
+.slide{
+  min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  padding:60px 80px;scroll-snap-align:start;position:relative;overflow:hidden;
+  border-bottom:1px solid var(--brd);
+}
+.slide::before{content:'';position:absolute;inset:0;pointer-events:none}
+
+/* NAV DOTS */
+#nav-dots{position:fixed;right:24px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mu);cursor:pointer;transition:all .3s}
+.dot.active{background:var(--g);transform:scale(1.4)}
+
+/* LABEL */
+.label{font-family:var(--mono);font-size:.7rem;color:var(--g);letter-spacing:3px;margin-bottom:1rem;display:flex;align-items:center;gap:.8rem}
+.label::before{content:'';width:2rem;height:1px;background:var(--g)}
+
+/* TITLE */
+h1{font-family:var(--display);font-size:clamp(3rem,8vw,6rem);line-height:.9;letter-spacing:3px;margin-bottom:1rem}
+h2{font-family:var(--display);font-size:clamp(2rem,5vw,3.5rem);line-height:1;letter-spacing:2px;margin-bottom:1rem}
+.sub{color:var(--mu);font-size:1.05rem;line-height:1.7;max-width:600px}
+
+/* CARDS GRID */
+.grid{display:grid;gap:1.5rem;margin-top:2rem}
+.grid-2{grid-template-columns:1fr 1fr}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.card{background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:14px;padding:1.8rem;transition:border-color .2s}
+.card:hover{border-color:rgba(34,197,94,.3)}
+.card-num{font-family:var(--display);font-size:3.5rem;color:var(--g);letter-spacing:2px;line-height:1}
+.card-unit{font-family:var(--display);font-size:1.5rem;color:var(--g2)}
+.card-label{font-family:var(--mono);font-size:.7rem;color:var(--mu);letter-spacing:2px;margin-top:.5rem}
+.card-title{font-weight:700;font-size:1rem;margin-bottom:.5rem}
+.card-desc{color:var(--mu);font-size:.9rem;line-height:1.6}
+.card-icon{font-size:2rem;margin-bottom:.8rem}
+.card.highlight{border-color:var(--g);background:rgba(34,197,94,.06)}
+
+/* FLOW */
+.flow{display:flex;align-items:center;gap:0;margin-top:2rem;flex-wrap:wrap}
+.flow-step{background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:12px;padding:1.5rem;flex:1;min-width:160px;text-align:center;position:relative}
+.flow-step.active{border-color:var(--g);background:rgba(34,197,94,.08)}
+.flow-arrow{color:var(--g);font-size:1.5rem;padding:0 .5rem;flex-shrink:0}
+.flow-num{width:36px;height:36px;border-radius:50%;border:2px solid var(--g);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:1.2rem;color:var(--g);margin:0 auto .8rem}
+.flow-title{font-weight:700;font-size:.9rem;margin-bottom:.4rem}
+.flow-desc{color:var(--mu);font-size:.8rem;line-height:1.5}
+
+/* BEFORE/AFTER */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:2rem}
+.before{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.04)}
+.after{border-color:rgba(34,197,94,.4);background:rgba(34,197,94,.06)}
+.compare-tag{font-family:var(--mono);font-size:.7rem;letter-spacing:2px;margin-bottom:1rem}
+.before .compare-tag{color:var(--red)}
+.after .compare-tag{color:var(--g)}
+.compare-item{display:flex;align-items:flex-start;gap:.8rem;margin-bottom:.8rem;font-size:.9rem;line-height:1.5}
+.compare-item .ico{flex-shrink:0;font-size:1rem}
+
+/* ROI TABLE */
+.roi-table{width:100%;border-collapse:collapse;margin-top:1.5rem}
+.roi-table th{font-family:var(--mono);font-size:.7rem;color:var(--g);letter-spacing:2px;padding:.8rem 1rem;border-bottom:1px solid var(--brd);text-align:left}
+.roi-table td{padding:.8rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.9rem}
+.roi-table tr:last-child td{border-bottom:none}
+.roi-table .total{color:var(--g);font-weight:700;font-size:1rem}
+.roi-table .highlight-row td{background:rgba(34,197,94,.06);color:var(--g)}
+
+/* TIMELINE */
+.timeline{margin-top:2rem;position:relative;padding-left:2rem}
+.timeline::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--g),transparent)}
+.tl-item{position:relative;margin-bottom:1.5rem;padding-left:1.5rem}
+.tl-item::before{content:'';position:absolute;left:-2.15rem;top:.4rem;width:12px;height:12px;border-radius:50%;background:var(--g);border:2px solid var(--bg)}
+.tl-phase{font-family:var(--mono);font-size:.7rem;color:var(--g);letter-spacing:2px;margin-bottom:.3rem}
+.tl-title{font-weight:700;margin-bottom:.3rem}
+.tl-desc{color:var(--mu);font-size:.9rem;line-height:1.5}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);color:var(--g2);padding:.35rem .8rem;border-radius:100px;font-family:var(--mono);font-size:.7rem;letter-spacing:1px}
+.badges{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1rem}
+
+/* HERO DECORATION */
+.hero-glow{position:absolute;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(34,197,94,.08),transparent 70%);pointer-events:none}
+
+/* FOOTER */
+.slide-footer{position:absolute;bottom:24px;right:40px;font-family:var(--mono);font-size:.7rem;color:var(--mu);letter-spacing:2px}
+.slide-num{font-family:var(--display);font-size:.9rem;color:rgba(34,197,94,.4)}
+
+/* PRINT */
+@media print{
+  html{scroll-snap-type:none}
+  .slide{min-height:auto;page-break-after:always;padding:40px}
+  #nav-dots{display:none}
+}
+@media(max-width:768px){
+  .slide{padding:40px 24px}
+  .grid-2,.grid-3,.grid-4,.compare{grid-template-columns:1fr}
+  .flow{flex-direction:column}
+  .flow-arrow{transform:rotate(90deg)}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV DOTS -->
+<div id="nav-dots"></div>
+
+<!-- ══ SLIDE 1: PORTADA ══ -->
+<div class="slide" id="s1" style="background:linear-gradient(135deg,#060b09 0%,#0a140c 100%)">
+  <div class="hero-glow"></div>
+  <div class="label">PRESENTACIÓN EJECUTIVA · 2025</div>
+  <h1>ZERO<br><span style="color:var(--g)">PAPER</span><span style="color:var(--mu)">™</span></h1>
+  <p class="sub" style="font-size:1.2rem;max-width:500px">Gestión operativa portuaria 100% digital.<br>Sin papel. Sin errores. Sin demoras.</p>
+  <div class="badges" style="margin-top:2rem">
+    <span class="badge">📱 PWA MÓVIL</span>
+    <span class="badge">☁️ NUBE + OFFLINE</span>
+    <span class="badge">⚡ 30 SEG / REGISTRO</span>
+    <span class="badge">🔍 BÚSQUEDA INSTANTÁNEA</span>
+    <span class="badge">📊 REPORTES 1 CLIC</span>
+  </div>
+  <div class="slide-footer"><span class="slide-num">01</span> / 08 — CONFIDENCIAL</div>
+</div>
+
+<!-- ══ SLIDE 2: EL PROBLEMA ══ -->
+<div class="slide" id="s2">
+  <div class="label">EL PROBLEMA</div>
+  <h2>Las Operaciones Portuarias<br>Siguen en <span style="color:var(--red)">Papel</span></h2>
+  <p class="sub">Cada día se pierden horas, documentos y dinero por procesos manuales que no escalan.</p>
+  <div class="grid grid-2">
+    <div class="card before">
+      <div class="compare-tag">❌ HOY SIN ZEROPAPER</div>
+      <div class="compare-item"><span class="ico">📋</span> Cuadernos y carpetas que nadie encuentra</div>
+      <div class="compare-item"><span class="ico">✍️</span> Registros a mano con errores de transcripción</div>
+      <div class="compare-item"><span class="ico">🔄</span> Cambios de turno con notas pegadas y llamadas</div>
+      <div class="compare-item"><span class="ico">🔍</span> Buscar un documento toma 15-30 minutos</div>
+      <div class="compare-item"><span class="ico">📊</span> Reportes manuales que demoran días</div>
+      <div class="compare-item"><span class="ico">❌</span> Documentos perdidos = multas y reclamos</div>
+    </div>
+    <div class="card after">
+      <div class="compare-tag">✅ CON ZEROPAPER</div>
+      <div class="compare-item"><span class="ico">📱</span> Todo desde el celular, en 30 segundos</div>
+      <div class="compare-item"><span class="ico">📷</span> Foto automática del documento físico</div>
+      <div class="compare-item"><span class="ico">🔄</span> Cambio de turno digital, sin papel</div>
+      <div class="compare-item"><span class="ico">⚡</span> Búsqueda instantánea por patente o folio</div>
+      <div class="compare-item"><span class="ico">📊</span> Exportar a Excel en 1 clic</div>
+      <div class="compare-item"><span class="ico">☁️</span> Respaldo automático, cero pérdidas</div>
+    </div>
+  </div>
+  <div class="slide-footer"><span class="slide-num">02</span> / 08</div>
+</div>
+
+<!-- ══ SLIDE 3: CÓMO FUNCIONA ══ -->
+<div class="slide" id="s3">
+  <div class="label">FUNCIONAMIENTO</div>
+  <h2>De 0 a Operativo<br>en <span style="color:var(--g)">72 Horas</span></h2>
+  <div class="flow">
+    <div class="flow-step active">
+      <div class="flow-num">1</div>
+      <div class="flow-title">Operador llega</div>
+      <div class="flow-desc">Abre ZeroPaper en su celular. Sin instalación, funciona como web app.</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step active">
+      <div class="flow-num">2</div>
+      <div class="flow-title">Registra operación</div>
+      <div class="flow-desc">Patente + empresa + documento + foto. Todo en 30 segundos.</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step active">
+      <div class="flow-num">3</div>
+      <div class="flow-title">Se sincroniza</div>
+      <div class="flow-desc">Nube automática. Funciona sin internet y sincroniza al volver la señal.</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step active">
+      <div class="flow-num">4</div>
+      <div class="flow-title">Supervisor ve todo</div>
+      <div class="flow-desc">Dashboard en tiempo real. Busca, exporta, audita desde cualquier dispositivo.</div>
+    </div>
+  </div>
+  <div class="grid grid-3" style="margin-top:2rem">
+    <div class="card">
+      <div class="card-icon">📷</div>
+      <div class="card-title">OCR + Foto</div>
+      <div class="card-desc">La app lee el documento automáticamente. Sin tipear, sin errores.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔄</div>
+      <div class="card-title">Turnos Digitales</div>
+      <div class="card-desc">El siguiente turno encuentra todo listo. Sin cuadernos ni llamadas.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Reportes Instantáneos</div>
+      <div class="card-desc">Excel, PDF, por fecha, por empresa, por operador. En 1 clic.</div>
+    </div>
+  </div>
+  <div class="slide-footer"><span class="slide-num">03</span> / 08</div>
+</div>
+
+<!-- ══ SLIDE 4: IMPACTO ══ -->
+<div class="slide" id="s4">
+  <div class="label">IMPACTO MEDIBLE</div>
+  <h2>Resultados desde<br>el <span style="color:var(--g)">Día 1</span></h2>
+  <div class="grid grid-4" style="margin-top:2rem">
+    <div class="card highlight">
+      <div class="card-num">80<span class="card-unit">%</span></div>
+      <div class="card-label">REDUCCIÓN PAPELERÍA</div>
+    </div>
+    <div class="card highlight">
+      <div class="card-num">30<span class="card-unit">s</span></div>
+      <div class="card-label">POR REGISTRO</div>
+    </div>
+    <div class="card highlight">
+      <div class="card-num">70<span class="card-unit">%</span></div>
+      <div class="card-label">MENOS HORAS ADMIN</div>
+    </div>
+    <div class="card highlight">
+      <div class="card-num">0</div>
+      <div class="card-label">DOCUMENTOS PERDIDOS</div>
+    </div>
+  </div>
+  <div class="grid grid-2" style="margin-top:1.5rem">
+    <div class="card">
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--amber);letter-spacing:2px;margin-bottom:1rem">⏱ TIEMPO RECUPERADO</div>
+      <div style="font-size:.9rem;color:var(--mu);line-height:2">
+        → <strong style="color:var(--fg)">15 min/registro</strong> → 30 segundos<br>
+        → <strong style="color:var(--fg)">2h/día en búsquedas</strong> → 10 segundos<br>
+        → <strong style="color:var(--fg)">1 día/semana en reportes</strong> → 5 minutos<br>
+        → <strong style="color:var(--fg)">30 min/cambio turno</strong> → automático
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--g);letter-spacing:2px;margin-bottom:1rem">💰 ROI ESTIMADO</div>
+      <div style="font-size:.9rem;color:var(--mu);line-height:2">
+        → Payback period: <strong style="color:var(--g)">3-6 meses</strong><br>
+        → ROI año 1: <strong style="color:var(--g)">340%</strong><br>
+        → Costo evitado (multas, re-trabajo): <strong style="color:var(--g)">alto</strong><br>
+        → Implementación: <strong style="color:var(--g)">72 horas</strong>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer"><span class="slide-num">04</span> / 08</div>
+</div>
+
+<!-- ══ SLIDE 5: ARQUITECTURA ══ -->
+<div class="slide" id="s5">
+  <div class="label">ARQUITECTURA</div>
+  <h2>Tecnología <span style="color:var(--g)">Robusta</span>,<br>Implementación Simple</h2>
+  <div class="grid grid-3" style="margin-top:2rem">
+    <div class="card" style="border-top:3px solid var(--g)">
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--g);letter-spacing:2px;margin-bottom:1rem">📱 CAPA CLIENTE</div>
+      <div style="font-size:.85rem;color:var(--mu);line-height:2">
+        ✓ PWA — funciona en iOS, Android, Desktop<br>
+        ✓ Sin instalación desde App Store<br>
+        ✓ Modo offline completo<br>
+        ✓ Cámara integrada (foto de documentos)<br>
+        ✓ Interfaz adaptable a cualquier pantalla
+      </div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--cyan)">
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--cyan);letter-spacing:2px;margin-bottom:1rem">⚙️ CAPA LÓGICA</div>
+      <div style="font-size:.85rem;color:var(--mu);line-height:2">
+        ✓ Autenticación por roles (operador/admin)<br>
+        ✓ Multiempresa y multidepartamento<br>
+        ✓ Sincronización en tiempo real<br>
+        ✓ OCR automático de documentos<br>
+        ✓ Motor de búsqueda instantánea
+      </div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--amber)">
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--amber);letter-spacing:2px;margin-bottom:1rem">☁️ CAPA DATOS</div>
+      <div style="font-size:.85rem;color:var(--mu);line-height:2">
+        ✓ Firebase / Firestore (Google Cloud)<br>
+        ✓ Backup automático continuo<br>
+        ✓ Disponibilidad 99.9% SLA<br>
+        ✓ Datos encriptados AES-256<br>
+        ✓ Exportación Excel / PDF / CSV
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:1.5rem;padding:1.2rem 1.5rem;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:12px;font-size:.9rem;color:var(--mu)">
+    🔒 <strong style="color:var(--fg)">Seguridad nivel bancario</strong> — Los datos nunca salen de la infraestructura de Google Cloud. Cumple con regulaciones de protección de datos. Sin dependencia de servidores propios.
+  </div>
+  <div class="slide-footer"><span class="slide-num">05</span> / 08</div>
+</div>
+
+<!-- ══ SLIDE 6: PLANES ══ -->
+<div class="slide" id="s6">
+  <div class="label">MODELO COMERCIAL</div>
+  <h2>Planes para <span style="color:var(--g)">Cada Operación</span></h2>
+  <div class="grid grid-3" style="margin-top:2rem">
+    <div class="card">
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--mu);letter-spacing:2px;margin-bottom:1rem">ENTRADA</div>
+      <div style="font-family:var(--display);font-size:1.8rem;letter-spacing:1px;margin-bottom:.3rem">PILOTO</div>
+      <div style="font-family:var(--display);font-size:2.5rem;color:var(--g);margin-bottom:.5rem">$0</div>
+      <div style="color:var(--mu);font-size:.85rem;margin-bottom:1.5rem">30 días gratis · sin tarjeta · sin riesgo</div>
+      <div style="font-size:.85rem;color:var(--mu);line-height:2">
+        ✓ 1 departamento<br>✓ 200 operaciones<br>✓ App + historial<br>✓ Soporte por email
+      </div>
+    </div>
+    <div class="card highlight">
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--g);letter-spacing:2px;margin-bottom:1rem">★ MÁS POPULAR</div>
+      <div style="font-family:var(--display);font-size:1.8rem;letter-spacing:1px;margin-bottom:.3rem">PROFESIONAL</div>
+      <div style="font-family:var(--display);font-size:2.5rem;color:var(--g);margin-bottom:.5rem">A MEDIDA</div>
+      <div style="color:var(--mu);font-size:.85rem;margin-bottom:1.5rem">Mensualidad según volumen de operaciones</div>
+      <div style="font-size:.85rem;color:var(--mu);line-height:2">
+        ✓ Departamentos ilimitados<br>✓ Usuarios ilimitados<br>✓ Dashboard ejecutivo<br>✓ Integración ERP<br>✓ Soporte prioritario
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--mu);letter-spacing:2px;margin-bottom:1rem">CORPORATIVO</div>
+      <div style="font-family:var(--display);font-size:1.8rem;letter-spacing:1px;margin-bottom:.3rem">ENTERPRISE</div>
+      <div style="font-family:var(--display);font-size:2.5rem;color:var(--g);margin-bottom:.5rem">CONVENIR</div>
+      <div style="color:var(--mu);font-size:.85rem;margin-bottom:1.5rem">Multi-empresa · SLA 99.9% · On-premise</div>
+      <div style="font-size:.85rem;color:var(--mu);line-height:2">
+        ✓ Multi-empresa / sede<br>✓ API REST propia<br>✓ Capacitación equipo<br>✓ Gerente de cuenta<br>✓ Cumplimiento ISO
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer"><span class="slide-num">06</span> / 08</div>
+</div>
+
+<!-- ══ SLIDE 7: IMPLEMENTACIÓN ══ -->
+<div class="slide" id="s7">
+  <div class="label">PLAN DE IMPLEMENTACIÓN</div>
+  <h2>Operativo en <span style="color:var(--g)">72 Horas</span></h2>
+  <div class="grid grid-2" style="margin-top:1.5rem">
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-phase">DÍA 1 — MAÑANA</div>
+        <div class="tl-title">Configuración inicial</div>
+        <div class="tl-desc">Creación de cuenta, departamentos y usuarios. Capacitación equipo (30 min).</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-phase">DÍA 1 — TARDE</div>
+        <div class="tl-title">Operación en paralelo</div>
+        <div class="tl-desc">Los operadores usan ZeroPaper junto al proceso actual. Sin riesgo.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-phase">DÍA 2</div>
+        <div class="tl-title">Ajustes y refinamiento</div>
+        <div class="tl-desc">Ajuste de flujos según la operación específica. Soporte en tiempo real.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-phase">DÍA 3 — FULL GO</div>
+        <div class="tl-title">100% digital</div>
+        <div class="tl-desc">Papel eliminado. Todos los turnos usando la app. Dashboard activo.</div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:1.5rem">
+        <div style="font-family:var(--mono);font-size:.7rem;color:var(--g);letter-spacing:2px;margin-bottom:1rem">✅ QUÉ INCLUYE LA IMPLEMENTACIÓN</div>
+        <div style="font-size:.9rem;color:var(--mu);line-height:2">
+          ✓ Configuración de cuenta y usuarios<br>
+          ✓ Capacitación operadores (presencial o remoto)<br>
+          ✓ Migración de datos históricos (opcional)<br>
+          ✓ Soporte dedicado primeras 2 semanas<br>
+          ✓ Ajuste de reportes y flujos<br>
+          ✓ Manual de uso para supervisores
+        </div>
+      </div>
+      <div class="card" style="border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.04)">
+        <div style="font-family:var(--mono);font-size:.7rem;color:var(--amber);letter-spacing:2px;margin-bottom:.8rem">⚡ GARANTÍA DE ADOPCIÓN</div>
+        <div style="font-size:.9rem;color:var(--mu);line-height:1.7">Si en 30 días el equipo no está usando la app, <strong style="color:var(--fg)">no se cobra</strong>. El riesgo es nuestro.</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer"><span class="slide-num">07</span> / 08</div>
+</div>
+
+<!-- ══ SLIDE 8: CTA ══ -->
+<div class="slide" id="s8" style="text-align:center;justify-content:center;align-items:center">
+  <div class="hero-glow" style="left:-200px;right:auto"></div>
+  <div class="label" style="justify-content:center">PRÓXIMOS PASOS</div>
+  <h2 style="font-size:clamp(2.5rem,7vw,5rem)">COMENCEMOS<br><span style="color:var(--g)">HOY</span></h2>
+  <p class="sub" style="margin:1.5rem auto;text-align:center;max-width:500px">30 días gratis. Sin tarjeta. Sin instalación. El equipo operativo en 72 horas.</p>
+  <div class="grid grid-3" style="max-width:700px;margin:2rem auto">
+    <div class="card" style="text-align:center">
+      <div style="font-size:2rem;margin-bottom:.5rem">📱</div>
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--g);letter-spacing:2px;margin-bottom:.5rem">PASO 1</div>
+      <div style="font-weight:700;margin-bottom:.3rem">Demo en vivo</div>
+      <div style="color:var(--mu);font-size:.85rem">Mostramos la app funcionando en 15 minutos</div>
+    </div>
+    <div class="card highlight" style="text-align:center">
+      <div style="font-size:2rem;margin-bottom:.5rem">🚀</div>
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--g);letter-spacing:2px;margin-bottom:.5rem">PASO 2</div>
+      <div style="font-weight:700;margin-bottom:.3rem">Piloto 30 días</div>
+      <div style="color:var(--mu);font-size:.85rem">Gratis, sin compromiso, con soporte incluido</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div style="font-size:2rem;margin-bottom:.5rem">✅</div>
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--g);letter-spacing:2px;margin-bottom:.5rem">PASO 3</div>
+      <div style="font-weight:700;margin-bottom:.3rem">Decisión informada</div>
+      <div style="color:var(--mu);font-size:.85rem">Con métricas reales de tu propia operación</div>
+    </div>
+  </div>
+  <div style="margin-top:2rem;display:flex;gap:2rem;justify-content:center;flex-wrap:wrap">
+    <div style="text-align:center">
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--mu);letter-spacing:2px">WHATSAPP</div>
+      <div style="font-size:1.1rem;color:var(--g);font-weight:700">+56 9 9585 4721</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--mu);letter-spacing:2px">EMAIL</div>
+      <div style="font-size:1.1rem;color:var(--g);font-weight:700">contacto@zeropaper.cl</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-family:var(--mono);font-size:.7rem;color:var(--mu);letter-spacing:2px">WEB</div>
+      <div style="font-size:1.1rem;color:var(--g);font-weight:700">zeropaper.cl</div>
+    </div>
+  </div>
+  <div class="slide-footer"><span class="slide-num">08</span> / 08 — ZEROPAPER™ 2025</div>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const navDots = document.getElementById('nav-dots');
+
+// Create dots
+slides.forEach((s, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'dot' + (i === 0 ? ' active' : '');
+  dot.onclick = () => s.scrollIntoView({behavior:'smooth'});
+  navDots.appendChild(dot);
+});
+
+// Update active dot on scroll
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const idx = [...slides].indexOf(e.target);
+      document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('active', i === idx));
+    }
+  });
+}, {threshold: 0.5});
+
+slides.forEach(s => observer.observe(s));
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  const current = [...slides].findIndex(s => {
+    const r = s.getBoundingClientRect();
+    return r.top >= -50 && r.top < window.innerHeight/2;
+  });
+  if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+    slides[Math.min(current+1, slides.length-1)]?.scrollIntoView({behavior:'smooth'});
+  }
+  if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+    slides[Math.max(current-1, 0)]?.scrollIntoView({behavior:'smooth'});
+  }
+});
+</script>
+</body>
+</html>
