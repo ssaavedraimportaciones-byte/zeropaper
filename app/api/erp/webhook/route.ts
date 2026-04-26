@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { db } from '@/lib/firebase-admin'
+import { getDb } from '@/lib/firebase-admin'
 
 const erpEventSchema = z.object({
   source: z.enum(['SAP', 'Oracle', 'Generic']),
@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
     const body = erpEventSchema.parse(await req.json())
     const normalized = normalize(body.source, body.payload)
 
+    const db = getDb()
     await db.collection('erp_events').add({
       ...normalized,
       originalEvent: body.event,

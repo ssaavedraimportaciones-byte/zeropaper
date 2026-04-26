@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
-import { db } from '@/lib/firebase-admin'
-
-export const config = { api: { bodyParser: false } }
+import { getDb } from '@/lib/firebase-admin'
 
 export async function POST(req: NextRequest) {
   const sig = req.headers.get('stripe-signature')!
@@ -19,6 +17,7 @@ export async function POST(req: NextRequest) {
 
   if (event.type === 'checkout.session.completed') {
     const { uid, plan } = session.metadata
+    const db = getDb()
     await db.collection('users').doc(uid).update({
       plan,
       stripeCustomerId: session.customer,
@@ -28,6 +27,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (event.type === 'customer.subscription.deleted') {
+    const db = getDb()
     const snap = await db.collection('users')
       .where('stripeSubscriptionId', '==', session.id)
       .limit(1).get()

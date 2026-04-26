@@ -1,17 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getApps, initializeApp, cert, getApp } from 'firebase-admin/app'
-import { getAuth as getAdminAuth } from 'firebase-admin/auth'
-
-// Ensure admin app is initialized
-if (!getApps().length) {
-  initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-  })
-}
+import { getApp } from 'firebase-admin/app'
 
 const PROJECT_ID = process.env.FIREBASE_PROJECT_ID!
 const FS_BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`

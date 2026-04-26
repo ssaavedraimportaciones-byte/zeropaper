@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { db } from '@/lib/firebase-admin'
+import { getDb } from '@/lib/firebase-admin'
 import { verifyAccessToken } from '@/lib/auth'
 
 async function getUser(req: NextRequest) {
@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(Number(url.searchParams.get('limit') ?? 50), 200)
     const after = url.searchParams.get('after')
 
+    const db = getDb()
     let query = db.collection('operations')
       .where('companyId', '==', user.uid)
       .orderBy('createdAt', 'desc')
@@ -33,7 +34,7 @@ export async function GET(req: NextRequest) {
     if (after) query = query.startAfter(after)
 
     const snap = await query.get()
-    const items = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    const items = snap.docs.map((d: any) => ({ id: d.id, ...d.data() }))
     return NextResponse.json({ items })
   } catch {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
@@ -45,6 +46,7 @@ export async function POST(req: NextRequest) {
     const user = await getUser(req)
     const body = operationSchema.parse(await req.json())
 
+    const db = getDb()
     const ref = await db.collection('operations').add({
       ...body,
       companyId: user.uid,
@@ -63,6 +65,7 @@ export async function DELETE(req: NextRequest) {
   try {
     const user = await getUser(req)
     const { id } = await req.json()
+    const db = getDb()
     const doc = await db.collection('operations').doc(id).get()
     if (!doc.exists || doc.data()?.companyId !== user.uid) {
       return NextResponse.json({ error: 'No encontrado' }, { status: 404 })

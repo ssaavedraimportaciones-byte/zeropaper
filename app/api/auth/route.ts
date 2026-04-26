@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { db } from '@/lib/firebase-admin'
+import { getDb } from '@/lib/firebase-admin'
 import { hashPassword, verifyPassword, signAccessToken, signRefreshToken, verifyRefreshToken } from '@/lib/auth'
 
 const loginSchema = z.object({
@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
   try {
     if (action === 'register') {
       const body = registerSchema.parse(await req.json())
+      const db = getDb()
       const existing = await db.collection('users').where('email', '==', body.email).limit(1).get()
       if (!existing.empty) return NextResponse.json({ error: 'Email ya registrado' }, { status: 409 })
 
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
 
     if (action === 'login') {
       const body = loginSchema.parse(await req.json())
+      const db = getDb()
       const snap = await db.collection('users').where('email', '==', body.email).limit(1).get()
       if (snap.empty) return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 })
 
@@ -57,6 +59,7 @@ export async function POST(req: NextRequest) {
     if (action === 'refresh') {
       const { refresh } = await req.json()
       const { uid } = await verifyRefreshToken(refresh)
+      const db = getDb()
       const snap = await db.collection('users').doc(uid).get()
       if (!snap.exists) return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
 
