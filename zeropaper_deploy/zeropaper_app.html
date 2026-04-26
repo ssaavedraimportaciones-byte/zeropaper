@@ -659,11 +659,8 @@ nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px
 ═══════════════════════════════════════════ */
 
 // ── FIREBASE CONFIG ──
-const FB = {
-  projectId: 'zeropaper-prod',
-  apiKey:    'AIzaSyCli7F4hLi-XEmmekGZpO2KQ1SO612I85Y'
-};
-const FS_BASE = () => `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
+const FB = { projectId: 'zeropaper-prod' };
+const FS_PROXY = '/api/proxy';
 
 // ── CONSTANTES ──
 const DB_NAME  = 'zp5_db';
@@ -773,22 +770,19 @@ function parseFs(doc) {
 }
 
 async function fsGet(path) {
-  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}`;
-  const res = await fetch(url);
+  const res = await fetch(`${FS_PROXY}?path=${encodeURIComponent(path)}`);
   if (!res.ok) throw new Error(res.status);
   return res.json();
 }
 
 async function fsList(path) {
-  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}&pageSize=500`;
-  const res = await fetch(url);
+  const res = await fetch(`${FS_PROXY}?path=${encodeURIComponent(path)}&pageSize=500`);
   if (!res.ok) throw new Error(res.status);
   return res.json();
 }
 
 async function fsSet(path, data) {
-  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}`;
-  const res = await fetch(url, {
+  const res = await fetch(`${FS_PROXY}?path=${encodeURIComponent(path)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(toFsDoc(data))
@@ -798,8 +792,7 @@ async function fsSet(path, data) {
 }
 
 async function fsPost(path, data) {
-  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}`;
-  const res = await fetch(url, {
+  const res = await fetch(`${FS_PROXY}?path=${encodeURIComponent(path)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(toFsDoc(data))
@@ -2084,7 +2077,7 @@ async function sincronizarFirebase(op) {
     const token = await getValidToken();
     const headers = { 'Content-Type':'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    const url = `${FS_BASE()}/empresas/${session.empresaId}/ops?key=${FB.apiKey}`;
+    const url = `${FS_PROXY}?path=${encodeURIComponent('empresas/' + session.empresaId + '/ops')}`;
 
     // Flatten arrays (Firestore REST no soporta arrays con toFsDoc básico)
     const flat = {};
