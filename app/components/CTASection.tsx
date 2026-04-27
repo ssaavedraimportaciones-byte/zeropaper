@@ -41,7 +41,7 @@ export default function CTASection() {
               <span className="gradient-text">desde el primer mes</span>
             </h2>
             <p className="text-gray-400 text-lg mb-8 leading-relaxed">
-              Agenda una demo personalizada para tu empresa. En 30 minutos te mostramos cómo Sin Papel
+              Agenda una demo personalizada para tu empresa. En 30 minutos te mostramos cómo ZeroPaper
               se adapta a tu operación y cuánto puedes ahorrar.
             </p>
 
@@ -94,7 +94,7 @@ export default function CTASection() {
                   ¡Solicitud recibida!
                 </h3>
                 <p className="text-gray-400 mb-6">
-                  Un especialista de Sin Papel se pondrá en contacto contigo en las próximas 2 horas hábiles
+                  Un especialista de ZeroPaper se pondrá en contacto contigo en las próximas 2 horas hábiles
                   para agendar tu demo personalizada.
                 </p>
                 <div className="badge badge-green mx-auto w-fit">

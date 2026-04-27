@@ -3,7 +3,7 @@
 const testimonios = [
   {
     quote:
-      'Implementamos Sin Papel en toda nuestra red de 12 sucursales en menos de una semana. El ahorro en el primer trimestre fue de $47,000 USD. La gerencia quedó impresionada con los reportes automáticos.',
+      'Implementamos ZeroPaper en toda nuestra red de 12 sucursales en menos de una semana. El ahorro en el primer trimestre fue de $47,000 USD. La gerencia quedó impresionada con los reportes automáticos.',
     nombre: 'Carlos Mendoza',
     cargo: 'Director de Operaciones',
     empresa: 'Grupo Financiero Noreste',
@@ -14,7 +14,7 @@ const testimonios = [
   },
   {
     quote:
-      'El proceso de aprobación de facturas que tardaba 3 días ahora se completa en 20 minutos. Nuestra directora financiera considera Sin Papel como la mejor inversión tecnológica del año.',
+      'El proceso de aprobación de facturas que tardaba 3 días ahora se completa en 20 minutos. Nuestra directora financiera considera ZeroPaper como la mejor inversión tecnológica del año.',
     nombre: 'Ana Lucía Romero',
     cargo: 'Gerente de Finanzas',
     empresa: 'Constructora Torres & Asociados',
@@ -58,7 +58,7 @@ const testimonios = [
   },
   {
     quote:
-      'Somos una empresa de 800 empleados y temíamos que la migración fuera traumática. Sin Papel lo hizo increíblemente simple. Hoy no concebimos trabajar de otra manera.',
+      'Somos una empresa de 800 empleados y temíamos que la migración fuera traumática. ZeroPaper lo hizo increíblemente simple. Hoy no concebimos trabajar de otra manera.',
     nombre: 'Patricia Salinas',
     cargo: 'Vicepresidenta de RRHH',
     empresa: 'Corporación Alianza Global',
@@ -95,7 +95,7 @@ export default function Testimonios() {
             <span className="gradient-text">líderes empresariales</span>
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Directores, gerentes y líderes de operaciones que ya transformaron su empresa con Sin Papel.
+            Directores, gerentes y líderes de operaciones que ya transformaron su empresa con ZeroPaper.
           </p>
         </div>
 
@@ -177,7 +177,7 @@ export default function Testimonios() {
             </div>
           </div>
           <p className="text-gray-400 text-sm">
-            Más de <strong className="text-white">500 líderes empresariales</strong> ya confían en Sin Papel
+            Más de <strong className="text-white">500 líderes empresariales</strong> ya confían en ZeroPaper
           </p>
         </div>
       </div>

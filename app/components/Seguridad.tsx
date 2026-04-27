@@ -121,7 +121,7 @@ export default function Seguridad() {
         {/* Trust statement */}
         <div className="text-center mt-10">
           <p className="text-gray-500 text-sm max-w-2xl mx-auto">
-            Sin Papel almacena y procesa datos en centros de datos certificados ISO 27001 en múltiples regiones.
+            ZeroPaper almacena y procesa datos en centros de datos certificados ISO 27001 en múltiples regiones.
             Nunca vendemos ni compartimos tu información con terceros.
           </p>
         </div>

@@ -33,7 +33,7 @@ export default function Integraciones() {
             <span className="gradient-text">tus sistemas actuales</span>
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Sin Papel se integra nativamente con los sistemas más usados del mercado.
+            ZeroPaper se integra nativamente con los sistemas más usados del mercado.
             Si tu sistema no está en la lista, nuestra API abierta te permite conectar cualquier plataforma.
           </p>
         </div>

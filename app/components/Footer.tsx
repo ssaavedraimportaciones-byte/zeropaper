@@ -88,7 +88,7 @@ export default function Footer() {
           style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}
         >
           <p className="text-gray-600 text-xs">
-            © {new Date().getFullYear()} Sin Papel. Todos los derechos reservados.
+            © {new Date().getFullYear()} ZeroPaper. Todos los derechos reservados.
           </p>
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">

@@ -134,7 +134,7 @@ export default function ProblemaSection() {
                   className="font-bold text-green-400 text-3xl mb-1"
                   style={{ fontFamily: 'Outfit, sans-serif' }}
                 >
-                  Con Sin Papel: $0
+                  Con ZeroPaper: $0
                 </div>
                 <p className="text-gray-400 text-sm">
                   Elimina el 100% de esos costos operativos
