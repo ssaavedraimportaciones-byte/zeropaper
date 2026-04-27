@@ -1,32 +1,8 @@
 {
-  "crons": [
-    { "path": "/api/exportar", "schedule": "0 10 * * 1" },
-    { "path": "/api/reporte",  "schedule": "0 11 1 * *" }
-  ],
   "rewrites": [
-    { "source": "/app", "destination": "/zeropaper_app.html" },
-    { "source": "/admin", "destination": "/zeropaper_admin.html" },
-    { "source": "/seguimiento", "destination": "/zeropaper_seguimiento.html" },
-    { "source": "/negocio", "destination": "/zeropaper_negocio.html" },
-    { "source": "/v2", "destination": "/index_v2.html" },
-    { "source": "/soporte", "destination": "/zeropaper_soporte.html" },
-    { "source": "/certificado", "destination": "/zeropaper_certificado.html" },
-    { "source": "/pitch", "destination": "/zeropaper_pitch.html" }
-  ],
-  "headers": [
-    {
-      "source": "/sw.js",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Service-Worker-Allowed", "value": "/" }
-      ]
-    },
-    {
-      "source": "/(.*)\\.html",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
-      ]
-    }
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/app", "destination": "/zeropaper_deploy/zeropaper_app.html" },
+    { "source": "/zeropaper_app.html", "destination": "/zeropaper_deploy/zeropaper_app.html" }
   ]
 }

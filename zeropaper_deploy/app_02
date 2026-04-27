@@ -1,0 +1,244 @@
+.tag{display:inline-block;background:var(--bg3);border:1px solid var(--brd);border-radius:6px;padding:2px 8px;font-family:var(--mono);font-size:9px;color:var(--mu);margin:2px;}
+.user-badge{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:8px 12px;margin-bottom:12px;}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--g2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0;}
+.user-name{font-weight:600;font-size:13px;}
+.user-empresa{font-family:var(--mono);font-size:9px;color:var(--mu);}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div class="auth-screen" id="loginScreen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <div class="auth-logo-title">ZeroPaper<span class="auth-logo-tm">™</span></div>
+      <div class="auth-logo-sub">GESTIÓN PORTUARIA</div>
+    </div>
+    <div class="auth-title">Iniciar sesión</div>
+    <div class="auth-sub">OPERADOR · EMPRESA</div>
+    <div class="auth-err" id="loginErr"></div>
+    <input class="auth-inp" id="loginEmail" type="email" placeholder="correo@empresa.cl" autocomplete="email">
+    <input class="auth-inp" id="loginPass" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <button class="auth-btn" onclick="doLogin()">Entrar →</button>
+    <div class="auth-link" onclick="showRegister()">¿Primera vez? <span>Crear cuenta</span></div>
+  </div>
+</div>
+
+<!-- ══ REGISTRO ══ -->
+<div class="auth-screen" id="registerScreen" style="display:none">
+  <div class="auth-box" style="overflow-y:auto;max-height:96vh">
+    <div class="auth-logo">
+      <div class="auth-logo-title">ZeroPaper<span class="auth-logo-tm">™</span></div>
+      <div class="auth-logo-sub">NUEVA CUENTA</div>
+    </div>
+    <div class="auth-title">Crear cuenta</div>
+    <div class="auth-sub">COMPLETA TUS DATOS</div>
+    <div class="auth-err" id="registerErr"></div>
+    <input class="auth-inp" id="regNombre" placeholder="Tu nombre (ej: Juan Pérez)" autocomplete="name">
+    <input class="auth-inp" id="regEmail" type="email" placeholder="correo@empresa.cl" autocomplete="email">
+    <input class="auth-inp" id="regPass" type="password" placeholder="Contraseña (mín. 8 caracteres)">
+    <div class="auth-divider"></div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:1px;margin-bottom:10px">¿TIENES CÓDIGO DE EMPRESA?</div>
+    <input class="auth-inp" id="regCodigo" placeholder="Código (ej: ZP-A1B2) — dejar vacío para crear empresa nueva" style="text-transform:uppercase">
+    <div id="regEmpresaBox" style="display:block">
+      <input class="auth-inp" id="regEmpresa" placeholder="Nombre de tu empresa (ej: Silogport S.A.)">
+    </div>
+    <button class="auth-btn" onclick="doRegister()">Crear cuenta →</button>
+    <div class="auth-link" onclick="showLogin()">¿Ya tienes cuenta? <span>Iniciar sesión</span></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app" style="display:none">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="zp-logo">ZeroPaper™</div>
+  <select class="depto-sel" id="deptoSel" onchange="cambiarDepto(this.value)">
+    <option value="">Selecciona depto</option>
+  </select>
+  <div class="topbar-btns">
+    <div class="ico-btn" id="installBtn" style="display:none" title="Instalar app">📲</div>
+    <div class="ico-btn" onclick="goTo('temas')" title="Tema">🎨</div>
+    <div class="ico-btn" onclick="goTo('config')" title="Config">⚙</div>
+  </div>
+</div>
+
+<!-- BADGE OFFLINE -->
+<div id="offBadge">Sin conexión</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div class="scroll" id="mainScroll">
+
+  <!-- ▸ HOME ◂ -->
+  <div class="view active" id="vHome">
+    <div id="homeUserBadge"></div>
+    <div class="sec-row" style="margin-bottom:14px">
+      <div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--mu);letter-spacing:2px">DEPARTAMENTO ACTIVO</div>
+        <div style="font-weight:800;font-size:18px;margin-top:2px" id="homeDeptName">Sin departamento</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--mono);font-size:8px;color:var(--mu)">HOY</div>
+        <div style="font-weight:700;font-size:20px;color:var(--g2)" id="homeCount">0</div>
+      </div>
+    </div>
+
+    <div class="act-grid" id="actGrid">
+      <div class="act-btn ab-g" onclick="goTo('ingreso')">
+        <span class="ab-icon">📥</span>
+        <span class="ab-label">REGISTRAR</span>
+        <span class="ab-title cg">INGRESO</span>
+      </div>
+      <div class="act-btn ab-o" onclick="goTo('salida')">
+        <span class="ab-icon">📤</span>
+        <span class="ab-label">REGISTRAR</span>
+        <span class="ab-title co">SALIDA</span>
+      </div>
+    </div>
+
+    <div id="rechazoAlert" style="display:none"></div>
+    <div id="anomaliaAlert" style="display:none"></div>
+    <div id="aiSuggestions" style="display:none"></div>
+    <div class="sec-row">
+      <span class="sec-l">ÚLTIMAS OPERACIONES</span>
+      <span class="sec-a" onclick="goTo('historial')">Ver todo →</span>
+    </div>
+    <div id="homeList">
+      <div class="empty"><div class="empty-i">📋</div><div class="empty-t">Sin operaciones hoy</div></div>
+    </div>
+  </div>
+
+  <!-- ▸ INGRESO ◂ -->
+  <div class="view" id="vIngreso">
+    <div class="sec-row" style="margin-bottom:14px">
+      <span style="font-weight:700;font-size:16px">📥 Nuevo Ingreso</span>
+      <span class="sec-a" onclick="goTo('home')">✕ Cancelar</span>
+    </div>
+    <div class="fotos-zone" id="fotosZoneIn"></div>
+    <input type="file" id="camIn" accept="image/*" capture="environment" style="display:none" onchange="addFoto(event,'in')">
+    <div class="frow">
+      <div>
+        <label class="flbl">Patente</label>
+        <input class="finp" id="inPlate" placeholder="AB-CD-12" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div>
+        <label class="flbl">Folio</label>
+        <input class="finp" id="inFolio" placeholder="Nº">
+      </div>
+    </div>
+    <label class="flbl">Tipo de Documento</label>
+    <select class="fsel" id="inDocType"></select>
+    <label class="flbl">Observaciones</label>
+    <input class="finp" id="inObs" placeholder="Opcional...">
+    <button class="btn-prime btn-green" id="inBtn" onclick="confirmarOp('in')">✓ Confirmar Ingreso</button>
+  </div>
+
+  <!-- ▸ SALIDA ◂ -->
+  <div class="view" id="vSalida">
+    <div class="sec-row" style="margin-bottom:14px">
+      <span style="font-weight:700;font-size:16px">📤 Nueva Salida</span>
+      <span class="sec-a" onclick="goTo('home')">✕ Cancelar</span>
+    </div>
+    <div class="fotos-zone" id="fotosZoneOut"></div>
+    <input type="file" id="camOut" accept="image/*" capture="environment" style="display:none" onchange="addFoto(event,'out')">
+    <div class="frow">
+      <div>
+        <label class="flbl">Patente</label>
+        <input class="finp" id="outPlate" placeholder="AB-CD-12" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div>
+        <label class="flbl">Folio</label>
+        <input class="finp" id="outFolio" placeholder="Nº">
+      </div>
+    </div>
+    <label class="flbl">Tipo de Documento</label>
+    <select class="fsel" id="outDocType"></select>
+    <label class="flbl">Observaciones</label>
+    <input class="finp" id="outObs" placeholder="Opcional...">
+    <button class="btn-prime btn-orange" id="outBtn" onclick="confirmarOp('out')">✓ Confirmar Salida</button>
+  </div>
+
+  <!-- ▸ HISTORIAL ◂ -->
+  <div class="view" id="vHistorial">
+    <div class="sec-row"><span class="sec-l">HISTORIAL</span><span class="sec-a" onclick="exportarCSV()">📊 Exportar</span></div>
+    <div class="search-bar">
+      <span class="search-ico">🔍</span>
+      <input class="search-inp" id="searchInp" placeholder="Buscar por patente, empresa, folio, operador, documento..." oninput="buscarOps(this.value)">
+    </div>
+    <div class="pills" id="filterPills">
+      <span class="pill on" onclick="filtrarH('TODOS',this)">Todos</span>
+      <span class="pill" onclick="filtrarH('INGRESO',this)">↓ Ingreso</span>
+      <span class="pill" onclick="filtrarH('SALIDA',this)">↑ Salida</span>
+    </div>
+    <div id="histList"></div>
+  </div>
+
+  <!-- ▸ TURNO ◂ -->
+  <div class="view" id="vTurno">
+    <div class="sec-row" style="margin-bottom:14px">
+      <span class="sec-l">MI TURNO</span>
+      <span class="sec-a" id="turnoInicioLabel"></span>
+    </div>
+
+    <div class="turno-header">
+      <div id="turnoNombreDisplay"></div>
+      <div class="turno-empresa" id="turnoEmpresaDisplay"></div>
+      <div class="turno-time" id="turnoTimeDisplay"></div>
+    </div>
+
+    <!-- Stats rápidas -->
+    <div class="stats-grid" id="turnoStats">
+      <div class="stat-box"><div class="stat-n" id="tsI">0</div><div class="stat-l">INGRESOS HOY</div></div>
+      <div class="stat-box"><div class="stat-n" id="tsS">0</div><div class="stat-l">SALIDAS HOY</div></div>
+      <div class="stat-box"><div class="stat-n" id="tsP">0</div><div class="stat-l">EN PLANTA</div></div>
+      <div class="stat-box"><div class="stat-n" id="tsF">0</div><div class="stat-l">CON FOTO</div></div>
+    </div>
+
+    <!-- Vehículos en planta (sin salida) -->
+    <div class="sec-row">
+      <span class="sec-l">VEHÍCULOS EN PLANTA</span>
+    </div>
+    <div id="pendientesList">
+      <div class="empty"><div class="empty-i">✅</div><div class="empty-t">Sin vehículos pendientes</div></div>
+    </div>
+
+    <!-- Handover -->
+    <div class="divider"></div>
+    <div class="sec-row"><span class="sec-l">CIERRE DE TURNO</span></div>
+    <div class="handover-box">
+      <label class="flbl">Nota para el próximo operador</label>
+      <textarea class="finp" id="turnoNota" placeholder="Novedades, pendientes, instrucciones..." rows="3" style="resize:none;height:80px"></textarea>
+      <button class="btn-cerrar-turno" onclick="cerrarTurno()">🔄 CERRAR TURNO Y TRASPASAR</button>
+    </div>
+
+    <!-- Portal cliente -->
+    <div class="divider"></div>
+    <div class="sec-row"><span class="sec-l">PORTAL CLIENTE</span></div>
+    <div class="link-portal">
+      <div class="link-portal-lbl">LINK DE SEGUIMIENTO EN TIEMPO REAL</div>
+      <div class="link-portal-url" id="portalLink">—</div>
+      <button class="btn-copy" onclick="copiarLink()">📋 COPIAR LINK</button>
+    </div>
+  </div>
+
+  <!-- ▸ DEPTOS ◂ -->
+  <div class="view" id="vDeptos">
+    <div class="sec-row">
+      <span class="sec-l">DEPARTAMENTOS</span>
+      <span class="sec-a" onclick="showModalNewDepto()">+ Agregar</span>
+    </div>
+    <div id="deptosList"></div>
+    <div class="divider"></div>
+    <div class="sec-row">
+      <span class="sec-l">DOCUMENTOS DEL DEPTO</span>
+      <span class="sec-a" onclick="showModalNewDoc()">+ Agregar</span>
+    </div>
+    <div id="docsList"></div>
+  </div>
+
+  <!-- ▸ TEMAS ◂ -->
+  <div class="view" id="vTemas">
+    <div class="sec-row"><span class="sec-l">APARIENCIA</span></div>
+    <div class="theme-grid">
+      <div class="theme-btn on" onclick="setTema('oscuro',this)">

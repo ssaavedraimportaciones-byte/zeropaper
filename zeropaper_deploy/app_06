@@ -1,0 +1,245 @@
+  const plate = document.getElementById(pre+'Plate').value.trim().toUpperCase();
+  const folio = document.getElementById(pre+'Folio').value.trim();
+  const docT  = document.getElementById(pre+'DocType').value;
+  const obs   = document.getElementById(pre+'Obs').value.trim();
+
+  if (!plate) { showToast('⚠','Falta patente','Ingresa la patente del vehículo'); return; }
+
+  const btn = document.getElementById(isIn?'inBtn':'outBtn');
+  btn.textContent = '⏳ Guardando...';
+  btn.disabled = true;
+
+  // ── Validar folio duplicado ──
+  if (folio) {
+    const opsPrevias = await getOpsEmpresa();
+    const dup = opsPrevias.find(o => o.folio && o.folio === folio);
+    if (dup) {
+      const ok = confirm(`⚠ Folio "${folio}" ya fue registrado\n${dup.plate} · ${(dup.docType||'').replace(/_/g,' ')} · ${dup.fecha}\n¿Continuar de todos modos?`);
+      if (!ok) {
+        btn.textContent = isIn ? '✓ Confirmar Ingreso' : '✓ Confirmar Salida';
+        btn.disabled = false;
+        return;
+      }
+    }
+  }
+
+  const now = new Date();
+  const op = {
+    id:          'op_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
+    tipo:        isIn ? 'INGRESO' : 'SALIDA',
+    plate, folio, docType: docT, obs,
+    depto:       deptoActivo?.id || '',
+    deptoNombre: deptoActivo?.nombre || '',
+    fecha:       now.toLocaleDateString('es-CL'),
+    hora:        now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),
+    ts:          now.getTime(),
+    uid:         session.uid,
+    empresaId:   session.empresaId,
+    empresaNombre: session.empresaNombre,
+    operador:    session.nombre,
+    fotoId:      null,
+    fotoIds:     [],
+    syncStatus:  'pending',
+    estado:      'PENDIENTE',
+    logs:        [{ accion:'CREADO', usuario: session.nombre, ts: now.getTime(), comentario:'' }]
+  };
+
+  const fotos = fotosDir[dir] || [];
+  if (fotos.length > 0) {
+    op.fotoIds = [];
+    for (let i = 0; i < fotos.length; i++) {
+      const fId = 'foto_' + op.id + '_' + i;
+      op.fotoIds.push(fId);
+      await dbPut('fotos', { id: fId, data: fotos[i].data, ts: op.ts });
+    }
+    op.fotoId = op.fotoIds[0]; // compatibilidad hacia atrás
+  }
+
+  await dbPut('ops', op);
+  sincronizarFirebase(op); // async, no esperar
+
+  btn.textContent = isIn ? '✓ Confirmar Ingreso' : '✓ Confirmar Salida';
+  btn.disabled = false;
+  fotosDir[dir] = [];
+
+  showToast(isIn?'📥':'📤', isIn?'Ingreso registrado':'Salida registrada', `${plate} · ${docT.replace(/_/g,' ')}`);
+
+  // Register learning patterns
+  registerLearning('plate_frequency', { plate });
+  registerLearning('doc_pattern', { docType: docT, depto: deptoActivo?.id });
+
+  // QR de seguimiento solo en INGRESO
+  if (isIn && session?.empresaId) {
+    const qrUrl = `${location.origin}/seguimiento?e=${session.empresaId}&p=${encodeURIComponent(plate)}`;
+    setTimeout(() => showQRModal(plate, qrUrl), 700);
+  } else {
+    setTimeout(() => goTo('home'), 600);
+  }
+}
+
+// ══════════════════════════════════════
+//  RENDER HOME
+// ══════════════════════════════════════
+
+async function renderHome() {
+  if (!session) return;
+  document.getElementById('homeDeptName').textContent = deptoActivo?.nombre || 'Sin departamento';
+  // User badge
+  const initials = (session.nombre||'?').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('homeUserBadge').innerHTML = `
+    <div class="user-badge">
+      <div class="user-avatar">${initials}</div>
+      <div><div class="user-name">${session.nombre||session.email}</div>
+      <div class="user-empresa">${session.empresaNombre||''} · ${session.rol||'operador'}</div></div>
+    </div>`;
+  const ops = await getOpsEmpresa();
+  const today = new Date().toLocaleDateString('es-CL');
+  const hoy = ops.filter(o => o.fecha===today);
+  document.getElementById('homeCount').textContent = hoy.length;
+
+  // ── Alerta de operaciones rechazadas ──
+  const rechazadas = ops.filter(o => o.estado==='RECHAZADO' && o.uid===session.uid).slice(0,3);
+  const alertEl = document.getElementById('rechazoAlert');
+  if (rechazadas.length && alertEl) {
+    alertEl.innerHTML = `
+      <div class="rechazo-alert">
+        <div class="rechazo-alert-title">⚠️ ${rechazadas.length} operación${rechazadas.length>1?'es':''} rechazada${rechazadas.length>1?'s':''}</div>
+        ${rechazadas.map(o => {
+          const motivo = o.logs?.slice().reverse().find(l=>l.accion==='RECHAZADO')?.comentario || 'Sin motivo';
+          return `<div class="rechazo-item">
+            <span><strong>${o.plate}</strong> · ${(o.docType||'').replace(/_/g,' ')}</span>
+            <span style="font-size:11px;color:#f87171">${motivo}</span>
+          </div>`;
+        }).join('')}
+      </div>`;
+    alertEl.style.display = 'block';
+  } else if (alertEl) alertEl.style.display = 'none';
+
+  // ── Detección de anomalías ──
+  const anomaliaEl = document.getElementById('anomaliaAlert');
+  if (anomaliaEl) {
+    const anomalias = [];
+    // Vehículos con más de 1 ingreso pendiente sin salida
+    const recientes48h = ops.filter(o => (Date.now() - (o.ts||0)) < 172800000 && o.plate);
+    const placasMap = {};
+    recientes48h.sort((a,b) => a.ts - b.ts).forEach(op => {
+      if (!placasMap[op.plate]) placasMap[op.plate] = 0;
+      if (op.tipo === 'INGRESO') placasMap[op.plate]++;
+      else if (op.tipo === 'SALIDA') placasMap[op.plate] = Math.max(0, placasMap[op.plate] - 1);
+    });
+    const atrapados = Object.entries(placasMap).filter(([,n]) => n > 1).map(([p]) => p);
+    if (atrapados.length) anomalias.push(`🔴 ${atrapados.length} patente${atrapados.length>1?'s':''} con múltiples ingresos sin salida: ${atrapados.slice(0,3).join(', ')}`);
+
+    // Últimas 10 ops sin foto
+    const sinFoto = ops.slice(0,10).filter(o => !o.fotoId && !(o.fotoIds?.length));
+    if (sinFoto.length >= 5) anomalias.push(`📷 ${sinFoto.length} de las últimas 10 operaciones sin foto de documento`);
+
+    if (anomalias.length) {
+      anomaliaEl.innerHTML = `<div class="rechazo-alert" style="border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.07)">
+        <div class="rechazo-alert-title" style="color:#fbbf24">⚡ Anomalías detectadas</div>
+        ${anomalias.map(a => `<div class="rechazo-item" style="color:#fbbf24">${a}</div>`).join('')}
+      </div>`;
+      anomaliaEl.style.display = 'block';
+    } else anomaliaEl.style.display = 'none';
+  }
+
+  // ── Sugerencias IA ──
+  const sugEl = document.getElementById('aiSuggestions');
+  if (sugEl && navigator.onLine) {
+    loadAISuggestions(sugEl, ops);
+  }
+
+  const recents = ops.slice(0,5);
+  const el = document.getElementById('homeList');
+  el.innerHTML = recents.length ? recents.map(opRow).join('') :
+    '<div class="empty"><div class="empty-i">📋</div><div class="empty-t">Sin operaciones aún</div></div>';
+}
+
+// ══════════════════════════════════════
+//  OP ROW
+// ══════════════════════════════════════
+
+function estadoBadge(est) {
+  const map = {
+    PENDIENTE:  ['est-pendiente','⏳ PEND'],
+    EN_REVISION:['est-revision', '👁 REVISIÓN'],
+    APROBADO:   ['est-aprobado', '✓ APROBADO'],
+    RECHAZADO:  ['est-rechazado','✗ RECHAZADO'],
+  };
+  const [cls, label] = map[est] || map['PENDIENTE'];
+  return `<span class="estado-badge ${cls}">${label}</span>`;
+}
+
+function opRow(op) {
+  const isIn = op.tipo === 'INGRESO';
+  const docLabel = (op.docType||'').replace(/_/g,' ');
+  const est = op.estado || 'PENDIENTE';
+  const borderColor = est==='RECHAZADO' ? 'border-color:rgba(239,68,68,.35)' :
+                      est==='APROBADO'  ? 'border-color:rgba(34,197,94,.25)'  : '';
+  return `<div class="h-item" onclick="verDetalle('${op.id}')" style="${borderColor}">
+    <div class="h-dot ${isIn?'hd-g':'hd-o'}"></div>
+    <div class="h-body">
+      <div class="h-top" style="flex-wrap:wrap;gap:4px">
+        <span class="h-tipo ${isIn?'cg':'co'}">${op.tipo}</span>
+        <span class="h-pat">${op.plate||'—'}</span>
+        <span class="h-depto">${op.deptoNombre||op.depto||''}</span>
+        ${estadoBadge(est)}
+      </div>
+      <div class="h-meta">${op.fecha} ${op.hora} · ${docLabel}</div>
+    </div>
+    <span class="h-badge">${(op.fotoIds?.length||0)>1?`📷${op.fotoIds.length}`:op.fotoId?'📷':'📋'}</span>
+  </div>`;
+}
+
+// ══════════════════════════════════════
+//  HISTORIAL
+// ══════════════════════════════════════
+
+async function renderHistorial(ops_override) {
+  const ops = ops_override || await getOpsEmpresa();
+  const filtrados = curFiltro==='TODOS' ? ops :
+    ops.filter(o => o.tipo===curFiltro || o.depto===curFiltro || o.deptoNombre===curFiltro);
+  document.getElementById('histList').innerHTML = filtrados.length ? filtrados.map(opRow).join('') :
+    '<div class="empty"><div class="empty-i">🔍</div><div class="empty-t">Sin registros</div></div>';
+  const pillsEl = document.getElementById('filterPills');
+  const deptoPills = deptos.map(d =>
+    `<span class="pill ${curFiltro===d.id?'on':''}" onclick="filtrarH('${d.id}',this)">${d.icon} ${d.nombre}</span>`
+  ).join('');
+  pillsEl.innerHTML = `
+    <span class="pill ${curFiltro==='TODOS'?'on':''}" onclick="filtrarH('TODOS',this)">Todos</span>
+    <span class="pill ${curFiltro==='INGRESO'?'on':''}" onclick="filtrarH('INGRESO',this)">↓ Ingreso</span>
+    <span class="pill ${curFiltro==='SALIDA'?'on':''}" onclick="filtrarH('SALIDA',this)">↑ Salida</span>
+    ${deptoPills}`;
+}
+
+function filtrarH(cat) { curFiltro = cat; renderHistorial(); }
+
+async function buscarOps(q) {
+  if (!q.trim()) { renderHistorial(); return; }
+  const ops = await getOpsEmpresa();
+  const t = q.toLowerCase().trim();
+  renderHistorial(ops.filter(o => {
+    const fields = [
+      o.plate, o.folio, o.fecha, o.hora,
+      o.docType, o.deptoNombre, o.depto,
+      o.operador, o.empresa, o.rut,
+      o.obs, o.tipo, o.estado,
+      o.destinatario, o.conductor, o.camion,
+      o.contenedor, o.guia, o.sello
+    ];
+    return fields.some(f => (f||'').toLowerCase().includes(t));
+  }));
+}
+
+// ══════════════════════════════════════
+//  DETALLE OPERACIÓN
+// ══════════════════════════════════════
+
+async function verDetalle(id) {
+  const ops = await dbGetAll('ops');
+  const op = ops.find(o=>o.id===id);
+  if (!op) return;
+  const isIn = op.tipo==='INGRESO';
+  let fotoHtml = '<div style="background:var(--bg3);border-radius:12px;padding:24px;text-align:center;margin-bottom:14px;color:var(--mu);font-family:var(--mono);font-size:12px">📷 Sin fotos adjuntas</div>';
+  // Soporte multi-foto: fotoIds[] tiene prioridad, sino usa fotoId legacy
+  const fotoIds = op.fotoIds?.length ? op.fotoIds : (op.fotoId ? [op.fotoId] : []);

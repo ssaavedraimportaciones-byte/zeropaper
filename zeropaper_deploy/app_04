@@ -1,0 +1,303 @@
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.textContent = '';
+  if (!email || !pass) { errEl.textContent = 'Completa todos los campos'; return; }
+
+  const btn = document.querySelector('#loginScreen .auth-btn');
+  btn.textContent = '⏳ Ingresando...'; btn.disabled = true;
+
+  try {
+    const uid  = emailToUid(email);
+    const hash = await sha256(email + '::' + pass);
+
+    const doc = await fsGet(`usuarios/${uid}`);
+    const perfil = parseFs(doc);
+
+    if (!perfil.passHash || perfil.passHash !== hash) {
+      errEl.textContent = 'Correo o contraseña incorrectos';
+      btn.textContent = 'Entrar →'; btn.disabled = false;
+      return;
+    }
+
+    session = {
+      uid, email,
+      localToken:  genToken(),
+      expiresAt:   Date.now() + 12 * 3600 * 1000, // 12 horas
+      nombre:      perfil.nombre || email.split('@')[0],
+      empresaId:   perfil.empresaId,
+      empresaNombre: perfil.empresaNombre,
+      rol:         perfil.rol || 'operador'
+    };
+    saveSession();
+    // Actualizar último login en operadores
+    try {
+      await fsSet(`empresas/${perfil.empresaId}/operadores/${uid}`, {
+        nombre: perfil.nombre || email.split('@')[0],
+        email, rol: perfil.rol || 'operador',
+        creadoEn: perfil.creadoEn || Date.now()
+      });
+    } catch(e) {}
+    iniciarApp();
+  } catch(e) {
+    errEl.textContent = 'Correo o contraseña incorrectos';
+  }
+  btn.textContent = 'Entrar →'; btn.disabled = false;
+}
+
+async function doRegister() {
+  const nombre    = document.getElementById('regNombre').value.trim();
+  const email     = document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass      = document.getElementById('regPass').value;
+  const codigo    = document.getElementById('regCodigo').value.trim().toUpperCase();
+  const empNombre = document.getElementById('regEmpresa').value.trim();
+  const errEl     = document.getElementById('registerErr');
+  errEl.textContent = '';
+
+  if (!nombre || !email || pass.length < 6) {
+    errEl.textContent = 'Completa nombre, correo y contraseña (mín. 6 caracteres)'; return;
+  }
+
+  const btn = document.querySelector('#registerScreen .auth-btn');
+  btn.textContent = '⏳ Creando cuenta...'; btn.disabled = true;
+
+  try {
+    const uid  = emailToUid(email);
+    const hash = await sha256(email + '::' + pass);
+
+    // Verificar si el correo ya existe
+    try {
+      const existing = await fsGet(`usuarios/${uid}`);
+      const ex = parseFs(existing);
+      if (ex.passHash) {
+        errEl.textContent = 'Este correo ya está registrado. Inicia sesión.';
+        btn.textContent = 'Crear cuenta →'; btn.disabled = false;
+        return;
+      }
+    } catch(e) { /* no existe, OK */ }
+
+    let empresaId, empresaNombre;
+
+    if (codigo) {
+      const emp = await buscarEmpresaPorCodigo(codigo);
+      if (!emp) {
+        errEl.textContent = 'Código de empresa no válido';
+        btn.textContent = 'Crear cuenta →'; btn.disabled = false;
+        return;
+      }
+      empresaId = emp.empresaId;
+      empresaNombre = emp.empresaNombre;
+    } else {
+      if (!empNombre) {
+        errEl.textContent = 'Ingresa el nombre de tu empresa o un código de empresa';
+        btn.textContent = 'Crear cuenta →'; btn.disabled = false;
+        return;
+      }
+      const emp = await crearEmpresa(empNombre);
+      empresaId = emp.empresaId;
+      empresaNombre = empNombre;
+    }
+
+    const rol = codigo ? 'operador' : 'admin';
+
+    await fsSet(`usuarios/${uid}`, {
+      nombre, email, passHash: hash, empresaId, empresaNombre,
+      rol, creadoEn: Date.now()
+    });
+
+    await fsSet(`empresas/${empresaId}/operadores/${uid}`, {
+      nombre, email, rol, creadoEn: Date.now()
+    });
+
+    session = {
+      uid, email,
+      localToken:   genToken(),
+      expiresAt:    Date.now() + 12 * 3600 * 1000,
+      nombre, empresaId, empresaNombre, rol
+    };
+    saveSession();
+    iniciarApp();
+  } catch(e) {
+    errEl.textContent = 'Error al crear cuenta. Intenta nuevamente.';
+  }
+  btn.textContent = 'Crear cuenta →'; btn.disabled = false;
+}
+
+document.getElementById('regCodigo').addEventListener('input', function() {
+  document.getElementById('regEmpresaBox').style.display = this.value.trim() ? 'none' : 'block';
+});
+
+// ══════════════════════════════════════
+//  INDEXEDDB
+// ══════════════════════════════════════
+
+function initDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('ops')) {
+        const s = d.createObjectStore('ops', { keyPath:'id' });
+        s.createIndex('tipo','tipo',{unique:false});
+        s.createIndex('ts','ts',{unique:false});
+        s.createIndex('empresaId','empresaId',{unique:false});
+      }
+      if (!d.objectStoreNames.contains('fotos'))
+        d.createObjectStore('fotos', { keyPath:'id' });
+    };
+    req.onsuccess = e => { db = e.target.result; res(); };
+    req.onerror   = e => rej(e);
+  });
+}
+
+function dbPut(store, obj) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readwrite');
+    const req = tx.objectStore(store).put(obj);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbGet(store, key) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readonly');
+    const req = tx.objectStore(store).get(key);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbGetAll(store) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbDelete(store, key) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readwrite');
+    const req = tx.objectStore(store).delete(key);
+    req.onsuccess = () => res();
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+async function getOpsEmpresa() {
+  if (!session) return [];
+  const all = await dbGetAll('ops');
+  return all.filter(o => o.empresaId === session.empresaId).sort((a,b) => b.ts - a.ts);
+}
+
+// ══════════════════════════════════════
+//  NAVEGACIÓN
+// ══════════════════════════════════════
+
+const VIEWS = ['home','ingreso','salida','historial','turno','deptos','temas','config'];
+const TABS  = ['home','historial','turno','deptos','config'];
+
+function goTo(name) {
+  VIEWS.forEach(v => {
+    document.getElementById('v'+cap(v))?.classList.remove('active');
+    if (TABS.includes(v)) document.getElementById('t-'+v)?.classList.remove('on');
+  });
+  document.getElementById('v'+cap(name))?.classList.add('active');
+  if (TABS.includes(name)) document.getElementById('t-'+name)?.classList.add('on');
+  document.getElementById('mainScroll').scrollTop = 0;
+  if (name==='home')      renderHome();
+  if (name==='historial') renderHistorial();
+  if (name==='turno')     renderTurno();
+  if (name==='deptos')    renderDeptos();
+  if (name==='ingreso')   prepForm('in');
+  if (name==='salida')    prepForm('out');
+  if (name==='config')    cargarConfig();
+  if (name==='temas')     cargarTema();
+}
+
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ══════════════════════════════════════
+//  DEPARTAMENTOS
+// ══════════════════════════════════════
+
+function cargarDeptos() {
+  const saved = localStorage.getItem(K_DEPTOS);
+  deptos = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEPTOS_DEFAULT));
+  const deptoId = localStorage.getItem(K_DEPTO) || deptos[0]?.id;
+  deptoActivo = deptos.find(d => d.id === deptoId) || deptos[0];
+  actualizarSelectorDepto();
+}
+
+function actualizarSelectorDepto() {
+  const sel = document.getElementById('deptoSel');
+  sel.innerHTML = deptos.map(d =>
+    `<option value="${d.id}" ${d.id===deptoActivo?.id?'selected':''}>${d.icon} ${d.nombre}</option>`
+  ).join('');
+}
+
+function cambiarDepto(id) {
+  deptoActivo = deptos.find(d => d.id === id);
+  if (deptoActivo) {
+    localStorage.setItem(K_DEPTO, id);
+    renderHome();
+    showToast('🏗', 'Departamento', deptoActivo.nombre);
+  }
+}
+
+function getDocTypes() {
+  return deptoActivo?.docs || [];
+}
+
+function prepForm(dir) {
+  const docs = getDocTypes();
+  const selId = dir==='in' ? 'inDocType' : 'outDocType';
+  const sel = document.getElementById(selId);
+  sel.innerHTML = docs.map(d => `<option value="${d}">${d.replace(/_/g,' ')}</option>`).join('');
+  ['Plate','Folio','Obs'].forEach(f => {
+    const el = document.getElementById((dir==='in'?'in':'out')+f);
+    if (el) el.value = '';
+  });
+  fotosDir[dir] = [];
+  renderFotosZone(dir);
+}
+
+// ══════════════════════════════════════
+//  FOTOS MÚLTIPLES
+// ══════════════════════════════════════
+
+function renderFotosZone(dir) {
+  const zoneId = dir==='in' ? 'fotosZoneIn' : 'fotosZoneOut';
+  const zone = document.getElementById(zoneId);
+  if (!zone) return;
+  const fotos = fotosDir[dir];
+  const thumbsHtml = fotos.map((f, i) => `
+    <div class="foto-thumb" onclick="verFotoCaptura('${dir}',${i})" style="cursor:pointer">
+      <img src="${f.data}" alt="doc ${i+1}">
+      <button class="foto-remove" onclick="event.stopPropagation();removeFoto('${dir}',${i})">✕</button>
+      <span class="foto-num">${i+1}</span>
+    </div>`).join('');
+  const camId = dir==='in' ? 'camIn' : 'camOut';
+  zone.innerHTML = `
+    ${fotos.length > 0 ? `<div class="fotos-grid">${thumbsHtml}</div>` : ''}
+    <div class="foto-add-btn" onclick="document.getElementById('${camId}').click()">
+      📷 ${fotos.length === 0 ? 'Agregar foto del documento' : 'Agregar otra foto'}
+      ${fotos.length > 0 ? `<span class="foto-count">${fotos.length} foto${fotos.length>1?'s':''}</span>` : ''}
+    </div>
+    ${fotos.length > 0 ? `
+    <button class="btn-prime btn-green" style="margin-top:10px;padding:14px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;" 
+      id="ocrBtn_${dir}" onclick="runOCR('${dir}')">
+      <span>🧠</span> <span>Leer documento con IA</span>
+    </button>
+    <div id="ocrResult_${dir}" style="display:none;margin-top:10px;"></div>
+    ` : ''}`;
+}
+
+// ══════════════════════════════════════
+//  VER FOTO CAPTURADA — VISOR FULL SCREEN
+// ══════════════════════════════════════

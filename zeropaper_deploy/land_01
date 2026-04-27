@@ -1,0 +1,271 @@
+}
+.cta-section::before{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:600px;height:300px;
+  background:radial-gradient(ellipse,rgba(34,197,94,.06) 0%,transparent 70%);
+}
+.cta-title{font-family:var(--display);font-size:clamp(48px,6vw,80px);letter-spacing:3px;margin-bottom:16px}
+.cta-sub{font-size:17px;color:#8aa08c;margin-bottom:40px;font-weight:300}
+.cta-badges{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:40px}
+.cta-badge{
+  font-family:var(--mono);font-size:9px;color:var(--mu);
+  border:1px solid var(--brd);border-radius:100px;
+  padding:6px 16px;letter-spacing:2px;
+}
+
+/* ── FOOTER ── */
+footer{
+  background:var(--bg2);border-top:1px solid var(--brd);
+  padding:40px 48px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.foot-logo{font-family:var(--display);font-size:22px;color:var(--g2);letter-spacing:2px}
+.foot-links{display:flex;gap:24px}
+.foot-links a{font-family:var(--mono);font-size:10px;color:var(--mu);text-decoration:none;letter-spacing:1px;transition:color .2s}
+.foot-links a:hover{color:var(--fg)}
+.foot-copy{font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:1px}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  nav{padding:14px 20px}
+  .nav-links{display:none}
+  .hero{padding:100px 20px 60px}
+  section{padding:60px 20px}
+  .problem-grid{grid-template-columns:1fr}
+  .prob-item{border-radius:0!important}
+  .feat-list{grid-template-columns:1fr}
+  .ia-grid{grid-template-columns:1fr}
+  .deptos-grid{grid-template-columns:1fr 1fr}
+  .roi-metrics{grid-template-columns:1fr 1fr}
+  .roi-breakdown{grid-template-columns:1fr}
+  .testimonios-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .how-steps{grid-template-columns:1fr;gap:24px}
+  .how-steps::before{display:none}
+  .qr-section{padding:60px 20px}
+  footer{flex-direction:column;gap:16px;text-align:center}
+  .foot-links{flex-wrap:wrap;justify-content:center}
+}
+@media(max-width:480px){
+  .deptos-grid{grid-template-columns:1fr}
+  .roi-metrics{grid-template-columns:1fr}
+  .qr-code{width:200px;height:200px}
+}
+
+/* ── ANTES / DESPUÉS ── */
+.avd-wrap{display:grid;grid-template-columns:1fr 1fr;gap:2px;border-radius:16px;overflow:hidden;margin-bottom:48px}
+.avd-col{padding:40px 32px}
+.avd-col.antes{background:rgba(239,68,68,.04);border:1px solid rgba(239,68,68,.15)}
+.avd-col.despues{background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.15)}
+.avd-tag{font-family:var(--mono);font-size:9px;letter-spacing:3px;padding:4px 14px;border-radius:100px;display:inline-block;margin-bottom:24px}
+.avd-tag.r{background:rgba(239,68,68,.12);color:#ef4444}
+.avd-tag.g{background:rgba(34,197,94,.12);color:var(--g2)}
+.avd-item{display:flex;gap:12px;margin-bottom:16px;font-size:14px;line-height:1.5;color:#8aa08c}
+.avd-item.r::before{content:'✗';color:#ef4444;font-weight:700;flex-shrink:0;margin-top:1px}
+.avd-item.g::before{content:'✓';color:var(--g2);font-weight:700;flex-shrink:0;margin-top:1px}
+@media(max-width:768px){.avd-wrap{grid-template-columns:1fr}}
+
+/* ── TECNOLOGÍA SIMPLE ── */
+.tech-section{background:var(--bg)}
+.tech-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.tech-card{
+  background:var(--bg2);border:1px solid var(--brd);border-radius:14px;
+  padding:28px;transition:border-color .2s;
+}
+.tech-card:hover{border-color:rgba(34,197,94,.25)}
+.tech-tag{font-family:var(--mono);font-size:9px;color:var(--g2);letter-spacing:3px;margin-bottom:8px}
+.tech-term{font-size:20px;font-weight:700;color:var(--fg);margin-bottom:10px}
+.tech-def{font-size:14px;color:#8aa08c;line-height:1.7}
+.tech-analogy{
+  margin-top:12px;padding:12px 16px;
+  background:rgba(34,197,94,.04);border-left:2px solid var(--g2);
+  font-size:12px;color:var(--mu);font-style:italic;line-height:1.6;border-radius:0 8px 8px 0;
+}
+@media(max-width:768px){.tech-grid{grid-template-columns:1fr}}
+
+/* ── RESPALDO EN NUBE ── */
+.nube-section{background:var(--bg2)}
+.nube-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.nube-card{
+  background:var(--bg3);border:1px solid var(--brd);border-radius:14px;
+  padding:28px;text-align:center;transition:border-color .2s;
+}
+.nube-card:hover{border-color:rgba(34,197,94,.3)}
+.nube-ico{font-size:40px;margin-bottom:16px}
+.nube-title{font-weight:700;font-size:15px;margin-bottom:8px;color:var(--fg)}
+.nube-val{font-family:var(--display);font-size:36px;color:var(--g2);letter-spacing:1px;margin-bottom:4px}
+.nube-desc{font-size:13px;color:var(--mu);line-height:1.6}
+@media(max-width:768px){.nube-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.nube-grid{grid-template-columns:1fr}}
+
+/* ── GLOSARIO ── */
+.glosario-section{background:var(--bg)}
+.glosario-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.glosa-item{
+  background:var(--bg2);border:1px solid var(--brd);border-radius:12px;
+  padding:20px 24px;transition:border-color .2s;
+}
+.glosa-item:hover{border-color:rgba(34,197,94,.2)}
+.glosa-term{font-family:var(--mono);font-size:12px;color:var(--g2);font-weight:700;letter-spacing:1px;margin-bottom:4px}
+.glosa-def{font-size:13px;color:#8aa08c;line-height:1.65}
+.glosa-simple{
+  margin-top:8px;font-size:12px;color:var(--mu);
+  padding-left:12px;border-left:2px solid var(--brd);font-style:italic;
+}
+@media(max-width:768px){.glosario-grid{grid-template-columns:1fr}}
+
+/* ── HERO EXTENDED ── */
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);
+  border-radius:100px;padding:6px 16px;
+  font-family:var(--mono);font-size:9px;color:var(--g2);letter-spacing:2px;
+  margin-bottom:24px;
+}
+.hero-badge::before{content:'▶';font-size:8px}
+
+/* ── FEATURE DETAIL extended ── */
+.feat-item .feat-why{
+  margin-top:10px;padding:8px 12px;
+  background:rgba(34,197,94,.04);border-radius:6px;
+  font-size:11px;color:var(--mu);font-style:italic;border-left:2px solid rgba(34,197,94,.3);
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">ZEROPAPER<span>GESTIÓN PORTUARIA DIGITAL</span></div>
+  <div class="nav-links">
+    <a href="#problema">El Problema</a>
+    <a href="#features">Funciones</a>
+    <a href="#tecnologia">Tecnología</a>
+    <a href="#deptos">Departamentos</a>
+    <a href="#roi">ROI</a>
+    <a href="#pricing">Planes</a>
+  </div>
+  <a href="/zeropaper_app.html" class="nav-cta">ABRIR APP →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge">LA REVOLUCIÓN DIGITAL PORTUARIA · CHILE · 2025</div>
+  <div class="hero-eyebrow">PLATAFORMA DE GESTIÓN DOCUMENTAL SIN PAPELES</div>
+  <h1 class="hero-title">ZERO<span class="accent">PAPER</span><sup class="tm">™</sup></h1>
+  <h2 class="hero-sub">EL FIN DEL PAPEL</h2>
+  <p class="hero-desc">
+    Imagina que cada documento que antes se imprimía, se firmaba, se fotocopiaba y se archivaba en una carpeta — ahora existe de forma digital, accesible desde cualquier celular, buscable en segundos, nunca se pierde y está respaldado automáticamente.<br><br>
+    Eso es ZeroPaper. La plataforma que transforma la operación portuaria chilena.
+  </p>
+  <div class="hero-btns">
+    <a href="/zeropaper_app.html" class="btn-hero-main">INGRESAR A LA APP →</a>
+    <a href="#problema" class="btn-hero-sec">VER EL PROBLEMA →</a>
+  </div>
+  <div class="hero-stats">
+    <div><div class="hero-stat-n">100%</div><div class="hero-stat-l">SIN PAPEL</div></div>
+    <div><div class="hero-stat-n">72h</div><div class="hero-stat-l">IMPLEMENTACIÓN</div></div>
+    <div><div class="hero-stat-n">30s</div><div class="hero-stat-l">POR REGISTRO</div></div>
+    <div><div class="hero-stat-n">24/7</div><div class="hero-stat-l">DISPONIBLE</div></div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span>GUARDA ALMACÉN</span> CONOCIMIENTO DE EMBARQUE <span>INTERCHECK</span> EIR <span>BOOKING</span> GATE IN / GATE OUT <span>DUS</span> DAM <span>AFORO</span> LEVANTE <span>MIC/DTA</span> GUÍA DESPACHO <span>ORDEN COMPRA</span> PASE SALIDA &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <span>GUARDA ALMACÉN</span> CONOCIMIENTO DE EMBARQUE <span>INTERCHECK</span> EIR <span>BOOKING</span> GATE IN / GATE OUT <span>DUS</span> DAM <span>AFORO</span> LEVANTE <span>MIC/DTA</span> GUÍA DESPACHO <span>ORDEN COMPRA</span> PASE SALIDA
+  </div>
+</div>
+
+<!-- EL PROBLEMA -->
+<section id="problema">
+  <div class="section-label">EL PROBLEMA</div>
+  <h2 class="section-title">¿CÓMO OPERA HOY<br>TU EMPRESA?</h2>
+  <p class="section-sub">Si alguno de estos escenarios te resulta familiar, ZeroPaper fue creado exactamente para ti.</p>
+  <div class="problem-grid">
+    <div class="prob-item">
+      <div class="prob-icon">📄</div>
+      <div class="prob-title">Montañas de papel y fotocopias</div>
+      <div class="prob-desc">Cada ingreso o salida genera un papel. Ese papel se fotocopia, se firma, se archiva en una carpeta. Al mes hay cientos. Al año, bodegas enteras de archivos que nadie consulta — pero que tampoco se pueden tirar "por si acaso".</div>
+    </div>
+    <div class="prob-item">
+      <div class="prob-icon">🔍</div>
+      <div class="prob-title">Buscar un documento toma horas</div>
+      <div class="prob-desc">¿Cuándo entró ese camión la semana pasada? ¿Qué patente tenía? ¿Quién lo recibió? La respuesta está en alguna carpeta, en algún cuaderno, en algún mensaje de WhatsApp — y encontrarla puede tomar 30 minutos o más.</div>
+    </div>
+    <div class="prob-item">
+      <div class="prob-icon">📱</div>
+      <div class="prob-title">El WhatsApp como sistema de gestión</div>
+      <div class="prob-desc">Fotos de documentos enviadas por grupos de WhatsApp. Mensajes que se pierden entre conversaciones. Información que desaparece cuando se cambia el celular. Sin registro oficial, sin trazabilidad, sin orden.</div>
+    </div>
+    <div class="prob-item">
+      <div class="prob-icon">⚡</div>
+      <div class="prob-title">El cambio de turno: el momento del caos</div>
+      <div class="prob-desc">El turno de noche le deja notas manuscritas al turno de día. Algunas son ilegibles. Otras se pierden. La información crítica depende de que una persona se acuerde de contarla. ¿Y si ese día llegó tarde o se fue enfermo?</div>
+    </div>
+    <div class="prob-item">
+      <div class="prob-icon">📞</div>
+      <div class="prob-title">Clientes que llaman sin parar</div>
+      <div class="prob-desc">"¿Llegó mi carga?" — esta pregunta llega 10 veces al día por cada cliente. Sin un sistema de seguimiento, el operador tiene que buscar en cuadernos o llamar a otra persona para responder. Tiempo perdido en ambos lados.</div>
+    </div>
+    <div class="prob-item">
+      <div class="prob-icon">❌</div>
+      <div class="prob-title">Errores que cuestan dinero</div>
+      <div class="prob-desc">Un número de folio mal transcrito. Una patente confundida. Un documento archivado en la carpeta equivocada. Pequeños errores manuales que generan reclamos, multas, demoras y retrabajos. Todo evitable con un sistema digital.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ANTES vs DESPUÉS -->
+<section style="background:var(--bg2);padding:80px 48px">
+  <div class="section-label">TRANSFORMACIÓN</div>
+  <h2 class="section-title">EL ANTES Y<br>EL DESPUÉS</h2>
+  <p class="section-sub">Una empresa que adopta ZeroPaper cambia su forma de operar desde el día 1.</p>
+  <div class="avd-wrap">
+    <div class="avd-col antes">
+      <span class="avd-tag r">❌ SIN ZEROPAPER — HOY</span>
+      <div class="avd-item r">Imprimir documentos, firmar a mano, fotocopiar y archivar en carpetas físicas</div>
+      <div class="avd-item r">Buscar un registro toma entre 15 y 60 minutos entre cuadernos y carpetas</div>
+      <div class="avd-item r">El turno saliente le deja notas manuscritas al turno entrante</div>
+      <div class="avd-item r">Clientes llaman cada hora para preguntar el estado de su carga</div>
+      <div class="avd-item r">Documentos extraviados o dañados que nunca se recuperan</div>
+      <div class="avd-item r">No hay forma de saber quién hizo qué, ni cuándo</div>
+      <div class="avd-item r">Si hay auditoría, se necesitan días para reunir la documentación</div>
+      <div class="avd-item r">Excel con versiones distintas en distintos computadores</div>
+      <div class="avd-item r">Bodega llena de archivadores con papeles de años anteriores</div>
+    </div>
+    <div class="avd-col despues">
+      <span class="avd-tag g">✓ CON ZEROPAPER — MAÑANA</span>
+      <div class="avd-item g">Registro digital en 30 segundos desde el celular, con foto del documento</div>
+      <div class="avd-item g">Búsqueda instantánea por patente, empresa, fecha, tipo de documento o cualquier dato</div>
+      <div class="avd-item g">Cambio de turno automático: el sistema guarda todo, sin notas de papel</div>
+      <div class="avd-item g">Clientes revisan el estado de su carga en tiempo real desde su teléfono</div>
+      <div class="avd-item g">Todos los documentos respaldados en la nube, nunca se pierden</div>
+      <div class="avd-item g">Trazabilidad completa: quién registró, qué documento, a qué hora</div>
+      <div class="avd-item g">En caso de auditoría, toda la información lista en segundos</div>
+      <div class="avd-item g">Un solo sistema, todos los turnos ven los mismos datos en tiempo real</div>
+      <div class="avd-item g">Cero archivadores, cero bodegas de papel, cero espacio físico desperdiciado</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-label">LA SOLUCIÓN</div>
+  <h2 class="section-title">TODO LO QUE<br>TU OPERACIÓN NECESITA</h2>
+  <p class="section-sub">9 funciones clave diseñadas específicamente para la realidad de la operación portuaria y logística chilena.</p>
+  <div class="feat-list">
+    <div class="feat-item">
+      <div class="feat-num">01</div>
+      <div class="feat-icon">📥</div>
+      <div class="feat-title">Registro instantáneo en 30 segundos</div>
+      <div class="feat-desc">El operador ingresa al sistema desde su celular, selecciona el tipo de documento, escribe la patente, saca la foto y listo. Todo registrado, con hora exacta y nombre del operador. Sin formularios de papel, sin cuadernos.</div>
+      <div class="feat-why">Antes: 5-10 minutos llenando formularios físicos. Ahora: 30 segundos.</div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-num">02</div>
+      <div class="feat-icon">📷</div>
+      <div class="feat-title">Fotografía de documentos con la cámara</div>
+      <div class="feat-desc">La cámara del celular se convierte en escáner. Se pueden tomar múltiples fotos de un mismo documento. Las imágenes quedan ligadas al registro y son visibles desde cualquier dispositivo autorizado.</div>
