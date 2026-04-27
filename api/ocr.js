@@ -1,6 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 
-export const config = { runtime: 'edge', maxDuration: 30 };
+export const config = { runtime: 'nodejs', maxDuration: 30 };
 
 const SYSTEM = `Eres un sistema OCR especializado en documentos operativos portuarios e industriales chilenos.
 Analiza la imagen y extrae TODOS los datos que puedas identificar.

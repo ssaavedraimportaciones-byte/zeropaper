@@ -1,9 +1,5 @@
 {
   "framework": "nextjs",
-  "functions": {
-    "api/chat.js": { "runtime": "nodejs20.x" },
-    "api/ocr.js": { "runtime": "nodejs20.x" }
-  },
   "rewrites": [
     { "source": "/login", "destination": "/login.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },

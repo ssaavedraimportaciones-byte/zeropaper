@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+export const config = { runtime: 'nodejs' };
 
 const FB = {
   projectId: 'zeropaper-prod',
