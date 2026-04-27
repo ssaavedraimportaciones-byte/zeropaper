@@ -291,47 +291,79 @@ let allClientes = [];
 let filtroActual = 'all';
 let editandoId   = null;
 
+// ── STORAGE LOCAL ──
+function getLocalEmpresas() { try { return JSON.parse(localStorage.getItem('zp_empresas')||'{}'); } catch{ return {}; } }
+function saveLocalEmpresas(e) { localStorage.setItem('zp_empresas', JSON.stringify(e)); }
+function getLocalOwnerClientes() { try { return JSON.parse(localStorage.getItem('zp_owner_clientes')||'[]'); } catch{ return []; } }
+function saveLocalOwnerClientes(c) { localStorage.setItem('zp_owner_clientes', JSON.stringify(c)); }
+
 // ── CARGAR CLIENTES ──
 async function cargarClientes() {
   const body = document.getElementById('clientesBody');
   body.innerHTML = '<div class="loading"><div class="spinner"></div><div style="font-family:var(--mono);font-size:12px;color:var(--mu)">Cargando clientes...</div></div>';
 
+  // 1. Cargar desde localStorage (siempre disponible, datos del owner panel)
+  const ownerLocal = getLocalOwnerClientes();
+  const empresasLocal = getLocalEmpresas();
+  const mapa = {};
+
+  // Clientes creados en este panel
+  for (const c of ownerLocal) mapa[c.id] = c;
+
+  // Clientes registrados desde la app (auto-importados)
+  for (const [codigo, emp] of Object.entries(empresasLocal)) {
+    const id = emp.empresaId || codigo;
+    if (mapa[id]) continue;
+    mapa[id] = {
+      id,
+      codigo:   codigo,
+      nombre:   emp.empresaNombre || emp.nombre || '—',
+      estado:   emp.activa === false ? 'suspendido' : 'activo',
+      plan:     emp.plan || 'trial',
+      email:    emp.email || '',
+      tel:      emp.tel   || '',
+      notas:    'Auto-registrado desde la app',
+      creadoEn: emp.creadoEn ? new Date(Number(emp.creadoEn)).toLocaleDateString('es-CL') : '—',
+      activa:   emp.activa !== false,
+    };
+  }
+
+  // 2. Intentar enriquecer con Firestore (no bloqueante)
   try {
-    // Intentar cargar desde /api/proxy (producción)
     const raw = await fsList('codigoEmpresas');
     const docs = raw.documents || [];
-    const clientes = [];
-
     for (const d of docs) {
-      const base = parseFs(d);
+      const base  = parseFs(d);
       const empId = base.empresaId;
       if (!empId) continue;
       let perfil = {};
-      try {
-        const p = await fsGet(`empresas/${empId}/perfil/datos`);
-        perfil = parseFs(p);
-      } catch(e) {}
-      clientes.push({
+      try { perfil = parseFs(await fsGet(`empresas/${empId}/perfil/datos`)); } catch(e) {}
+      const codigo = (d.name || '').split('/').pop() || perfil.codigo || empId.slice(4,10).toUpperCase();
+      mapa[empId] = {
+        ...(mapa[empId] || {}),
         id:       empId,
-        codigo:   d.id || perfil.codigo || '—',
-        nombre:   perfil.nombre || base.empresaNombre || '—',
-        estado:   perfil.estado || 'activo',
-        plan:     perfil.plan   || 'trial',
-        email:    perfil.email  || '',
-        tel:      perfil.tel    || '',
-        notas:    perfil.notas  || '',
-        creadoEn: perfil.creadoEn ? new Date(Number(perfil.creadoEn)).toLocaleDateString('es-CL') : '—',
+        codigo,
+        nombre:   perfil.nombre || base.empresaNombre || mapa[empId]?.nombre || '—',
+        estado:   perfil.estado || (perfil.activa === false ? 'suspendido' : 'activo'),
+        plan:     perfil.plan   || mapa[empId]?.plan || 'trial',
+        email:    perfil.email  || mapa[empId]?.email || '',
+        tel:      perfil.tel    || mapa[empId]?.tel || '',
+        notas:    perfil.notas  || mapa[empId]?.notas || '',
+        creadoEn: perfil.creadoEn ? new Date(Number(perfil.creadoEn)).toLocaleDateString('es-CL') : (mapa[empId]?.creadoEn || '—'),
         activa:   perfil.activa !== false,
-      });
+      };
     }
-    allClientes = clientes;
-  } catch(e) {
-    // Sin proxy (dev local): usar datos de demo
+  } catch(e) {}
+
+  allClientes = Object.values(mapa);
+
+  // Si no hay nada en absoluto, mostrar 4 ejemplos demo (solo para presentación)
+  if (!allClientes.length) {
     allClientes = [
-      { id:'demo1', codigo:'ABC123', nombre:'Terminal Pacífico Ltda.', estado:'activo',  plan:'pro',        email:'ops@terminalpac.cl', tel:'+56 2 2234 5678', notas:'Cliente desde 2025', creadoEn:'12/01/2025', activa:true  },
-      { id:'demo2', codigo:'XYZ789', nombre:'Granel Sur S.A.',         estado:'activo',  plan:'starter',    email:'info@granelsur.cl',  tel:'+56 9 8876 5432', notas:'',                  creadoEn:'15/03/2025', activa:true  },
-      { id:'demo3', codigo:'MNO456', nombre:'Report — Agunza Chile',   estado:'trial',   plan:'enterprise', email:'ti@agunza.com',       tel:'+56 9 9990 0001', notas:'Demo solicitada por gerencia', creadoEn:'20/04/2026', activa:true },
-      { id:'demo4', codigo:'QRS321', nombre:'Recinto Logístico Norte', estado:'suspendido', plan:'starter', email:'admin@rlnorte.cl',    tel:'',                notas:'Pago vencido',      creadoEn:'01/11/2024', activa:false },
+      { id:'demo1', codigo:'ABC123', nombre:'Terminal Pacífico Ltda.', estado:'activo',  plan:'pro',        email:'ops@terminalpac.cl', tel:'+56 2 2234 5678', notas:'Cliente desde 2025', creadoEn:'12/01/2025', activa:true },
+      { id:'demo2', codigo:'XYZ789', nombre:'Granel Sur S.A.',         estado:'activo',  plan:'starter',    email:'info@granelsur.cl',  tel:'+56 9 8876 5432', notas:'',                  creadoEn:'15/03/2025', activa:true },
+      { id:'demo3', codigo:'MNO456', nombre:'Report — Agunza Chile',   estado:'trial',   plan:'enterprise', email:'ti@agunza.com',      tel:'+56 9 9990 0001', notas:'Demo solicitada',   creadoEn:'20/04/2026', activa:true },
+      { id:'demo4', codigo:'QRS321', nombre:'Recinto Logístico Norte', estado:'suspendido', plan:'starter', email:'admin@rlnorte.cl',   tel:'',                notas:'Pago vencido',      creadoEn:'01/11/2024', activa:false },
     ];
   }
 
@@ -443,9 +475,14 @@ async function toggleEstado(id) {
   const nuevoEstado = c.estado === 'suspendido' ? 'activo' : 'suspendido';
   c.estado = nuevoEstado;
   c.activa = nuevoEstado !== 'suspendido';
-  try {
-    await fsPatch(`empresas/${id}/perfil/datos`, { estado: nuevoEstado, activa: c.activa });
-  } catch(e) {}
+  // Persistir local
+  const lista = getLocalOwnerClientes();
+  const idx = lista.findIndex(x => x.id === id);
+  if (idx >= 0) { lista[idx] = c; saveLocalOwnerClientes(lista); }
+  const emps = getLocalEmpresas();
+  if (emps[c.codigo]) { emps[c.codigo].activa = c.activa; saveLocalEmpresas(emps); }
+  // Sync Firestore opcional
+  try { await fsPatch(`empresas/${id}/perfil/datos`, { estado: nuevoEstado, activa: c.activa }); } catch(e) {}
   actualizarMetricas();
   renderClientes();
   showToast(nuevoEstado === 'activo' ? '✓ Cliente reactivado' : '⏸ Cliente suspendido');
@@ -491,17 +528,31 @@ async function guardarCliente() {
   };
 
   if (editandoId) {
-    // Editar existente
     const c = allClientes.find(x => x.id === editandoId);
     if (c) Object.assign(c, data);
+    // Persistir local
+    const lista = getLocalOwnerClientes();
+    const idx = lista.findIndex(x => x.id === editandoId);
+    if (idx >= 0) lista[idx] = c;
+    else if (c) lista.push(c);
+    saveLocalOwnerClientes(lista);
+    // Sync Firestore opcional
     try { await fsPatch(`empresas/${editandoId}/perfil/datos`, data); } catch(e) {}
     showToast('✓ Cliente actualizado');
   } else {
-    // Crear nuevo
     const id     = 'emp_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
     const codigo = id.slice(4,10).toUpperCase();
     const nuevo  = { ...data, id, codigo, creadoEn: new Date().toLocaleDateString('es-CL') };
     allClientes.push(nuevo);
+    // Persistir local
+    const lista = getLocalOwnerClientes();
+    lista.push(nuevo);
+    saveLocalOwnerClientes(lista);
+    // Persistir también como empresa para que la app pueda usar este código
+    const emps = getLocalEmpresas();
+    emps[codigo] = { empresaId: id, empresaNombre: nombre, ...data, codigo, creadoEn: Date.now() };
+    saveLocalEmpresas(emps);
+    // Sync Firestore opcional
     try {
       await fsSet(`empresas/${id}/perfil/datos`, { ...data, codigo, creadoEn: Date.now() });
       await fsSet(`codigoEmpresas/${codigo}`, { empresaId: id, empresaNombre: nombre });
