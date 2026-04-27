@@ -817,17 +817,37 @@ async function crearEmpresa(empresaNombre) {
   const empresaId = 'emp_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
   const codigo = empresaId.slice(4,10).toUpperCase();
   const data = { nombre: empresaNombre, codigo, creadoEn: Date.now(), activa: true };
-  await fsSet(`empresas/${empresaId}/perfil/datos`, data);
-  await fsSet(`codigoEmpresas/${codigo}`, { empresaId, empresaNombre: empresaNombre });
+
+  // Guardar local siempre
+  const localEmpresas = getLocalEmpresas();
+  localEmpresas[codigo] = { empresaId, empresaNombre, ...data };
+  saveLocalEmpresas(localEmpresas);
+
+  // Sync Firestore opcional
+  try {
+    await fsSet(`empresas/${empresaId}/perfil/datos`, data);
+    await fsSet(`codigoEmpresas/${codigo}`, { empresaId, empresaNombre });
+  } catch(e) {}
+
   return { empresaId, codigo };
 }
 
 async function buscarEmpresaPorCodigo(codigo) {
+  const c = codigo.toUpperCase().trim();
+  // Buscar local primero
+  const localEmpresas = getLocalEmpresas();
+  if (localEmpresas[c]) return localEmpresas[c];
+  // Buscar en Firestore
   try {
-    const doc = await fsGet(`codigoEmpresas/${codigo.toUpperCase().trim()}`);
+    const doc = await fsGet(`codigoEmpresas/${c}`);
     const data = parseFs(doc);
-    return data.empresaId ? data : null;
-  } catch(e) { return null; }
+    if (data.empresaId) {
+      localEmpresas[c] = data;
+      saveLocalEmpresas(localEmpresas);
+      return data;
+    }
+  } catch(e) {}
+  return null;
 }
 
 // ══════════════════════════════════════
@@ -844,6 +864,12 @@ function showRegister() {
   document.getElementById('registerScreen').style.display = 'flex';
 }
 
+// ── LOCAL USER STORE (funciona sin Firebase) ──
+function getLocalUsers() { try { return JSON.parse(localStorage.getItem('zp_users')||'{}'); } catch{ return {}; } }
+function saveLocalUsers(u) { localStorage.setItem('zp_users', JSON.stringify(u)); }
+function getLocalEmpresas() { try { return JSON.parse(localStorage.getItem('zp_empresas')||'{}'); } catch{ return {}; } }
+function saveLocalEmpresas(e) { localStorage.setItem('zp_empresas', JSON.stringify(e)); }
+
 async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim().toLowerCase();
   const pass  = document.getElementById('loginPass').value;
@@ -858,10 +884,22 @@ async function doLogin() {
     const uid  = emailToUid(email);
     const hash = await sha256(email + '::' + pass);
 
-    const doc = await fsGet(`usuarios/${uid}`);
-    const perfil = parseFs(doc);
+    // 1. Buscar en localStorage primero (siempre funciona)
+    let perfil = getLocalUsers()[uid] || null;
 
-    if (!perfil.passHash || perfil.passHash !== hash) {
+    // 2. Si no está local, intentar Firestore
+    if (!perfil?.passHash) {
+      try {
+        const doc = await fsGet(`usuarios/${uid}`);
+        perfil = parseFs(doc);
+        // Guardar local para próximas veces
+        if (perfil?.passHash) {
+          const u = getLocalUsers(); u[uid] = perfil; saveLocalUsers(u);
+        }
+      } catch(e) {}
+    }
+
+    if (!perfil?.passHash || perfil.passHash !== hash) {
       errEl.textContent = 'Correo o contraseña incorrectos';
       btn.textContent = 'Entrar →'; btn.disabled = false;
       return;
@@ -869,22 +907,15 @@ async function doLogin() {
 
     session = {
       uid, email,
-      localToken:  genToken(),
-      expiresAt:   Date.now() + 12 * 3600 * 1000, // 12 horas
-      nombre:      perfil.nombre || email.split('@')[0],
-      empresaId:   perfil.empresaId,
+      localToken:    genToken(),
+      expiresAt:     Date.now() + 12 * 3600 * 1000,
+      nombre:        perfil.nombre || email.split('@')[0],
+      empresaId:     perfil.empresaId,
       empresaNombre: perfil.empresaNombre,
-      rol:         perfil.rol || 'operador'
+      rol:           perfil.rol || 'operador'
     };
     saveSession();
-    // Actualizar último login en operadores
-    try {
-      await fsSet(`empresas/${perfil.empresaId}/operadores/${uid}`, {
-        nombre: perfil.nombre || email.split('@')[0],
-        email, rol: perfil.rol || 'operador',
-        creadoEn: perfil.creadoEn || Date.now()
-      });
-    } catch(e) {}
+    try { await fsSet(`empresas/${perfil.empresaId}/operadores/${uid}`, { nombre: perfil.nombre||email.split('@')[0], email, rol: perfil.rol||'operador', creadoEn: perfil.creadoEn||Date.now() }); } catch(e) {}
     iniciarApp();
   } catch(e) {
     errEl.textContent = 'Correo o contraseña incorrectos';
@@ -912,7 +943,13 @@ async function doRegister() {
     const uid  = emailToUid(email);
     const hash = await sha256(email + '::' + pass);
 
-    // Verificar si el correo ya existe
+    // Verificar si ya existe (local primero)
+    const localUsers = getLocalUsers();
+    if (localUsers[uid]?.passHash) {
+      errEl.textContent = 'Este correo ya está registrado. Inicia sesión.';
+      btn.textContent = 'Crear cuenta →'; btn.disabled = false;
+      return;
+    }
     try {
       const existing = await fsGet(`usuarios/${uid}`);
       const ex = parseFs(existing);
@@ -921,7 +958,7 @@ async function doRegister() {
         btn.textContent = 'Crear cuenta →'; btn.disabled = false;
         return;
       }
-    } catch(e) { /* no existe, OK */ }
+    } catch(e) { /* no existe en Firestore, OK */ }
 
     let empresaId, empresaNombre;
 
@@ -933,7 +970,7 @@ async function doRegister() {
         return;
       }
       empresaId = emp.empresaId;
-      empresaNombre = emp.empresaNombre;
+      empresaNombre = emp.empresaNombre || emp.nombre;
     } else {
       if (!empNombre) {
         errEl.textContent = 'Ingresa el nombre de tu empresa o un código de empresa';
@@ -946,26 +983,23 @@ async function doRegister() {
     }
 
     const rol = codigo ? 'operador' : 'admin';
+    const userData = { nombre, email, passHash: hash, empresaId, empresaNombre, rol, creadoEn: Date.now() };
 
-    await fsSet(`usuarios/${uid}`, {
-      nombre, email, passHash: hash, empresaId, empresaNombre,
-      rol, creadoEn: Date.now()
-    });
+    // Guardar LOCAL siempre (funciona sin Firebase)
+    localUsers[uid] = userData;
+    saveLocalUsers(localUsers);
 
-    await fsSet(`empresas/${empresaId}/operadores/${uid}`, {
-      nombre, email, rol, creadoEn: Date.now()
-    });
+    // Intentar sync Firestore en background (no bloqueante)
+    try {
+      await fsSet(`usuarios/${uid}`, userData);
+      await fsSet(`empresas/${empresaId}/operadores/${uid}`, { nombre, email, rol, creadoEn: Date.now() });
+    } catch(e) { /* sin Firebase, funciona igual */ }
 
-    session = {
-      uid, email,
-      localToken:   genToken(),
-      expiresAt:    Date.now() + 12 * 3600 * 1000,
-      nombre, empresaId, empresaNombre, rol
-    };
+    session = { uid, email, localToken: genToken(), expiresAt: Date.now() + 12*3600*1000, nombre, empresaId, empresaNombre, rol };
     saveSession();
     iniciarApp();
   } catch(e) {
-    errEl.textContent = 'Error al crear cuenta. Intenta nuevamente.';
+    errEl.textContent = 'Error al crear cuenta: ' + (e?.message || e);
   }
   btn.textContent = 'Crear cuenta →'; btn.disabled = false;
 }
