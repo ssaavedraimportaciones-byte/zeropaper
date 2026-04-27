@@ -1356,32 +1356,36 @@ function addFoto(ev, dir) {
   ev.target.value = '';
 }
 
-// ── SCANNER MODAL ── procesamiento de imagen con canvas
-let _scanDir = null, _scanImg = null, _scanRotate = 0, _scanContrast = 1.4, _scanBrightness = 1.1;
+// ── SCANNER MODAL ── procesamiento de imagen tipo CamScanner
+let _scanDir = null, _scanImg = null, _scanRotate = 0, _scanMode = 'scan';
 
 function abrirScannerModal(src, dir) {
-  _scanDir = dir; _scanRotate = 0; _scanContrast = 1.4; _scanBrightness = 1.1;
+  _scanDir = dir; _scanRotate = 0; _scanMode = 'scan';
   const prev = document.getElementById('scannerModal');
   if (prev) prev.remove();
 
   const m = document.createElement('div');
   m.id = 'scannerModal';
-  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9998;display:flex;flex-direction:column;align-items:center;padding:16px;overflow-y:auto;';
+  m.style.cssText = 'position:fixed;inset:0;background:#0d0d0d;z-index:9998;display:flex;flex-direction:column;align-items:center;padding:16px;overflow-y:auto;';
   m.innerHTML = `
     <div style="width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px;">
       <div style="display:flex;align-items:center;justify-content:space-between;">
         <span style="color:var(--g2);font-family:var(--mono);font-size:13px;letter-spacing:1px">📷 ESCANEAR DOCUMENTO</span>
-        <button onclick="document.getElementById('scannerModal').remove()" style="background:none;border:1px solid #444;color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;">✕</button>
+        <button onclick="document.getElementById('scannerModal').remove()" style="background:none;border:1px solid #444;color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
       </div>
-      <canvas id="scanCanvas" style="width:100%;border-radius:12px;border:2px solid var(--g1);background:#000;display:block;"></canvas>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <button onclick="scanRotate()" style="padding:12px;border-radius:10px;border:1px solid #444;background:#1a1a1a;color:#fff;font-size:13px;cursor:pointer;">↺ Rotar 90°</button>
-        <button onclick="scanEnhance()" style="padding:12px;border-radius:10px;border:1px solid #444;background:#1a1a1a;color:#fff;font-size:13px;cursor:pointer;">✨ Auto-mejorar</button>
-        <button onclick="scanReset()" style="padding:12px;border-radius:10px;border:1px solid #333;background:#111;color:#888;font-size:12px;cursor:pointer;">↩ Restablecer</button>
-        <button onclick="scanConfirm()" style="padding:12px;border-radius:10px;border:none;background:var(--g1);color:#fff;font-size:13px;font-weight:700;cursor:pointer;">✓ Usar imagen</button>
+      <div style="position:relative;background:#111;border-radius:12px;overflow:hidden;border:2px solid var(--g1);box-shadow:0 0 30px rgba(82,183,136,.2);">
+        <canvas id="scanCanvas" style="width:100%;display:block;background:#fff;"></canvas>
+        <div id="scanBadge" style="position:absolute;top:10px;right:10px;background:var(--g1);color:#fff;font-family:var(--mono);font-size:9px;letter-spacing:2px;padding:4px 10px;border-radius:20px;font-weight:700;">SCAN B&N</div>
       </div>
-      <div style="font-family:var(--mono);font-size:10px;color:var(--mu);text-align:center;letter-spacing:.5px">
-        Rotar hasta que el documento quede vertical · Mejorar contraste para mejor legibilidad
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+        <button id="btnModeScan" onclick="setScanMode('scan')" style="padding:10px 6px;border-radius:10px;border:2px solid var(--g1);background:rgba(82,183,136,.15);color:var(--g2);font-size:11px;font-family:var(--mono);cursor:pointer;letter-spacing:.5px;">📄 B&N</button>
+        <button id="btnModeDoc"  onclick="setScanMode('doc')"  style="padding:10px 6px;border-radius:10px;border:1px solid #444;background:#1a1a1a;color:#666;font-size:11px;font-family:var(--mono);cursor:pointer;letter-spacing:.5px;">📑 DOC</button>
+        <button id="btnModeColor" onclick="setScanMode('color')" style="padding:10px 6px;border-radius:10px;border:1px solid #444;background:#1a1a1a;color:#666;font-size:11px;font-family:var(--mono);cursor:pointer;letter-spacing:.5px;">🎨 COLOR</button>
+      </div>
+      <button onclick="scanRotate()" style="padding:12px;border-radius:10px;border:1px solid #444;background:#1a1a1a;color:#fff;font-size:13px;font-family:var(--mono);cursor:pointer;letter-spacing:.5px;">↺ ROTAR 90°</button>
+      <button onclick="scanConfirm()" style="padding:15px;border-radius:12px;border:none;background:var(--g1);color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:1px;font-family:var(--mono);">✓ USAR ESTE ESCANEO</button>
+      <div style="font-family:var(--mono);font-size:10px;color:#444;text-align:center;letter-spacing:.5px;">
+        B&N → fondo blanco / texto negro · DOC → umbral máximo · COLOR → original mejorado
       </div>
     </div>`;
   document.body.appendChild(m);
@@ -1389,6 +1393,21 @@ function abrirScannerModal(src, dir) {
   _scanImg = new Image();
   _scanImg.onload = () => scanDraw();
   _scanImg.src = src;
+}
+
+function setScanMode(mode) {
+  _scanMode = mode;
+  ['scan','doc','color'].forEach(m => {
+    const btn = document.getElementById('btnMode' + m.charAt(0).toUpperCase() + m.slice(1));
+    if (!btn) return;
+    const active = m === mode;
+    btn.style.border  = active ? '2px solid var(--g1)' : '1px solid #444';
+    btn.style.background = active ? 'rgba(82,183,136,.15)' : '#1a1a1a';
+    btn.style.color   = active ? 'var(--g2)' : '#666';
+  });
+  const badge = document.getElementById('scanBadge');
+  if (badge) badge.textContent = mode === 'doc' ? 'DOCUMENTO' : mode === 'scan' ? 'SCAN B&N' : 'COLOR';
+  scanDraw();
 }
 
 function scanDraw() {
@@ -1402,35 +1421,49 @@ function scanDraw() {
   canvas.height = swapped ? w : h;
 
   ctx.save();
-  ctx.translate(canvas.width/2, canvas.height/2);
+  ctx.translate(canvas.width / 2, canvas.height / 2);
   ctx.rotate((r * Math.PI) / 180);
-  ctx.drawImage(_scanImg, -w/2, -h/2);
+  ctx.drawImage(_scanImg, -w / 2, -h / 2);
   ctx.restore();
 
-  // Contraste + brillo via pixel manipulation
   const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const d = id.data;
-  const c = _scanContrast, b = _scanBrightness;
-  for (let i = 0; i < d.length; i += 4) {
-    d[i]   = Math.min(255, Math.max(0, ((d[i]   / 255 - 0.5) * c + 0.5) * 255 * b));
-    d[i+1] = Math.min(255, Math.max(0, ((d[i+1] / 255 - 0.5) * c + 0.5) * 255 * b));
-    d[i+2] = Math.min(255, Math.max(0, ((d[i+2] / 255 - 0.5) * c + 0.5) * 255 * b));
+  const d  = id.data;
+
+  if (_scanMode === 'doc') {
+    // Umbral máximo: fondo blanco puro, texto negro — ideal para OCR
+    for (let i = 0; i < d.length; i += 4) {
+      const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      const v = Math.min(255, Math.max(0, ((gray / 255 - 0.5) * 4.0 + 0.5) * 255 * 1.25));
+      d[i] = d[i + 1] = d[i + 2] = v;
+    }
+  } else if (_scanMode === 'scan') {
+    // Scanner B&N: luminancia real + alto contraste (estilo CamScanner)
+    for (let i = 0; i < d.length; i += 4) {
+      const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      const v = Math.min(255, Math.max(0, ((gray / 255 - 0.5) * 2.4 + 0.5) * 255 * 1.1));
+      d[i] = d[i + 1] = d[i + 2] = v;
+    }
+  } else {
+    // Color mejorado: contraste sutil sin perder color
+    for (let i = 0; i < d.length; i += 4) {
+      d[i]     = Math.min(255, Math.max(0, ((d[i]     / 255 - 0.5) * 1.5 + 0.5) * 255));
+      d[i + 1] = Math.min(255, Math.max(0, ((d[i + 1] / 255 - 0.5) * 1.5 + 0.5) * 255));
+      d[i + 2] = Math.min(255, Math.max(0, ((d[i + 2] / 255 - 0.5) * 1.5 + 0.5) * 255));
+    }
   }
   ctx.putImageData(id, 0, 0);
 }
 
-function scanRotate() { _scanRotate = (_scanRotate + 90) % 360; scanDraw(); }
-function scanEnhance() { _scanContrast = _scanContrast < 2 ? 2.2 : 1.4; _scanBrightness = _scanBrightness < 1.2 ? 1.15 : 1.1; scanDraw(); }
-function scanReset()  { _scanRotate = 0; _scanContrast = 1.4; _scanBrightness = 1.1; scanDraw(); }
+function scanRotate()  { _scanRotate = (_scanRotate + 90) % 360; scanDraw(); }
 
 function scanConfirm() {
   const canvas = document.getElementById('scanCanvas');
   if (!canvas || !_scanDir) return;
-  const data = canvas.toDataURL('image/jpeg', 0.88);
+  const data = canvas.toDataURL('image/jpeg', 0.92);
   fotosDir[_scanDir].push({ data });
   renderFotosZone(_scanDir);
   document.getElementById('scannerModal').remove();
-  showToast('📷','Foto agregada','Imagen procesada y guardada');
+  showToast('📷', 'Escaneado', 'Documento procesado y guardado');
 }
 
 function removeFoto(dir, idx) {
