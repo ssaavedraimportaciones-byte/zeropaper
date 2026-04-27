@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZeroPaper™ — Panel Propietario</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060e09;--bg2:#0d1a10;--bg3:#111f14;
+  --g1:#16a34a;--g2:#4ade80;--g3:#86efac;
+  --red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;
+  --mu:#5a7a5e;--brd:rgba(74,222,128,.12);
+  --card:rgba(255,255,255,.03);
+  --font:'Inter',sans-serif;--mono:'Space Mono',monospace;--disp:'Bebas Neue',sans-serif;
+  --radius:14px;--shadow:0 4px 24px rgba(0,0,0,.4);
+}
+body{background:var(--bg);color:#e8f5ea;font-family:var(--font);min-height:100vh;}
+
+/* ── AUTH ── */
+#authScreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;}
+.auth-box{background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:40px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:18px;}
+.auth-logo{font-family:var(--disp);font-size:2rem;letter-spacing:3px;color:var(--g2);text-align:center;}
+.auth-sub{font-family:var(--mono);font-size:10px;color:var(--mu);text-align:center;letter-spacing:2px;}
+.auth-input{background:var(--bg3);border:1px solid var(--brd);border-radius:10px;padding:14px 16px;color:#fff;font-family:var(--mono);font-size:14px;width:100%;outline:none;}
+.auth-input:focus{border-color:var(--g1);}
+.auth-btn{background:var(--g1);color:#fff;border:none;border-radius:10px;padding:14px;font-weight:700;font-size:15px;cursor:pointer;letter-spacing:1px;}
+.auth-btn:hover{background:#15803d;}
+.auth-err{color:var(--red);font-family:var(--mono);font-size:11px;text-align:center;display:none;}
+
+/* ── LAYOUT ── */
+#panel{display:none;}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--brd);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;backdrop-filter:blur(20px);}
+.tb-logo{font-family:var(--disp);font-size:1.4rem;letter-spacing:3px;color:var(--g2);}
+.tb-badge{font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:2px;background:rgba(74,222,128,.08);border:1px solid var(--brd);border-radius:20px;padding:4px 12px;}
+.tb-logout{background:none;border:1px solid #333;color:#666;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;}
+.tb-logout:hover{border-color:var(--red);color:var(--red);}
+
+.main{max-width:1200px;margin:0 auto;padding:28px 24px;}
+
+/* ── METRICS ── */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+@media(max-width:700px){.metrics{grid-template-columns:repeat(2,1fr);}}
+.metric{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--radius);padding:20px;}
+.metric-num{font-family:var(--disp);font-size:2.2rem;letter-spacing:2px;line-height:1;}
+.metric-label{font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:2px;margin-top:6px;}
+.metric.green .metric-num{color:var(--g2);}
+.metric.yellow .metric-num{color:var(--yellow);}
+.metric.red .metric-num{color:var(--red);}
+.metric.blue .metric-num{color:var(--blue);}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center;}
+.search-box{flex:1;min-width:200px;background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:10px 16px;color:#fff;font-family:var(--mono);font-size:13px;outline:none;}
+.search-box:focus{border-color:var(--g1);}
+.btn-add{background:var(--g1);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-weight:700;font-size:13px;cursor:pointer;letter-spacing:.5px;white-space:nowrap;}
+.btn-add:hover{background:#15803d;}
+.filter-btn{background:var(--bg2);border:1px solid var(--brd);color:var(--mu);border-radius:10px;padding:10px 16px;font-family:var(--mono);font-size:11px;cursor:pointer;letter-spacing:.5px;}
+.filter-btn.active{border-color:var(--g1);color:var(--g2);background:rgba(22,163,74,.1);}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--radius);overflow:hidden;}
+.table-head{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 120px;gap:0;border-bottom:1px solid var(--brd);padding:12px 20px;font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:1px;}
+.table-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 120px;gap:0;padding:16px 20px;border-bottom:1px solid rgba(74,222,128,.05);align-items:center;transition:background .15s;}
+.table-row:last-child{border-bottom:none;}
+.table-row:hover{background:rgba(255,255,255,.02);}
+@media(max-width:900px){
+  .table-head,.table-row{grid-template-columns:1fr;gap:4px;}
+  .table-head{display:none;}
+  .table-row{background:var(--bg3);border-radius:12px;margin:8px;padding:16px;}
+}
+.client-name{font-weight:700;font-size:14px;color:#e8f5ea;}
+.client-code{font-family:var(--mono);font-size:11px;color:var(--mu);margin-top:2px;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.5px;}
+.badge-active{background:rgba(74,222,128,.15);color:var(--g2);border:1px solid rgba(74,222,128,.3);}
+.badge-suspended{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2);}
+.badge-trial{background:rgba(245,158,11,.1);color:var(--yellow);border:1px solid rgba(245,158,11,.2);}
+.plan-tag{font-family:var(--mono);font-size:11px;color:#a0b4a2;}
+.ops-num{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--g3);}
+.date-str{font-family:var(--mono);font-size:11px;color:var(--mu);}
+.row-actions{display:flex;gap:6px;}
+.act-btn{padding:6px 12px;border-radius:8px;font-size:11px;font-family:var(--mono);cursor:pointer;border:1px solid #333;background:none;color:#888;transition:all .15s;white-space:nowrap;}
+.act-btn:hover{border-color:var(--g1);color:var(--g2);}
+.act-btn.danger:hover{border-color:var(--red);color:var(--red);}
+
+/* ── EMPTY / LOADING ── */
+.empty{padding:60px 20px;text-align:center;color:var(--mu);font-family:var(--mono);font-size:13px;}
+.loading{padding:60px 20px;text-align:center;}
+.spinner{width:32px;height:32px;border:3px solid var(--brd);border-top-color:var(--g2);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── MODAL ── */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:var(--bg2);border:1px solid var(--brd);border-radius:20px;padding:28px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:16px;max-height:90vh;overflow-y:auto;}
+.modal-title{font-family:var(--disp);font-size:1.4rem;letter-spacing:2px;color:var(--g2);}
+.field-label{font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:1px;margin-bottom:6px;}
+.field-input{background:var(--bg3);border:1px solid var(--brd);border-radius:10px;padding:12px 14px;color:#fff;font-family:var(--mono);font-size:13px;width:100%;outline:none;}
+.field-input:focus{border-color:var(--g1);}
+.field-select{background:var(--bg3);border:1px solid var(--brd);border-radius:10px;padding:12px 14px;color:#fff;font-family:var(--mono);font-size:13px;width:100%;outline:none;cursor:pointer;}
+.modal-actions{display:flex;gap:10px;margin-top:4px;}
+.btn-cancel{flex:1;padding:12px;border-radius:10px;border:1px solid #333;background:none;color:#888;cursor:pointer;font-size:13px;}
+.btn-save{flex:2;padding:12px;border-radius:10px;border:none;background:var(--g1);color:#fff;font-weight:700;font-size:13px;cursor:pointer;}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--brd);border-radius:12px;padding:12px 20px;font-family:var(--mono);font-size:12px;color:var(--g2);box-shadow:var(--shadow);opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none;z-index:999;}
+#toast.show{opacity:1;transform:translateY(0);}
+
+/* ── DETAIL CARD ── */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.detail-item{background:var(--bg3);border-radius:10px;padding:14px;}
+.detail-key{font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:1px;margin-bottom:4px;}
+.detail-val{font-size:14px;font-weight:600;color:#e8f5ea;}
+</style>
+</head>
+<body>
+
+<!-- ─── AUTH ─── -->
+<div id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">ZEROPAPER™</div>
+    <div class="auth-sub">PANEL PROPIETARIO · ACCESO RESTRINGIDO</div>
+    <input class="auth-input" type="password" id="authPass" placeholder="Contraseña de propietario" onkeydown="if(event.key==='Enter')doAuth()">
+    <button class="auth-btn" onclick="doAuth()">INGRESAR →</button>
+    <div class="auth-err" id="authErr">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<!-- ─── PANEL ─── -->
+<div id="panel">
+  <div class="topbar">
+    <div class="tb-logo">ZEROPAPER™</div>
+    <div class="tb-badge">PANEL PROPIETARIO</div>
+    <button class="tb-logout" onclick="doLogout()">Cerrar sesión</button>
+  </div>
+
+  <div class="main">
+    <!-- Métricas -->
+    <div class="metrics">
+      <div class="metric green"><div class="metric-num" id="mTotal">—</div><div class="metric-label">CLIENTES TOTALES</div></div>
+      <div class="metric green"><div class="metric-num" id="mActivos">—</div><div class="metric-label">ACTIVOS</div></div>
+      <div class="metric yellow"><div class="metric-num" id="mTrial">—</div><div class="metric-label">EN PRUEBA</div></div>
+      <div class="metric red"><div class="metric-num" id="mSuspendidos">—</div><div class="metric-label">SUSPENDIDOS</div></div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <input class="search-box" id="searchBox" placeholder="Buscar cliente por nombre o código..." oninput="filtrarClientes()">
+      <button class="filter-btn active" id="filtAll"    onclick="setFiltro('all')">TODOS</button>
+      <button class="filter-btn"        id="filtActive" onclick="setFiltro('activo')">ACTIVOS</button>
+      <button class="filter-btn"        id="filtTrial"  onclick="setFiltro('trial')">PRUEBA</button>
+      <button class="filter-btn"        id="filtSusp"   onclick="setFiltro('suspendido')">SUSPENDIDOS</button>
+      <button class="btn-add" onclick="abrirModalNuevo()">+ Nuevo cliente</button>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-wrap">
+      <div class="table-head">
+        <div>CLIENTE</div><div>CÓDIGO</div><div>ESTADO</div><div>PLAN</div><div>ALTA</div><div>ACCIONES</div>
+      </div>
+      <div id="clientesBody">
+        <div class="loading"><div class="spinner"></div><div style="font-family:var(--mono);font-size:12px;color:var(--mu)">Cargando clientes...</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL NUEVO / EDITAR ─── -->
+<div class="modal-ov" id="modalCliente" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitulo">NUEVO CLIENTE</div>
+    <div>
+      <div class="field-label">NOMBRE DE LA EMPRESA</div>
+      <input class="field-input" id="fNombre" placeholder="Ej: Terminal Pacífico Ltda.">
+    </div>
+    <div>
+      <div class="field-label">EMAIL DE CONTACTO</div>
+      <input class="field-input" id="fEmail" type="email" placeholder="contacto@empresa.cl">
+    </div>
+    <div>
+      <div class="field-label">TELÉFONO</div>
+      <input class="field-input" id="fTel" placeholder="+56 9 ...">
+    </div>
+    <div>
+      <div class="field-label">PLAN</div>
+      <select class="field-select" id="fPlan">
+        <option value="trial">Trial (30 días gratis)</option>
+        <option value="starter">Starter — $29.000 CLP/mes</option>
+        <option value="pro">Pro — $59.000 CLP/mes</option>
+        <option value="enterprise">Enterprise — Precio especial</option>
+      </select>
+    </div>
+    <div>
+      <div class="field-label">ESTADO</div>
+      <select class="field-select" id="fEstado">
+        <option value="activo">Activo</option>
+        <option value="trial">En prueba</option>
+        <option value="suspendido">Suspendido</option>
+      </select>
+    </div>
+    <div>
+      <div class="field-label">NOTAS INTERNAS</div>
+      <input class="field-input" id="fNotas" placeholder="Observaciones...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-save"   onclick="guardarCliente()">GUARDAR →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL DETALLE ─── -->
+<div class="modal-ov" id="modalDetalle" style="display:none">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="modal-title" id="detNombre">—</div>
+      <button onclick="document.getElementById('modalDetalle').style.display='none'" style="background:none;border:1px solid #333;color:#888;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;">✕</button>
+    </div>
+    <div class="detail-grid" id="detGrid"></div>
+    <div style="display:flex;gap:8px;margin-top:4px;">
+      <button id="detBtnSuspend" onclick="toggleEstadoDetalle()" class="act-btn danger" style="flex:1;padding:12px;border-radius:10px;font-size:12px;">Suspender cliente</button>
+      <button onclick="editarDesdeDetalle()" class="act-btn" style="flex:1;padding:12px;border-radius:10px;font-size:12px;border-color:var(--g1);color:var(--g2);">Editar datos</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── CONFIG ──
+const ADMIN_PASS = 'zeropaper2026';          // cambia esto
+const FS_PROXY   = '/api/proxy';
+const K_AUTH     = 'zp_owner_auth';
+
+// ── AUTH ──
+function doAuth() {
+  const v = document.getElementById('authPass').value;
+  const err = document.getElementById('authErr');
+  if (v === ADMIN_PASS) {
+    localStorage.setItem(K_AUTH, '1');
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('panel').style.display = 'block';
+    cargarClientes();
+  } else {
+    err.style.display = 'block';
+    document.getElementById('authPass').value = '';
+  }
+}
+function doLogout() {
+  localStorage.removeItem(K_AUTH);
+  location.reload();
+}
+if (localStorage.getItem(K_AUTH) === '1') {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('panel').style.display = 'block';
+}
+
+// ── FIRESTORE ──
+async function fsGet(path) {
+  const r = await fetch(`${FS_PROXY}?path=${encodeURIComponent(path)}`);
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+async function fsList(path) {
+  const r = await fetch(`${FS_PROXY}?path=${encodeURIComponent(path)}&list=1`);
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+async function fsSet(path, data) {
+  const r = await fetch(FS_PROXY, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ path, data }) });
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+async function fsPatch(path, data) {
+  const r = await fetch(FS_PROXY, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ path, data }) });
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+function parseFs(doc) {
+  if (!doc || !doc.fields) return {};
+  const out = {};
+  for (const [k, v] of Object.entries(doc.fields)) {
+    out[k] = v.stringValue ?? v.integerValue ?? v.booleanValue ?? v.doubleValue ?? v.timestampValue ?? '';
+  }
+  return out;
+}
+
+// ── ESTADO ──
+let allClientes = [];
+let filtroActual = 'all';
+let editandoId   = null;
+
+// ── CARGAR CLIENTES ──
+async function cargarClientes() {
+  const body = document.getElementById('clientesBody');
+  body.innerHTML = '<div class="loading"><div class="spinner"></div><div style="font-family:var(--mono);font-size:12px;color:var(--mu)">Cargando clientes...</div></div>';
+
+  try {
+    // Intentar cargar desde /api/proxy (producción)
+    const raw = await fsList('codigoEmpresas');
+    const docs = raw.documents || [];
+    const clientes = [];
+
+    for (const d of docs) {
+      const base = parseFs(d);
+      const empId = base.empresaId;
+      if (!empId) continue;
+      let perfil = {};
+      try {
+        const p = await fsGet(`empresas/${empId}/perfil/datos`);
+        perfil = parseFs(p);
+      } catch(e) {}
+      clientes.push({
+        id:       empId,
+        codigo:   d.id || perfil.codigo || '—',
+        nombre:   perfil.nombre || base.empresaNombre || '—',
+        estado:   perfil.estado || 'activo',
+        plan:     perfil.plan   || 'trial',
+        email:    perfil.email  || '',
+        tel:      perfil.tel    || '',
+        notas:    perfil.notas  || '',
+        creadoEn: perfil.creadoEn ? new Date(Number(perfil.creadoEn)).toLocaleDateString('es-CL') : '—',
+        activa:   perfil.activa !== false,
+      });
+    }
+    allClientes = clientes;
+  } catch(e) {
+    // Sin proxy (dev local): usar datos de demo
+    allClientes = [
+      { id:'demo1', codigo:'ABC123', nombre:'Terminal Pacífico Ltda.', estado:'activo',  plan:'pro',        email:'ops@terminalpac.cl', tel:'+56 2 2234 5678', notas:'Cliente desde 2025', creadoEn:'12/01/2025', activa:true  },
+      { id:'demo2', codigo:'XYZ789', nombre:'Granel Sur S.A.',         estado:'activo',  plan:'starter',    email:'info@granelsur.cl',  tel:'+56 9 8876 5432', notas:'',                  creadoEn:'15/03/2025', activa:true  },
+      { id:'demo3', codigo:'MNO456', nombre:'Report — Agunza Chile',   estado:'trial',   plan:'enterprise', email:'ti@agunza.com',       tel:'+56 9 9990 0001', notas:'Demo solicitada por gerencia', creadoEn:'20/04/2026', activa:true },
+      { id:'demo4', codigo:'QRS321', nombre:'Recinto Logístico Norte', estado:'suspendido', plan:'starter', email:'admin@rlnorte.cl',    tel:'',                notas:'Pago vencido',      creadoEn:'01/11/2024', activa:false },
+    ];
+  }
+
+  actualizarMetricas();
+  renderClientes();
+}
+
+// ── MÉTRICAS ──
+function actualizarMetricas() {
+  const activos     = allClientes.filter(c => c.estado === 'activo').length;
+  const trial       = allClientes.filter(c => c.estado === 'trial').length;
+  const suspendidos = allClientes.filter(c => c.estado === 'suspendido').length;
+  document.getElementById('mTotal').textContent       = allClientes.length;
+  document.getElementById('mActivos').textContent     = activos;
+  document.getElementById('mTrial').textContent       = trial;
+  document.getElementById('mSuspendidos').textContent = suspendidos;
+}
+
+// ── FILTRO ──
+let _filtro = 'all';
+function setFiltro(f) {
+  _filtro = f;
+  ['filtAll','filtActive','filtTrial','filtSusp'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+  const map = { all:'filtAll', activo:'filtActive', trial:'filtTrial', suspendido:'filtSusp' };
+  document.getElementById(map[f])?.classList.add('active');
+  renderClientes();
+}
+
+function filtrarClientes() { renderClientes(); }
+
+function getClientesFiltrados() {
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  return allClientes.filter(c => {
+    const matchFiltro = _filtro === 'all' || c.estado === _filtro;
+    const matchSearch = !q || c.nombre.toLowerCase().includes(q) || c.codigo.toLowerCase().includes(q) || c.email.toLowerCase().includes(q);
+    return matchFiltro && matchSearch;
+  });
+}
+
+// ── RENDER ──
+function estadoBadge(e) {
+  if (e === 'activo')     return '<span class="badge badge-active">ACTIVO</span>';
+  if (e === 'suspendido') return '<span class="badge badge-suspended">SUSPENDIDO</span>';
+  return '<span class="badge badge-trial">PRUEBA</span>';
+}
+const planLabel = { trial:'Trial', starter:'Starter', pro:'Pro', enterprise:'Enterprise' };
+
+function renderClientes() {
+  const lista = getClientesFiltrados();
+  const body  = document.getElementById('clientesBody');
+  if (!lista.length) {
+    body.innerHTML = '<div class="empty">Sin clientes para mostrar</div>';
+    return;
+  }
+  body.innerHTML = lista.map(c => `
+    <div class="table-row">
+      <div>
+        <div class="client-name">${c.nombre}</div>
+        <div class="client-code">${c.email || '—'}</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--g3)">${c.codigo}</div>
+      <div>${estadoBadge(c.estado)}</div>
+      <div class="plan-tag">${planLabel[c.plan] || c.plan}</div>
+      <div class="date-str">${c.creadoEn}</div>
+      <div class="row-actions">
+        <button class="act-btn" onclick="verDetalle('${c.id}')">Ver</button>
+        <button class="act-btn danger" onclick="toggleEstado('${c.id}')">${c.estado === 'suspendido' ? 'Activar' : 'Suspender'}</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── DETALLE ──
+let _detalleId = null;
+function verDetalle(id) {
+  const c = allClientes.find(x => x.id === id);
+  if (!c) return;
+  _detalleId = id;
+  document.getElementById('detNombre').textContent = c.nombre;
+  document.getElementById('detGrid').innerHTML = `
+    <div class="detail-item"><div class="detail-key">CÓDIGO</div><div class="detail-val" style="font-family:var(--mono);color:var(--g2)">${c.codigo}</div></div>
+    <div class="detail-item"><div class="detail-key">ESTADO</div><div class="detail-val">${estadoBadge(c.estado)}</div></div>
+    <div class="detail-item"><div class="detail-key">PLAN</div><div class="detail-val">${planLabel[c.plan] || c.plan}</div></div>
+    <div class="detail-item"><div class="detail-key">ALTA</div><div class="detail-val">${c.creadoEn}</div></div>
+    <div class="detail-item"><div class="detail-key">EMAIL</div><div class="detail-val" style="font-size:12px">${c.email || '—'}</div></div>
+    <div class="detail-item"><div class="detail-key">TELÉFONO</div><div class="detail-val" style="font-size:12px">${c.tel || '—'}</div></div>
+    ${c.notas ? `<div class="detail-item" style="grid-column:1/-1"><div class="detail-key">NOTAS</div><div class="detail-val" style="font-size:13px;font-weight:400">${c.notas}</div></div>` : ''}
+  `;
+  const btn = document.getElementById('detBtnSuspend');
+  btn.textContent = c.estado === 'suspendido' ? 'Reactivar cliente' : 'Suspender cliente';
+  document.getElementById('modalDetalle').style.display = 'flex';
+}
+
+async function toggleEstadoDetalle() {
+  const c = allClientes.find(x => x.id === _detalleId);
+  if (!c) return;
+  await toggleEstado(c.id);
+  document.getElementById('modalDetalle').style.display = 'none';
+}
+
+function editarDesdeDetalle() {
+  document.getElementById('modalDetalle').style.display = 'none';
+  abrirModalEditar(_detalleId);
+}
+
+// ── TOGGLE ESTADO ──
+async function toggleEstado(id) {
+  const c = allClientes.find(x => x.id === id);
+  if (!c) return;
+  const nuevoEstado = c.estado === 'suspendido' ? 'activo' : 'suspendido';
+  c.estado = nuevoEstado;
+  c.activa = nuevoEstado !== 'suspendido';
+  try {
+    await fsPatch(`empresas/${id}/perfil/datos`, { estado: nuevoEstado, activa: c.activa });
+  } catch(e) {}
+  actualizarMetricas();
+  renderClientes();
+  showToast(nuevoEstado === 'activo' ? '✓ Cliente reactivado' : '⏸ Cliente suspendido');
+}
+
+// ── MODAL NUEVO/EDITAR ──
+function abrirModalNuevo() {
+  editandoId = null;
+  document.getElementById('modalTitulo').textContent = 'NUEVO CLIENTE';
+  ['fNombre','fEmail','fTel','fNotas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fPlan').value   = 'trial';
+  document.getElementById('fEstado').value = 'trial';
+  document.getElementById('modalCliente').style.display = 'flex';
+}
+
+function abrirModalEditar(id) {
+  const c = allClientes.find(x => x.id === id);
+  if (!c) return;
+  editandoId = id;
+  document.getElementById('modalTitulo').textContent = 'EDITAR CLIENTE';
+  document.getElementById('fNombre').value = c.nombre;
+  document.getElementById('fEmail').value  = c.email;
+  document.getElementById('fTel').value    = c.tel;
+  document.getElementById('fNotas').value  = c.notas;
+  document.getElementById('fPlan').value   = c.plan;
+  document.getElementById('fEstado').value = c.estado;
+  document.getElementById('modalCliente').style.display = 'flex';
+}
+
+function cerrarModal() { document.getElementById('modalCliente').style.display = 'none'; }
+
+async function guardarCliente() {
+  const nombre = document.getElementById('fNombre').value.trim();
+  if (!nombre) { alert('Escribe el nombre de la empresa'); return; }
+  const data = {
+    nombre,
+    email:  document.getElementById('fEmail').value.trim(),
+    tel:    document.getElementById('fTel').value.trim(),
+    notas:  document.getElementById('fNotas').value.trim(),
+    plan:   document.getElementById('fPlan').value,
+    estado: document.getElementById('fEstado').value,
+    activa: document.getElementById('fEstado').value !== 'suspendido',
+  };
+
+  if (editandoId) {
+    // Editar existente
+    const c = allClientes.find(x => x.id === editandoId);
+    if (c) Object.assign(c, data);
+    try { await fsPatch(`empresas/${editandoId}/perfil/datos`, data); } catch(e) {}
+    showToast('✓ Cliente actualizado');
+  } else {
+    // Crear nuevo
+    const id     = 'emp_' + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+    const codigo = id.slice(4,10).toUpperCase();
+    const nuevo  = { ...data, id, codigo, creadoEn: new Date().toLocaleDateString('es-CL') };
+    allClientes.push(nuevo);
+    try {
+      await fsSet(`empresas/${id}/perfil/datos`, { ...data, codigo, creadoEn: Date.now() });
+      await fsSet(`codigoEmpresas/${codigo}`, { empresaId: id, empresaNombre: nombre });
+    } catch(e) {}
+    showToast('✓ Cliente creado — código: ' + codigo);
+  }
+
+  cerrarModal();
+  actualizarMetricas();
+  renderClientes();
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── INIT ──
+if (localStorage.getItem(K_AUTH) === '1') cargarClientes();
+</script>
+</body>
+</html>
