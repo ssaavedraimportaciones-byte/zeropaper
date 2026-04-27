@@ -1,0 +1,255 @@
+        <div class="depto-name">${d.nombre}</div>
+        <div class="depto-docs">${d.docs.length} tipos de doc · ${d.desc||''}</div>
+      </div>
+      ${d.id===deptoActivo?.id ? '<span class="depto-badge-act">ACTIVO</span>' :
+        `<button onclick="cambiarDepto('${d.id}')" style="background:none;border:1px solid var(--brd);border-radius:6px;padding:3px 8px;color:var(--mu);cursor:pointer;font-family:var(--mono);font-size:9px">Activar</button>`}
+    </div>`).join('');
+  const docsEl = document.getElementById('docsList');
+  if (deptoActivo) {
+    docsEl.innerHTML = `<div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:8px">${deptoActivo.icon} ${deptoActivo.nombre}</div>` +
+      deptoActivo.docs.map(d => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--brd)">
+          <span class="tag">${d.replace(/_/g,' ')}</span>
+          <button onclick="eliminarDoc('${d}')" style="background:none;border:none;color:var(--mu);cursor:pointer">✕</button>
+        </div>`).join('');
+  }
+}
+
+function showModalNewDepto() {
+  const existing = document.getElementById('newDeptoModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-ov'; modal.id = 'newDeptoModal';
+  modal.innerHTML = `<div class="modal-box">
+    <div class="modal-hdr"><div class="modal-title">Nuevo Departamento</div>
+    <button class="modal-x" onclick="document.getElementById('newDeptoModal').remove()">✕</button></div>
+    <label class="flbl">Nombre</label>
+    <input class="finp" id="newDeptoNombre" placeholder="Ej: Operaciones">
+    <label class="flbl">Ícono (emoji)</label>
+    <input class="finp" id="newDeptoIcon" placeholder="🏗" maxlength="4">
+    <label class="flbl">Tipos de documento (comas)</label>
+    <input class="finp" id="newDeptoDocs" placeholder="GUIA,FACTURA,ORDEN">
+    <button class="btn-prime btn-green" onclick="crearDepto()">✓ Crear</button>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+function crearDepto() {
+  const nombre  = document.getElementById('newDeptoNombre').value.trim();
+  const icon    = document.getElementById('newDeptoIcon').value.trim() || '🏗';
+  const docsRaw = document.getElementById('newDeptoDocs').value.trim();
+  if (!nombre) { showToast('⚠','Falta nombre',''); return; }
+  const docs = docsRaw ? docsRaw.split(',').map(d=>d.trim().toUpperCase().replace(/ /g,'_')) : [];
+  const id = nombre.toLowerCase().replace(/ /g,'_') + '_' + Date.now();
+  deptos.push({ id, nombre, icon, desc:'', color:'g', docs });
+  localStorage.setItem(K_DEPTOS, JSON.stringify(deptos));
+  actualizarSelectorDepto();
+  renderDeptos();
+  document.getElementById('newDeptoModal').remove();
+  showToast('🏗','Departamento creado', nombre);
+}
+
+function showModalNewDoc() {
+  if (!deptoActivo) { showToast('⚠','Sin depto','Selecciona un departamento'); return; }
+  const existing = document.getElementById('newDocModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-ov'; modal.id = 'newDocModal';
+  modal.innerHTML = `<div class="modal-box">
+    <div class="modal-hdr"><div class="modal-title">Nuevo Documento</div>
+    <button class="modal-x" onclick="document.getElementById('newDocModal').remove()">✕</button></div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:10px">Para: ${deptoActivo.icon} ${deptoActivo.nombre}</div>
+    <label class="flbl">Nombre del documento</label>
+    <input class="finp" id="newDocNombre" placeholder="Ej: CARTA PORTE" oninput="this.value=this.value.toUpperCase()">
+    <button class="btn-prime btn-green" onclick="crearDoc()">✓ Agregar</button>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+function crearDoc() {
+  const nombre = document.getElementById('newDocNombre').value.trim().toUpperCase().replace(/ /g,'_');
+  if (!nombre) return;
+  if (!deptoActivo.docs.includes(nombre)) {
+    deptoActivo.docs.push(nombre);
+    localStorage.setItem(K_DEPTOS, JSON.stringify(deptos));
+    renderDeptos();
+    showToast('📄','Documento agregado', nombre.replace(/_/g,' '));
+  }
+  document.getElementById('newDocModal').remove();
+}
+
+function eliminarDoc(doc) {
+  if (!deptoActivo) return;
+  deptoActivo.docs = deptoActivo.docs.filter(d=>d!==doc);
+  localStorage.setItem(K_DEPTOS, JSON.stringify(deptos));
+  renderDeptos();
+}
+
+// ══════════════════════════════════════
+//  TEMAS
+// ══════════════════════════════════════
+
+function setTema(tema, btn) {
+  document.documentElement.setAttribute('data-theme', tema==='oscuro'?'':tema);
+  localStorage.setItem(K_TEMA, tema);
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  showToast('🎨','Tema aplicado','');
+}
+
+function setFontSize(size) {
+  document.body.style.fontSize = size+'px';
+  localStorage.setItem('zp5_font', size);
+}
+
+function cargarTema() {
+  const tema = localStorage.getItem(K_TEMA) || 'oscuro';
+  const idx = ['oscuro','claro','azul','contraste'].indexOf(tema);
+  document.querySelectorAll('.theme-btn').forEach((b,i) => b.classList.toggle('on', i===idx));
+}
+
+// ══════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════
+
+function cargarConfig() {
+  if (!session) return;
+  const infoEl = document.getElementById('configUserInfo');
+  infoEl.innerHTML = `Email: ${session.email}<br>Empresa: ${session.empresaNombre}<br>Rol: ${session.rol}`;
+  const inpEl = document.getElementById('cfgOperador');
+  if (inpEl) inpEl.value = session.nombre || '';
+}
+
+async function guardarNombre() {
+  const nombre = document.getElementById('cfgOperador').value.trim();
+  if (!nombre) return;
+  session.nombre = nombre;
+  saveSession();
+  try {
+    await fsSet(`usuarios/${session.uid}`, { nombre });
+    showToast('✅','Nombre guardado','');
+  } catch(e) {
+    showToast('✅','Guardado localmente','');
+  }
+}
+
+// ══════════════════════════════════════
+//  FIREBASE SYNC
+// ══════════════════════════════════════
+
+async function sincronizarFirebase(op) {
+  if (!session?.empresaId) return;
+  try {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 8000);
+    const token = await getValidToken();
+    const headers = { 'Content-Type':'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const url = `${FS_BASE()}/empresas/${session.empresaId}/ops?key=${FB.apiKey}`;
+
+    // Flatten arrays (Firestore REST no soporta arrays con toFsDoc básico)
+    const flat = {};
+    for (const [k,v] of Object.entries(op)) {
+      if (Array.isArray(v)) continue;
+      flat[k] = v;
+    }
+    flat.logsJson    = JSON.stringify(op.logs    || []);
+    flat.fotoIdsJson = JSON.stringify(op.fotoIds || []);
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(toFsDoc(flat)),
+      signal: ctrl.signal
+    });
+    if (res.ok) {
+      const data = await res.json();
+      op._id = data.name?.split('/').pop(); // Guardar ID de Firestore para polling
+      op.syncStatus = 'synced';
+      await dbPut('ops', op);
+    }
+  } catch(e) { /* offline - op saved locally */ }
+}
+
+// Sync cola de pendientes al volver online
+async function syncPendientes() {
+  if (!session || !navigator.onLine) return;
+  try {
+    const ops = await dbGetAll('ops');
+    const pendientes = ops.filter(o => o.syncStatus === 'pending' && o.empresaId === session.empresaId);
+    for (const op of pendientes) {
+      await sincronizarFirebase(op);
+    }
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════
+//  EXPORTAR CSV
+// ══════════════════════════════════════
+
+async function exportarCSV() {
+  const ops = await getOpsEmpresa();
+  if (!ops.length) { showToast('⚠','Sin datos',''); return; }
+  const header = 'ID,Tipo,Patente,Departamento,Documento,Folio,Fecha,Hora,Operador,Empresa,Observaciones,Sync\n';
+  const rows = ops.map(o =>
+    [o.id,o.tipo,o.plate||'',o.deptoNombre||'',o.docType||'',o.folio||'',o.fecha||'',o.hora||'',o.operador||'',o.empresaNombre||'',o.obs||'',o.syncStatus||''].join(',')
+  ).join('\n');
+  const blob = new Blob([header+rows], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ZeroPaper_${session.empresaNombre||'export'}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('📊','Exportado',`${ops.length} registros`);
+}
+
+async function limpiarDatos() {
+  const ops = await dbGetAll('ops');
+  for (const op of ops) if (op.empresaId === session?.empresaId) await dbDelete('ops', op.id);
+  const fotos = await dbGetAll('fotos');
+  for (const f of fotos) await dbDelete('fotos', f.id);
+  renderHome();
+  showToast('🗑','Datos eliminados','');
+}
+
+// ══════════════════════════════════════
+//  POLLING — actualizaciones de estado
+// ══════════════════════════════════════
+
+let pollingTimer = null;
+
+async function pollEstados() {
+  if (!session?.empresaId || !navigator.onLine) return;
+  try {
+    const res = await fsList(`empresas/${session.empresaId}/ops`);
+    const remoteOps = (res.documents || []).map(parseFs);
+    // Filtrar ops propias con estado terminal
+    const actualizadas = remoteOps.filter(o =>
+      o.uid === session.uid &&
+      (o.estado === 'APROBADO' || o.estado === 'RECHAZADO')
+    );
+    if (!actualizadas.length) return;
+
+    const localOps = await dbGetAll('ops');
+    let cambios = false;
+
+    for (const remote of actualizadas) {
+      // Buscar local por id o _id
+      const local = localOps.find(o =>
+        o.id === remote.id || (remote._id && o._id === remote._id)
+      );
+      if (!local || local.estado === remote.estado) continue;
+
+      local.estado = remote.estado;
+      if (remote.logsJson) {
+        try { local.logs = JSON.parse(remote.logsJson); } catch(e) {}
+      }
+      if (remote.motivoRechazo) local.motivoRechazo = remote.motivoRechazo;
+      await dbPut('ops', local);
+      cambios = true;
+
+      if (remote.estado === 'RECHAZADO') {
+        const motivo = local.logs?.slice().reverse().find(l => l.accion === 'RECHAZADO')?.comentario
+          || remote.motivoRechazo || '';
+        showToast('⚠', `${local.plate}: Rechazada`, motivo.slice(0, 45));

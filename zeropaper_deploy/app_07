@@ -1,0 +1,230 @@
+  if (fotoIds.length > 0) {
+    const fotosData = [];
+    for (const fId of fotoIds) {
+      try {
+        const f = await dbGet('fotos', fId);
+        if (f?.data) fotosData.push(f.data);
+      } catch(e){}
+    }
+    if (fotosData.length > 0) {
+      if (fotosData.length === 1) {
+        fotoHtml = `<img src="${fotosData[0]}" class="modal-foto" alt="Documento" style="cursor:pointer" onclick="verFotoHistorial(${JSON.stringify(fotosData)},0)" title="Toca para ver en pantalla completa">`;
+      } else {
+        const thumbs = fotosData.map((d, i) => `
+          <div style="position:relative;cursor:pointer" onclick="verFotoHistorial(${JSON.stringify(fotosData)},${i})">
+            <img src="${d}" style="width:100%;border-radius:8px;border:1px solid var(--brd);display:block" alt="Foto ${i+1}">
+            <span style="position:absolute;top:4px;left:6px;background:rgba(0,0,0,.65);color:#fff;font-family:var(--mono);font-size:9px;border-radius:4px;padding:1px 6px">Foto ${i+1}</span>
+            <span style="position:absolute;bottom:4px;right:6px;background:rgba(0,0,0,.65);color:#52b788;font-family:var(--mono);font-size:9px;border-radius:4px;padding:1px 6px">👁 VER</span>
+          </div>`).join('');
+        fotoHtml = `
+          <div style="margin-bottom:14px">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:1px;margin-bottom:8px">📷 ${fotosData.length} FOTOS ADJUNTAS</div>
+            <div style="display:grid;grid-template-columns:${fotosData.length===2?'1fr 1fr':fotosData.length>=3?'1fr 1fr 1fr':'1fr'};gap:6px">
+              ${thumbs}
+            </div>
+          </div>`;
+      }
+    }
+  }
+  const existing = document.getElementById('opModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-ov'; modal.id = 'opModal';
+  const colorVar = isIn ? 'var(--g2)' : 'var(--o2)';
+  modal.innerHTML = `<div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title">Detalle Operación</div>
+      <button class="modal-x" onclick="document.getElementById('opModal').remove()">✕</button>
+    </div>
+    ${fotoHtml}
+    <div class="modal-row"><span class="modal-lbl">ESTADO</span>${estadoBadge(op.estado||'PENDIENTE')}</div>
+    <div class="modal-row"><span class="modal-lbl">TIPO</span><span class="badge" style="background:${isIn?'rgba(74,124,89,.2)':'rgba(255,109,0,.2)'};color:${colorVar}">${op.tipo}</span></div>
+    <div class="modal-row"><span class="modal-lbl">DEPTO</span><span class="modal-val">${op.deptoNombre||op.depto||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">PATENTE</span><span class="modal-val">${op.plate||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">DOCUMENTO</span><span class="modal-val">${(op.docType||'—').replace(/_/g,' ')}</span></div>
+    <div class="modal-row"><span class="modal-lbl">FOLIO</span><span class="modal-val">${op.folio||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">FECHA</span><span class="modal-val">${op.fecha} ${op.hora}</span></div>
+    <div class="modal-row"><span class="modal-lbl">OPERADOR</span><span class="modal-val">${op.operador||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">OBS</span><span class="modal-val">${op.obs||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">SYNC</span><span class="modal-val">${op.syncStatus==='synced'?'✅ Sincronizado':'⏳ Pendiente'}</span></div>
+    ${(op.logs||[]).length > 0 ? `
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--brd)">
+      <div class="modal-lbl" style="margin-bottom:8px">TRAZABILIDAD</div>
+      <div class="log-list">
+        ${(op.logs||[]).map(l => {
+          const dotCls = l.accion==='CREADO'?'log-ld-c':l.accion==='APROBADO'?'log-ld-a':l.accion==='RECHAZADO'?'log-ld-r':'log-ld-v';
+          const d = new Date(l.ts);
+          const ts = d.toLocaleDateString('es-CL')+' '+d.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+          return `<div class="log-item">
+            <div class="log-dot ${dotCls}"></div>
+            <div>
+              <span style="font-weight:700;font-size:12px">${l.accion}</span>
+              <span style="color:var(--mu);font-size:12px"> · ${l.usuario||'—'}</span>
+              ${l.comentario?`<span style="color:#f87171;font-size:11px"> · "${l.comentario}"</span>`:''}
+              <div class="log-ts">${ts}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : ''}
+    <button class="btn-prime btn-gray" style="margin-top:14px" onclick="document.getElementById('opModal').remove()">Cerrar</button>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+// ══════════════════════════════════════
+//  TURNO
+// ══════════════════════════════════════
+
+async function renderTurno() {
+  if (!session) return;
+
+  // Header turno
+  const initials = (session.nombre||'?').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('turnoNombreDisplay').innerHTML = `<div style="display:flex;align-items:center;gap:10px"><div class="user-avatar">${initials}</div><div class="turno-op-name">${session.nombre||session.email}</div></div>`;
+  document.getElementById('turnoEmpresaDisplay').textContent = session.empresaNombre || '';
+
+  turnoInicio = localStorage.getItem(K_TURNO);
+  if (!turnoInicio) {
+    turnoInicio = new Date().toISOString();
+    localStorage.setItem(K_TURNO, turnoInicio);
+  }
+  const inicioDate = new Date(turnoInicio);
+  const ahora = new Date();
+  const diffMs = ahora - inicioDate;
+  const diffH = Math.floor(diffMs / 3600000);
+  const diffM = Math.floor((diffMs % 3600000) / 60000);
+  document.getElementById('turnoTimeDisplay').textContent =
+    `Turno iniciado: ${inicioDate.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})} · Duración: ${diffH}h ${diffM}m`;
+  document.getElementById('turnoInicioLabel').textContent = inicioDate.toLocaleDateString('es-CL');
+
+  const ops = await getOpsEmpresa();
+  const today = new Date().toLocaleDateString('es-CL');
+  const hoy   = ops.filter(o => o.fecha === today);
+  const ingresos = hoy.filter(o => o.tipo === 'INGRESO');
+  const salidas  = hoy.filter(o => o.tipo === 'SALIDA');
+  const conFoto  = hoy.filter(o => o.fotoId || o.fotoIds?.length);
+
+  // Vehículos en planta = ingresos sin salida correspondiente (última 48h)
+  const limite48h = Date.now() - 48 * 3600 * 1000;
+  const recentOps = ops.filter(o => o.ts > limite48h && o.plate && o.plate !== '—');
+  const inPlanta  = calcularEnPlanta(recentOps);
+
+  document.getElementById('tsI').textContent = ingresos.length;
+  document.getElementById('tsS').textContent = salidas.length;
+  document.getElementById('tsP').textContent = inPlanta.length;
+  document.getElementById('tsF').textContent = conFoto.length;
+
+  // Lista pendientes
+  const pendEl = document.getElementById('pendientesList');
+  if (inPlanta.length === 0) {
+    pendEl.innerHTML = '<div class="empty"><div class="empty-i">✅</div><div class="empty-t">No hay vehículos en planta</div></div>';
+  } else {
+    pendEl.innerHTML = inPlanta.map(op => {
+      const tiempoEnPlanta = calcularTiempoTranscurrido(op.ts);
+      return `<div class="pendiente-item">
+        <span class="pendiente-icon">🚛</span>
+        <div class="pendiente-body">
+          <div class="pendiente-plate">${op.plate}</div>
+          <div class="pendiente-meta">${(op.docType||'').replace(/_/g,' ')} · ${op.deptoNombre||''}</div>
+        </div>
+        <div class="pendiente-time">${tiempoEnPlanta}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Portal link
+  const baseUrl = window.location.origin;
+  const portalUrl = `${baseUrl}/seguimiento?e=${session.empresaId}`;
+  document.getElementById('portalLink').textContent = portalUrl;
+}
+
+function calcularEnPlanta(ops) {
+  const placas = {};
+  ops.sort((a,b) => a.ts - b.ts).forEach(op => {
+    if (!placas[op.plate]) placas[op.plate] = { ingresos: [], salidas: [] };
+    if (op.tipo === 'INGRESO') placas[op.plate].ingresos.push(op);
+    else placas[op.plate].salidas.push(op);
+  });
+  const enPlanta = [];
+  for (const [placa, data] of Object.entries(placas)) {
+    let pendientes = data.ingresos.length - data.salidas.length;
+    if (pendientes > 0) {
+      // El último ingreso sin salida
+      const ings = data.ingresos.sort((a,b)=>b.ts-a.ts);
+      enPlanta.push(ings[0]);
+    }
+  }
+  return enPlanta.sort((a,b) => a.ts - b.ts);
+}
+
+function calcularTiempoTranscurrido(ts) {
+  const diff = Date.now() - ts;
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+async function cerrarTurno() {
+  if (!session) return;
+  const nota = document.getElementById('turnoNota').value.trim();
+  const ops  = await getOpsEmpresa();
+  const today = new Date().toLocaleDateString('es-CL');
+  const hoyOps = ops.filter(o => o.fecha === today);
+  const limite48h = Date.now() - 48 * 3600 * 1000;
+  const recentOps = ops.filter(o => o.ts > limite48h && o.plate && o.plate !== '—');
+  const enPlanta  = calcularEnPlanta(recentOps);
+
+  const turno = {
+    empresaId:     session.empresaId,
+    operadorUid:   session.uid,
+    operadorNombre:session.nombre,
+    inicioTs:      new Date(turnoInicio).getTime(),
+    finTs:         Date.now(),
+    totalOps:      hoyOps.length,
+    enPlantaCount: enPlanta.length,
+    enPlantaPlacas:enPlanta.map(o=>o.plate).join(','),
+    nota,
+    fecha:         today
+  };
+
+  try {
+    await fsPost(`empresas/${session.empresaId}/turnos`, turno);
+    localStorage.removeItem(K_TURNO);
+    turnoInicio = null;
+    showToast('✅','Turno cerrado','Traspaso registrado en la nube');
+    setTimeout(() => renderTurno(), 500);
+  } catch(e) {
+    showToast('⚠','Sin conexión','Turno guardado localmente');
+    localStorage.removeItem(K_TURNO);
+    turnoInicio = null;
+    setTimeout(() => renderTurno(), 500);
+  }
+}
+
+function copiarLink() {
+  const url = document.getElementById('portalLink').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast('📋','Link copiado','Envíalo a tu cliente'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('📋','Link copiado','Envíalo a tu cliente');
+  }
+}
+
+// ══════════════════════════════════════
+//  DEPARTAMENTOS MANAGER
+// ══════════════════════════════════════
+
+function renderDeptos() {
+  const el = document.getElementById('deptosList');
+  el.innerHTML = deptos.map(d => `
+    <div class="depto-card">
+      <div class="depto-icon-big">${d.icon}</div>
+      <div class="depto-info">

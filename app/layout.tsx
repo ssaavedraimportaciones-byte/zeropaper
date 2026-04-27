@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Sin Papel — La Empresa del Futuro, Hoy',
+  title: 'ZeroPaper — Operaciones portuarias sin papel',
   description:
-    'Transforma tu organización con gestión documental 100% digital. Reduce costos, automatiza procesos y cumple normativas desde una sola plataforma.',
+    'Digitaliza el registro de operaciones portuarias desde el celular. Registro en 30 segundos, búsqueda instantánea, sin papel.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

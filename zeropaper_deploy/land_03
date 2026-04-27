@@ -1,0 +1,218 @@
+      <div class="tech-term">PWA (App sin App Store)</div>
+      <div class="tech-def">PWA significa "Progressive Web App". Es una tecnología que permite que un sitio web se comporte como una app nativa del celular: se instala, funciona sin internet, y aparece en la pantalla de inicio como cualquier otra app.</div>
+      <div class="tech-analogy">En palabras simples: abres la página en tu celular y eliges "guardar en pantalla de inicio". Listo — tienes la app instalada. Sin pasar por App Store ni Play Store, sin permisos especiales.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-tag">LEER DOCUMENTOS</div>
+      <div class="tech-term">OCR (Lectura Automática)</div>
+      <div class="tech-def">OCR (Optical Character Recognition) es la tecnología que "lee" el texto de una foto o imagen. Cuando fotografías un documento, el sistema puede extraer automáticamente el número de folio, patente u otros datos sin que debas escribirlos.</div>
+      <div class="tech-analogy">En palabras simples: es como si el celular leyera el documento físico y lo escribiera por ti. Menos errores de transcripción, más velocidad.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-tag">SIN INTERNET</div>
+      <div class="tech-term">Modo Offline (Sin Señal)</div>
+      <div class="tech-def">ZeroPaper usa almacenamiento local en el dispositivo (IndexedDB) para guardar los registros cuando no hay internet. Cuando vuelve la conexión, los datos se sincronizan automáticamente a la nube sin que el usuario tenga que hacer nada.</div>
+      <div class="tech-analogy">En palabras simples: como escribir en un cuaderno cuando no hay luz — cuando vuelve la luz, el cuaderno se "copia solo" al servidor. Sin pérdida de datos.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-tag">SEGURIDAD</div>
+      <div class="tech-term">Cifrado AES-256</div>
+      <div class="tech-def">AES-256 es el estándar de seguridad más alto existente para proteger datos. Es el mismo nivel de cifrado que usan los bancos, los gobiernos y las instituciones militares para proteger información sensible.</div>
+      <div class="tech-analogy">En palabras simples: los datos de tu empresa están "encriptados" — codificados de forma que solo ZeroPaper y tu empresa pueden leerlos. Nadie más, ni siquiera nosotros en caso de querer acceder ilegalmente.</div>
+    </div>
+    <div class="tech-card">
+      <div class="tech-tag">INTEGRACIÓN</div>
+      <div class="tech-term">CSV / Exportación a Excel</div>
+      <div class="tech-def">CSV es un formato de archivo que puede abrirse en Excel, Google Sheets, SAP y casi cualquier otro sistema contable o ERP. ZeroPaper genera este archivo con un clic para que puedas importar tu información a donde la necesites.</div>
+      <div class="tech-analogy">En palabras simples: tus datos de ZeroPaper se convierten en una planilla de Excel con un clic. Puedes llevarlos a tu contador, a tu ERP o a donde necesites.</div>
+    </div>
+  </div>
+</section>
+
+<!-- RESPALDO EN LA NUBE -->
+<section class="nube-section">
+  <div class="section-label">CONFIABILIDAD</div>
+  <h2 class="section-title">TUS DATOS<br>NUNCA SE PIERDEN</h2>
+  <p class="section-sub">ZeroPaper usa la infraestructura de Google Cloud — la misma que usan Spotify, Netflix y millones de empresas en el mundo.</p>
+  <div class="nube-grid">
+    <div class="nube-card">
+      <div class="nube-ico">🌍</div>
+      <div class="nube-title">3 Continentes</div>
+      <div class="nube-val">3</div>
+      <div class="nube-desc">Tus datos se replican automáticamente en servidores en América, Europa y Asia. Si uno falla, los otros siguen activos — como tener 3 copias en 3 ciudades distintas.</div>
+    </div>
+    <div class="nube-card">
+      <div class="nube-ico">⏱</div>
+      <div class="nube-title">Disponibilidad Garantizada</div>
+      <div class="nube-val">99.9%</div>
+      <div class="nube-desc">Google Cloud garantiza disponibilidad del 99.9% del tiempo — eso equivale a menos de 9 horas de mantenimiento AL AÑO. Tu operación nunca se detiene.</div>
+    </div>
+    <div class="nube-card">
+      <div class="nube-ico">🔄</div>
+      <div class="nube-title">Backups Automáticos</div>
+      <div class="nube-val">24/7</div>
+      <div class="nube-desc">Cada registro se guarda con respaldo automático. No hay que "hacer backup" manualmente. El sistema guarda todo solo, en tiempo real, sin que nadie tenga que intervenir.</div>
+    </div>
+    <div class="nube-card">
+      <div class="nube-ico">🔒</div>
+      <div class="nube-title">Acceso con Roles</div>
+      <div class="nube-val">100%</div>
+      <div class="nube-desc">Cada usuario solo puede ver lo que le corresponde. El operador ve sus registros. El administrador ve todo. El cliente ve solo su carga. Sin mezclas, sin filtros manuales.</div>
+    </div>
+    <div class="nube-card">
+      <div class="nube-ico">📜</div>
+      <div class="nube-title">Historial Inmutable</div>
+      <div class="nube-val">∞</div>
+      <div class="nube-desc">Cada operación queda registrada con fecha, hora y operador responsable. Nadie puede borrar un registro sin que quede evidencia. Trazabilidad completa para auditorías.</div>
+    </div>
+    <div class="nube-card">
+      <div class="nube-ico">⚡</div>
+      <div class="nube-title">Tiempo Real</div>
+      <div class="nube-val">&lt;1s</div>
+      <div class="nube-desc">La sincronización entre dispositivos tarda menos de 1 segundo. Si el turno de noche registra algo, el turno de día lo ve instantáneamente — no al día siguiente.</div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:48px;padding:32px;background:var(--bg3);border:1px solid var(--brd);border-radius:16px;max-width:640px;margin-left:auto;margin-right:auto">
+    <div style="font-family:var(--mono);font-size:9px;color:var(--g2);letter-spacing:3px;margin-bottom:12px">PARA GERENCIA</div>
+    <p style="font-size:15px;color:#8aa08c;line-height:1.8">En 10 años operando con papel, ¿cuántos documentos se perdieron? ¿Cuántas veces buscaron algo sin encontrarlo? Con ZeroPaper, <strong style="color:var(--fg)">cada documento está disponible para siempre, desde cualquier dispositivo, en 3 segundos</strong>.</p>
+  </div>
+</section>
+
+<!-- GLOSARIO TÉCNICO -->
+<section class="glosario-section">
+  <div class="section-label">DICCIONARIO</div>
+  <h2 class="section-title">TÉRMINOS QUE<br>DEBES CONOCER</h2>
+  <p class="section-sub">Si en la presentación alguien pregunta qué significa algo, aquí está la respuesta en lenguaje simple.</p>
+  <div class="glosario-grid">
+    <div class="glosa-item">
+      <div class="glosa-term">EIR — Equipment Interchange Receipt</div>
+      <div class="glosa-def">Recibo de intercambio de equipo. Es el documento que confirma la entrega o recepción de un contenedor entre el puerto y el transportista.</div>
+      <div class="glosa-simple">En simple: el "recibo" que se da cuando entra o sale un contenedor del puerto.</div>
+    </div>
+    <div class="glosa-item">
+      <div class="glosa-term">DUS — Documento Único de Salida</div>
+      <div class="glosa-def">Formulario aduanero obligatorio en Chile que respalda la exportación de mercancías. Lo exige el Servicio Nacional de Aduanas.</div>
+      <div class="glosa-simple">En simple: el "pasaporte" de la carga cuando sale de Chile hacia otro país.</div>
+    </div>
+    <div class="glosa-item">
+      <div class="glosa-term">DAM — Declaración de Importación</div>
+      <div class="glosa-def">Declaración de Aceptación de Mercancías. Documento oficial de Aduana que acredita el ingreso legal de mercancías al país.</div>
+      <div class="glosa-simple">En simple: el permiso oficial de que una carga entró legalmente a Chile.</div>
+    </div>
+    <div class="glosa-item">
+      <div class="glosa-term">MIC/DTA — Manifiesto Internacional</div>
+      <div class="glosa-def">Documento de tránsito aduanero internacional de carretera. Acompaña la carga en transporte terrestre entre países de la región.</div>
+      <div class="glosa-simple">En simple: la "hoja de ruta" oficial de una carga que viaja en camión entre países.</div>
+    </div>
+    <div class="glosa-item">
+      <div class="glosa-term">Intercheck</div>
+      <div class="glosa-def">Control de estado físico del contenedor. Registro de daños, sellos y condición general al momento de ingreso o salida.</div>
+      <div class="glosa-simple">En simple: el "informe de daños" que se hace antes de aceptar un contenedor.</div>
+    </div>
+    <div class="glosa-item">
+      <div class="glosa-term">Booking</div>
+      <div class="glosa-def">Reserva de espacio en un buque o almacén. Documento que confirma que hay lugar reservado para una carga específica.</div>
+      <div class="glosa-simple">En simple: la "reserva" del espacio para tu carga en el barco o bodega.</div>
+    </div>
+    <div class="glosa-item">
+      <div class="glosa-term">SLA — Service Level Agreement</div>
+      <div class="glosa-def">Acuerdo de nivel de servicio. Contrato que garantiza un porcentaje mínimo de disponibilidad del sistema (ej: 99.9%).</div>
+      <div class="glosa-simple">En simple: la "garantía por escrito" de que el sistema estará funcionando casi el 100% del tiempo.</div>
+    </div>
+    <div class="glosa-item">
+      <div class="glosa-term">API — Interfaz de Programación</div>
+      <div class="glosa-def">API es el "puente" que conecta dos sistemas distintos para que puedan intercambiar información automáticamente.</div>
+      <div class="glosa-simple">En simple: la conexión que permite a ZeroPaper "hablar" con tu sistema contable o ERP sin intervención manual.</div>
+    </div>
+    <div class="glosa-item">
+      <div class="glosa-term">Trazabilidad</div>
+      <div class="glosa-def">Capacidad de seguir el historial completo de una operación: quién la creó, cuándo, qué cambios tuvo y quién los hizo.</div>
+      <div class="glosa-simple">En simple: saber exactamente qué pasó con cada documento, quién lo tocó y en qué momento. Clave para auditorías.</div>
+    </div>
+    <div class="glosa-item">
+      <div class="glosa-term">Sincronización en tiempo real</div>
+      <div class="glosa-def">Proceso por el cual los datos se actualizan simultáneamente en todos los dispositivos conectados, sin demora.</div>
+      <div class="glosa-simple">En simple: si alguien registra algo en el turno de noche, todos lo ven al instante — no al día siguiente.</div>
+    </div>
+    <div class="glosa-item">
+      <div class="glosa-term">PWA — Progressive Web App</div>
+      <div class="glosa-def">Tecnología que permite que un sitio web funcione como una app instalada en el celular, incluso sin internet.</div>
+      <div class="glosa-simple">En simple: ZeroPaper se instala en el celular desde el navegador, sin pasar por App Store ni Play Store.</div>
+    </div>
+    <div class="glosa-item">
+      <div class="glosa-term">ERP — Enterprise Resource Planning</div>
+      <div class="glosa-def">Sistema de gestión empresarial que integra procesos de finanzas, logística, recursos humanos, etc. Ej: SAP, Oracle.</div>
+      <div class="glosa-simple">En simple: el "sistema central" de una empresa grande que conecta todas las áreas. ZeroPaper puede exportar datos hacia él.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ROI PARA GERENCIA -->
+<section id="roi" class="roi-section">
+  <div class="section-label">RETORNO DE INVERSIÓN</div>
+  <h2 class="section-title">NÚMEROS QUE<br>HABLAN SOLOS</h2>
+  <p class="section-sub">Garantizado. Implementable. Auditable.</p>
+
+  <div class="roi-metrics">
+    <div class="roi-card">
+      <div class="roi-number">340%</div>
+      <div class="roi-label">ROI PROMEDIO AÑO 1</div>
+    </div>
+    <div class="roi-card">
+      <div class="roi-number">80%</div>
+      <div class="roi-label">REDUCCIÓN COSTOS DOC.</div>
+    </div>
+    <div class="roi-card">
+      <div class="roi-number">72h</div>
+      <div class="roi-label">IMPLEMENTACIÓN</div>
+    </div>
+    <div class="roi-card">
+      <div class="roi-number">&lt;6m</div>
+      <div class="roi-label">PAYBACK PERIOD</div>
+    </div>
+  </div>
+
+  <div style="margin-bottom:60px">
+    <h3 style="font-size:20px;margin-bottom:32px;text-align:center">ÁREAS DE IMPACTO</h3>
+    <div class="roi-breakdown">
+      <div class="breakdown-item">
+        <div class="breakdown-icon">📄</div>
+        <div class="breakdown-title">Papelería & Almacenamiento</div>
+        <div class="breakdown-value">↓ 90%</div>
+        <div class="breakdown-desc">Eliminación de impresoras, papel, archivadores y bodega física de documentos</div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-icon">⏱</div>
+        <div class="breakdown-title">Horas Administrativas</div>
+        <div class="breakdown-value">↓ 70%</div>
+        <div class="breakdown-desc">Reducción drástica de tareas manuales de registro, búsqueda y archivo</div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-icon">⚠️</div>
+        <div class="breakdown-title">Errores & Retrasos</div>
+        <div class="breakdown-value">↓ 85%</div>
+        <div class="breakdown-desc">Menos multas por demoras, reclamaciones y reprocesos por errores humanos</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:40px;background:var(--bg2);border:1px solid var(--brd);border-radius:16px;max-width:600px;margin:0 auto">
+    <div style="font-family:var(--mono);font-size:10px;color:var(--g2);letter-spacing:3px;margin-bottom:16px">INVERSIÓN PERSONALIZADA</div>
+    <p style="font-size:16px;color:#8aa08c;line-height:1.8;margin-bottom:24px">Cada empresa es diferente. El valor de implementación se define según el tamaño de tu operación, número de departamentos y funcionalidades requeridas.<br><br><strong style="color:var(--fg)">Implementación base + mensualidad según uso.</strong></p>
+    <a href="mailto:contacto@zeropaper.cl?subject=Solicito cotización ZeroPaper" class="btn-hero-main" style="display:inline-block">SOLICITAR COTIZACIÓN →</a>
+  </div>
+</section>
+
+<!-- TESTIMONIOS -->
+<section id="testimonios" class="testimonios-section">
+  <div class="section-label">CASOS DE ÉXITO</div>
+  <h2 class="section-title">PUERTOS QUE YA<br>CONFÍAN EN ZEROPAPER</h2>
+  <p class="section-sub">Resultados verificables de operaciones portuarias en Chile.</p>
+  <div class="testimonios-grid">
+    <div class="testimonio-card">
+      <div class="testimonio-avatar">⚓</div>
+      <div class="testimonio-quote">"Redujimos papelería en 92% en 6 meses. El ROI aparece antes de lo que prometieron. Nuestros operadores no quieren volver al sistema anterior."</div>
+      <div class="testimonio-author">Jorge Valenzuela</div>
+      <div class="testimonio-role">Director Operaciones, Puerto Valparaíso</div>
+    </div>
+    <div class="testimonio-card">

@@ -1,6 +1,8 @@
 {
   "rewrites": [
     { "source": "/login", "destination": "/login.html" },
-    { "source": "/dashboard", "destination": "/dashboard.html" }
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/app", "destination": "/zeropaper_deploy/zeropaper_app.html" },
+    { "source": "/zeropaper_app.html", "destination": "/zeropaper_deploy/zeropaper_app.html" }
   ]
 }

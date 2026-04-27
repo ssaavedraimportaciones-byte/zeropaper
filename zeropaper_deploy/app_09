@@ -1,0 +1,270 @@
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      } else if (remote.estado === 'APROBADO') {
+        showToast('✅', `${local.plate}: Aprobada`, 'Operación aprobada');
+        if (navigator.vibrate) navigator.vibrate([100]);
+      }
+    }
+    if (cambios) renderHome();
+  } catch(e) { /* offline o error de red */ }
+}
+
+function startPolling() {
+  if (pollingTimer) return;
+  pollEstados(); // poll inmediato al iniciar
+  pollingTimer = setInterval(() => {
+    if (document.visibilityState !== 'hidden') pollEstados();
+  }, 90000); // cada 90 segundos
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') pollEstados();
+  }, { passive: true });
+}
+
+// ══════════════════════════════════════
+//  SYNC DEPTOS DESDE FIRESTORE
+// ══════════════════════════════════════
+
+async function sincronizarDeptos() {
+  if (!session?.empresaId || !navigator.onLine) return;
+  try {
+    const doc = await fsGet(`empresas/${session.empresaId}/config/deptos`);
+    const data = parseFs(doc);
+    if (data.deptosJson) {
+      const remotos = JSON.parse(data.deptosJson);
+      if (Array.isArray(remotos) && remotos.length > 0) {
+        localStorage.setItem(K_DEPTOS, JSON.stringify(remotos));
+        deptos = remotos;
+        const activeId = localStorage.getItem(K_DEPTO);
+        deptoActivo = deptos.find(d => d.id === activeId) || deptos[0];
+        actualizarSelectorDepto();
+      }
+    }
+  } catch(e) { /* usar deptos locales */ }
+}
+
+// ══════════════════════════════════════
+//  QR DE SEGUIMIENTO
+// ══════════════════════════════════════
+
+function showQRModal(plate, url) {
+  const existing = document.getElementById('qrModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-ov'; modal.id = 'qrModal';
+  modal.innerHTML = `<div class="modal-box" style="text-align:center;max-width:300px;padding:20px">
+    <div class="modal-hdr">
+      <div class="modal-title">📷 QR Seguimiento</div>
+      <button class="modal-x" onclick="document.getElementById('qrModal').remove()">✕</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:26px;font-weight:800;letter-spacing:4px;margin:10px 0;color:var(--fg)">${plate}</div>
+    <div id="qrCanvas" style="display:flex;justify-content:center;align-items:center;min-height:200px;margin:12px 0"></div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:14px;letter-spacing:1px">SEGUIMIENTO EN TIEMPO REAL</div>
+    <button class="btn-prime btn-gray" style="margin:0" onclick="document.getElementById('qrModal').remove()">Cerrar</button>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+
+  // Generar QR
+  const canvas = document.getElementById('qrCanvas');
+  if (typeof QRCode !== 'undefined') {
+    try {
+      new QRCode(canvas, {
+        text: url, width: 200, height: 200,
+        colorDark: '#e8e8f0', colorLight: '#13132a',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch(e) { canvas.innerHTML = fallbackQR(url); }
+  } else {
+    canvas.innerHTML = fallbackQR(url);
+  }
+}
+
+function fallbackQR(url) {
+  const enc = encodeURIComponent(url);
+  return `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&bgcolor=13132a&color=e8e8f0&data=${enc}" style="border-radius:8px;width:200px;height:200px" alt="QR">`;
+}
+
+// ══════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════
+
+function showToast(icon, titulo, sub) {
+  document.getElementById('tIco').textContent = icon;
+  document.getElementById('tTit').textContent = titulo;
+  document.getElementById('tSub').textContent = sub||'';
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ══════════════════════════════════════
+//  ONLINE / OFFLINE
+// ══════════════════════════════════════
+
+function checkOnline() {
+  document.getElementById('offBadge').classList.toggle('show', !navigator.onLine);
+  if (navigator.onLine) syncPendientes();
+}
+
+// ══════════════════════════════════════
+//  PWA INSTALL
+// ══════════════════════════════════════
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'flex';
+});
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('installBtn').style.display = 'none';
+});
+
+// ══════════════════════════════════════
+//  SUGERENCIAS IA
+// ══════════════════════════════════════
+
+async function loadAISuggestions(el, ops) {
+  try {
+    const knowledge = await getSmartSuggestions();
+    if (!knowledge) { el.style.display = 'none'; return; }
+
+    const tips = [];
+    const patterns = knowledge.patterns || {};
+    const freqPlates = knowledge.frequentPlates || {};
+
+    // Detect peak hours
+    const hour = new Date().getHours();
+    let peakDocs = [];
+    for (const [key, count] of Object.entries(patterns)) {
+      if (key.includes(`_h${hour}`) && count > 3) {
+        peakDocs.push(key.split('_h')[0].replace(/_/g, ' '));
+      }
+    }
+    if (peakDocs.length) {
+      tips.push(`📊 A esta hora sueles registrar: <strong>${peakDocs.slice(0,3).join(', ')}</strong>`);
+    }
+
+    // Top frequent plates
+    const topPlates = Object.entries(freqPlates).sort((a,b) => b[1] - a[1]).slice(0, 3);
+    if (topPlates.length >= 2) {
+      tips.push(`🚛 Vehículos frecuentes: <strong>${topPlates.map(([p]) => p).join(', ')}</strong>`);
+    }
+
+    // Ops velocity insight
+    const today = new Date().toLocaleDateString('es-CL');
+    const todayOps = ops.filter(o => o.fecha === today);
+    if (todayOps.length > 10) {
+      tips.push(`⚡ Ritmo alto hoy: <strong>${todayOps.length} operaciones</strong> registradas`);
+    }
+
+    if (!tips.length) { el.style.display = 'none'; return; }
+
+    el.innerHTML = `
+      <div style="background:rgba(79,143,247,.06);border:1px solid rgba(79,143,247,.2);border-radius:14px;padding:14px;margin-bottom:12px;">
+        <div style="font-weight:700;font-size:12px;color:var(--b);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+          💡 Sugerencias IA
+          <span style="font-size:9px;font-weight:600;background:rgba(79,143,247,.15);padding:2px 8px;border-radius:6px;">Aprendido</span>
+        </div>
+        ${tips.map(t => `<div style="font-size:12px;color:var(--fg2);padding:3px 0;">${t}</div>`).join('')}
+      </div>`;
+    el.style.display = 'block';
+  } catch(e) { el.style.display = 'none'; }
+}
+
+// ══════════════════════════════════════
+//  INICIO DE APP
+// ══════════════════════════════════════
+
+function iniciarApp() {
+  document.getElementById('loginScreen').style.display    = 'none';
+  document.getElementById('registerScreen').style.display = 'none';
+  document.getElementById('app').style.display            = 'flex';
+}
+
+async function init() {
+  // Tema + font
+  const tema = localStorage.getItem(K_TEMA);
+  if (tema && tema!=='oscuro') document.documentElement.setAttribute('data-theme', tema);
+  const font = localStorage.getItem('zp5_font');
+  if (font) document.body.style.fontSize = font+'px';
+
+  // DB
+  await initDB();
+
+  // Cargar deptos
+  cargarDeptos();
+
+  // Sesión
+  loadSession();
+
+  if (session) {
+    // Verificar que el token no esté muy expirado
+    if (Date.now() > session.expiresAt + 7 * 24 * 3600 * 1000) {
+      doLogout(); return;
+    }
+    iniciarApp();
+    await renderHome();
+    turnoInicio = localStorage.getItem(K_TURNO);
+    if (!turnoInicio) {
+      turnoInicio = new Date().toISOString();
+      localStorage.setItem(K_TURNO, turnoInicio);
+    }
+    // Sincronizar deptos y arrancar polling de estados
+    sincronizarDeptos();
+    startPolling();
+  } else {
+    showLogin();
+  }
+
+  // Events
+  checkOnline();
+  window.addEventListener('online',  checkOnline);
+  window.addEventListener('offline', checkOnline);
+
+  // Enter en login
+  document.getElementById('loginPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  document.getElementById('loginEmail').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('loginPass').focus();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
+</script>
+
+<!-- ZeroPaper™ Soporte IA Widget -->
+<div id="zp-support-btn" onclick="window.open('/soporte','_blank')" title="Soporte Técnico IA"
+  style="position:fixed;bottom:24px;right:24px;z-index:9999;width:52px;height:52px;border-radius:50%;
+  background:#1B4332;color:white;font-size:22px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 4px 20px rgba(27,67,50,0.35);transition:transform .2s,box-shadow .2s"
+  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(27,67,50,0.5)'"
+  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(27,67,50,0.35)'">💬</div>
+<div style="position:fixed;bottom:82px;right:18px;z-index:9998;background:#1B4332;color:white;
+  font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;white-space:nowrap;
+  pointer-events:none;opacity:0;transition:opacity .3s" id="zp-support-tooltip">Soporte IA</div>
+<script>
+(function(){
+  const btn = document.getElementById('zp-support-btn');
+  const tip = document.getElementById('zp-support-tooltip');
+  setTimeout(()=>{ tip.style.opacity='1'; setTimeout(()=>tip.style.opacity='0', 3000); }, 2000);
+  btn.addEventListener('mouseover',()=>tip.style.opacity='1');
+  btn.addEventListener('mouseout',()=>tip.style.opacity='0');
+})();
+</script>
+</body>
+</html>
