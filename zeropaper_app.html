@@ -98,10 +98,10 @@ html,body{height:100%;background:var(--bg);color:var(--fg);font-family:var(--dis
   color:var(--mu);cursor:pointer;margin-top:6px;
 }
 .auth-link span{color:var(--g2);text-decoration:underline;}
+.auth-err{color:var(--r);font-size:13px;font-family:var(--mono);min-height:16px;margin-bottom:8px;text-align:center;}
 .auth-demo-btn{width:100%;padding:11px;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.25);color:var(--g2);border-radius:10px;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:all .2s;margin-top:4px;}
 .auth-demo-btn:hover{background:rgba(74,222,128,.18);border-color:rgba(74,222,128,.5);}
 .auth-demo-hint{text-align:center;font-family:var(--mono);font-size:9px;color:var(--mu);margin-top:4px;letter-spacing:.5px;}
-.auth-err{color:var(--r);font-size:13px;font-family:var(--mono);min-height:16px;margin-bottom:8px;text-align:center;}
 .auth-divider{height:1px;background:var(--brd);margin:14px 0;}
 .auth-empresa-code{
   background:rgba(74,124,89,.08);border:1px solid rgba(74,124,89,.2);
@@ -277,7 +277,7 @@ nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px
 .theme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
 .theme-btn{border:2px solid var(--brd);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;font-size:9px;font-family:var(--mono);color:var(--mu);transition:border-color .2s;}
 .theme-btn.on{border-color:var(--g2);color:var(--g2);}
-.theme-preview{width:24px;height:24px;border-radius:6px;margin:0 auto 4px;}
+.theme-preview{width:24px;height:24px;border-radius:6px;margin:0 auto 4px;pointer-events:none;}
 
 /* ══ DEPTOS MANAGER ══ */
 .depto-card{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
@@ -487,7 +487,7 @@ nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px
     <div class="sec-row"><span class="sec-l">HISTORIAL</span><span class="sec-a" onclick="exportarCSV()">📊 Exportar</span></div>
     <div class="search-bar">
       <span class="search-ico">🔍</span>
-      <input class="search-inp" id="searchInp" placeholder="Patente, folio, fecha..." oninput="buscarOps(this.value)">
+      <input class="search-inp" id="searchInp" placeholder="Buscar por patente, empresa, folio, operador, documento..." oninput="buscarOps(this.value)">
     </div>
     <div class="pills" id="filterPills">
       <span class="pill on" onclick="filtrarH('TODOS',this)">Todos</span>
@@ -607,10 +607,36 @@ nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px
     <div class="card" style="margin-top:10px">
       <div class="card-title">ADMINISTRACIÓN</div>
       <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:10px">Panel de gestión y estadísticas completas.</div>
-      <a href="/zeropaper_admin.html" target="_blank" style="text-decoration:none">
+      <a href="./zeropaper_admin.html" target="_blank" style="text-decoration:none">
         <button class="btn-prime btn-green" style="width:100%;margin-bottom:8px">🖥 Abrir Panel Admin</button>
       </a>
       <button class="btn-prime btn-gray" onclick="doLogout()">🔓 Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- ▸ IA ASISTENTE ◂ -->
+  <div class="view" id="vIa">
+    <div class="sec-row" style="margin-bottom:0">
+      <span class="sec-l">🤖 ASISTENTE IA</span>
+      <span class="sec-a" onclick="zpClearChat()">Limpiar</span>
+    </div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--mu);margin:4px 0 12px;letter-spacing:.5px">Busca operaciones, documentos o haz preguntas sobre el sistema.</div>
+    <!-- Chips sugeridos -->
+    <div id="zpChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+      <button class="pill" onclick="zpAsk('Operaciones de hoy')">📅 Hoy</button>
+      <button class="pill" onclick="zpAsk('¿Qué es un EIR?')">📄 ¿Qué es EIR?</button>
+      <button class="pill" onclick="zpAsk('¿Cómo busco por patente?')">🔍 Buscar patente</button>
+      <button class="pill" onclick="zpAsk('¿Qué es DAM?')">📋 ¿Qué es DAM?</button>
+      <button class="pill" onclick="zpAsk('Resumen del turno')">🔄 Mi turno</button>
+      <button class="pill" onclick="zpAsk('¿Cómo exporto datos?')">📊 Exportar</button>
+    </div>
+    <!-- Mensajes -->
+    <div id="zpMsgs" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;min-height:200px"></div>
+    <!-- Input -->
+    <div style="display:flex;gap:8px;position:sticky;bottom:0;background:var(--bg);padding:8px 0">
+      <input id="zpInput" class="finp" placeholder="Pregunta o escribe una patente/empresa/folio..." style="flex:1"
+        onkeydown="if(event.key==='Enter')zpSend()">
+      <button class="btn-prime btn-green" onclick="zpSend()" style="width:56px;padding:0;font-size:20px">➤</button>
     </div>
   </div>
 
@@ -620,8 +646,8 @@ nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px
 <nav>
   <div class="ftab on" id="t-home" onclick="goTo('home')"><span class="ftab-i">⌂</span><span class="ftab-l">INICIO</span></div>
   <div class="ftab" id="t-historial" onclick="goTo('historial')"><span class="ftab-i">📋</span><span class="ftab-l">HISTORIAL</span></div>
+  <div class="ftab" id="t-ia" onclick="goTo('ia')"><span class="ftab-i">🤖</span><span class="ftab-l">IA</span></div>
   <div class="ftab" id="t-turno" onclick="goTo('turno')"><span class="ftab-i">🔄</span><span class="ftab-l">TURNO</span></div>
-  <div class="ftab" id="t-deptos" onclick="goTo('deptos')"><span class="ftab-i">🏗</span><span class="ftab-l">DEPTOS</span></div>
   <div class="ftab" id="t-config" onclick="goTo('config')"><span class="ftab-i">⚙</span><span class="ftab-l">CONFIG</span></div>
 </nav>
 
@@ -674,6 +700,7 @@ let curFiltro  = 'TODOS';
 let fotosDir   = { in: [], out: [] };
 let toastTimer = null;
 let turnoInicio= null;
+let _zpFotoArr = null; // cache global para visor de fotos
 
 // ══════════════════════════════════════
 //  AUTH PROPIO — SHA-256 + Firestore
@@ -1028,8 +1055,8 @@ async function getOpsEmpresa() {
 //  NAVEGACIÓN
 // ══════════════════════════════════════
 
-const VIEWS = ['home','ingreso','salida','historial','turno','deptos','temas','config'];
-const TABS  = ['home','historial','turno','deptos','config'];
+const VIEWS = ['home','ingreso','salida','historial','turno','deptos','temas','config','ia'];
+const TABS  = ['home','historial','ia','turno','config'];
 
 function goTo(name) {
   VIEWS.forEach(v => {
@@ -1047,6 +1074,7 @@ function goTo(name) {
   if (name==='salida')    prepForm('out');
   if (name==='config')    cargarConfig();
   if (name==='temas')     cargarTema();
+  if (name==='ia')        renderIA();
 }
 
 function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -1106,9 +1134,9 @@ function renderFotosZone(dir) {
   if (!zone) return;
   const fotos = fotosDir[dir];
   const thumbsHtml = fotos.map((f, i) => `
-    <div class="foto-thumb">
+    <div class="foto-thumb" onclick="verFotoCaptura('${dir}',${i})" style="cursor:pointer">
       <img src="${f.data}" alt="doc ${i+1}">
-      <button class="foto-remove" onclick="removeFoto('${dir}',${i})">✕</button>
+      <button class="foto-remove" onclick="event.stopPropagation();removeFoto('${dir}',${i})">✕</button>
       <span class="foto-num">${i+1}</span>
     </div>`).join('');
   const camId = dir==='in' ? 'camIn' : 'camOut';
@@ -1125,6 +1153,68 @@ function renderFotosZone(dir) {
     </button>
     <div id="ocrResult_${dir}" style="display:none;margin-top:10px;"></div>
     ` : ''}`;
+}
+
+// ══════════════════════════════════════
+//  VER FOTO CAPTURADA — VISOR FULL SCREEN
+// ══════════════════════════════════════
+
+function verFotoCaptura(dir, idx) {
+  const fotos = fotosDir[dir];
+  if (!fotos || !fotos[idx]) return;
+  const prev = document.getElementById('fotoViewerModal');
+  if (prev) prev.remove();
+  const total = fotos.length;
+  const f = fotos[idx];
+  const m = document.createElement('div');
+  m.id = 'fotoViewerModal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;';
+  m.innerHTML = `
+    <div style="width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="color:#22c55e;font-family:'Space Mono',monospace;font-size:13px;">📷 Foto ${idx+1} / ${total}</span>
+        <button onclick="document.getElementById('fotoViewerModal').remove()" style="background:none;border:1px solid #444;color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+      <img src="${f.data}" alt="Documento" style="width:100%;max-height:65vh;object-fit:contain;border-radius:12px;border:1px solid #333;">
+      ${total > 1 ? `
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button onclick="verFotoCaptura('${dir}',${Math.max(0,idx-1)})" ${idx===0?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===0?'#222':'#1a6b3a'};color:#fff;font-size:13px;cursor:${idx===0?'default':'pointer'};">← Anterior</button>
+        <button onclick="verFotoCaptura('${dir}',${Math.min(total-1,idx+1)})" ${idx===total-1?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===total-1?'#222':'#22c55e'};color:#fff;font-size:13px;cursor:${idx===total-1?'default':'pointer'};">Siguiente →</button>
+      </div>` : ''}
+    </div>`;
+  m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  document.body.appendChild(m);
+}
+
+// ══════════════════════════════════════
+//  VER FOTO DE HISTORIAL — VISOR FULL SCREEN
+// ══════════════════════════════════════
+
+function verFotoHistorial(fotosArr, idx) {
+  _zpFotoArr = fotosArr; // guardar en cache global
+  const prev = document.getElementById('fotoHistorialModal');
+  if (prev) prev.remove();
+  const total = fotosArr.length;
+  const src = fotosArr[idx];
+  const m = document.createElement('div');
+  m.id = 'fotoHistorialModal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;';
+  m.innerHTML = `
+    <div style="width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="color:var(--g2);font-family:var(--mono);font-size:12px;letter-spacing:1px;">📄 DOC ${idx+1} / ${total}</span>
+        <button onclick="document.getElementById('fotoHistorialModal').remove()" style="background:none;border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <img src="${src}" alt="Documento" style="width:100%;max-height:70vh;object-fit:contain;border-radius:12px;border:1px solid var(--brd);">
+      ${total > 1 ? `
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('fotoHistorialModal').remove();verFotoHistorial(_zpFotoArr,${Math.max(0,idx-1)})" ${idx===0?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===0?'rgba(255,255,255,.05)':'var(--g)'};color:#fff;font-size:13px;cursor:${idx===0?'default':'pointer'};opacity:${idx===0?.4:1}">← Anterior</button>
+        <button onclick="document.getElementById('fotoHistorialModal').remove();verFotoHistorial(_zpFotoArr,${Math.min(total-1,idx+1)})" ${idx===total-1?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===total-1?'rgba(255,255,255,.05)':'var(--g2)'};color:#fff;font-size:13px;cursor:${idx===total-1?'default':'pointer'};opacity:${idx===total-1?.4:1}">Siguiente →</button>
+      </div>` : ''}
+      <a href="${src}" download="documento_${idx+1}.jpg" style="text-align:center;padding:10px;border-radius:10px;border:1px solid var(--brd);color:var(--mu);font-size:12px;font-family:var(--mono);text-decoration:none;letter-spacing:1px;">⬇ DESCARGAR IMAGEN</a>
+    </div>`;
+  m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  document.body.appendChild(m);
 }
 
 // ══════════════════════════════════════
@@ -1147,6 +1237,11 @@ async function runOCR(dir) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ image: fotos[0].data })
     });
+    if (!res.ok) {
+      showToast('⚠', 'OCR no disponible', 'Rellena los campos manualmente');
+      if (btn) { btn.innerHTML = '<span>🧠</span> <span>Reintentar lectura</span>'; btn.disabled = false; }
+      return;
+    }
     const data = await res.json();
 
     if (data.error) {
@@ -1224,24 +1319,41 @@ async function runOCR(dir) {
 async function registerLearning(type, data) {
   if (!session?.empresaId) return;
   try {
-    await fetch('/api/learn', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        empresa: session.empresaId,
-        depto: deptoActivo?.id || 'global',
-        type, data
-      })
-    });
-  } catch(e) { /* offline, skip */ }
+    const key = `zp5_learn_${session.empresaId}`;
+    const existing = JSON.parse(localStorage.getItem(key) || '{"plates":{},"docs":{},"hours":{}}');
+    if (type === 'plate_frequency' && data.plate) {
+      existing.plates[data.plate] = (existing.plates[data.plate] || 0) + 1;
+    }
+    if (type === 'doc_pattern' && data.docType) {
+      const h = new Date().getHours();
+      const k = `${data.docType}_h${h}`;
+      existing.docs[k] = (existing.docs[k] || 0) + 1;
+    }
+    localStorage.setItem(key, JSON.stringify(existing));
+  } catch(e) {}
 }
 
 async function getSmartSuggestions() {
-  if (!session?.empresaId || !navigator.onLine) return null;
+  if (!session?.empresaId) return null;
   try {
-    const depto = deptoActivo?.id || '';
-    const res = await fetch(`/api/learn?empresa=${session.empresaId}&depto=${depto}`);
-    return await res.json();
+    // Calcular desde datos locales — sin necesidad de backend
+    const ops = await dbGetAll('ops');
+    const myOps = ops.filter(o => o.empresaId === session.empresaId);
+    const patterns = {};
+    const freqPlates = {};
+    myOps.forEach(op => {
+      if (op.ts && op.docType) {
+        const h = new Date(op.ts).getHours();
+        const k = `${op.docType}_h${h}`;
+        patterns[k] = (patterns[k] || 0) + 1;
+      }
+      if (op.plate) freqPlates[op.plate] = (freqPlates[op.plate] || 0) + 1;
+    });
+    // Complementar con datos aprendidos localmente
+    const stored = JSON.parse(localStorage.getItem(`zp5_learn_${session.empresaId}`) || '{}');
+    Object.entries(stored.docs || {}).forEach(([k,v]) => patterns[k] = (patterns[k]||0)+v);
+    Object.entries(stored.plates || {}).forEach(([k,v]) => freqPlates[k] = (freqPlates[k]||0)+v);
+    return { patterns, frequentPlates: freqPlates };
   } catch(e) { return null; }
 }
 
@@ -1250,11 +1362,87 @@ function addFoto(ev, dir) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e2 => {
-    fotosDir[dir].push({ data: e2.target.result });
-    renderFotosZone(dir);
+    abrirScannerModal(e2.target.result, dir);
   };
   reader.readAsDataURL(file);
   ev.target.value = '';
+}
+
+// ── SCANNER MODAL ── procesamiento de imagen con canvas
+let _scanDir = null, _scanImg = null, _scanRotate = 0, _scanContrast = 1.4, _scanBrightness = 1.1;
+
+function abrirScannerModal(src, dir) {
+  _scanDir = dir; _scanRotate = 0; _scanContrast = 1.4; _scanBrightness = 1.1;
+  const prev = document.getElementById('scannerModal');
+  if (prev) prev.remove();
+
+  const m = document.createElement('div');
+  m.id = 'scannerModal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9998;display:flex;flex-direction:column;align-items:center;padding:16px;overflow-y:auto;';
+  m.innerHTML = `
+    <div style="width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="color:var(--g2);font-family:var(--mono);font-size:13px;letter-spacing:1px">📷 ESCANEAR DOCUMENTO</span>
+        <button onclick="document.getElementById('scannerModal').remove()" style="background:none;border:1px solid #444;color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <canvas id="scanCanvas" style="width:100%;border-radius:12px;border:2px solid var(--g1);background:#000;display:block;"></canvas>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button onclick="scanRotate()" style="padding:12px;border-radius:10px;border:1px solid #444;background:#1a1a1a;color:#fff;font-size:13px;cursor:pointer;">↺ Rotar 90°</button>
+        <button onclick="scanEnhance()" style="padding:12px;border-radius:10px;border:1px solid #444;background:#1a1a1a;color:#fff;font-size:13px;cursor:pointer;">✨ Auto-mejorar</button>
+        <button onclick="scanReset()" style="padding:12px;border-radius:10px;border:1px solid #333;background:#111;color:#888;font-size:12px;cursor:pointer;">↩ Restablecer</button>
+        <button onclick="scanConfirm()" style="padding:12px;border-radius:10px;border:none;background:var(--g1);color:#fff;font-size:13px;font-weight:700;cursor:pointer;">✓ Usar imagen</button>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--mu);text-align:center;letter-spacing:.5px">
+        Rotar hasta que el documento quede vertical · Mejorar contraste para mejor legibilidad
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+
+  _scanImg = new Image();
+  _scanImg.onload = () => scanDraw();
+  _scanImg.src = src;
+}
+
+function scanDraw() {
+  const canvas = document.getElementById('scanCanvas');
+  if (!canvas || !_scanImg) return;
+  const ctx = canvas.getContext('2d');
+  const r = _scanRotate;
+  const w = _scanImg.naturalWidth, h = _scanImg.naturalHeight;
+  const swapped = r === 90 || r === 270;
+  canvas.width  = swapped ? h : w;
+  canvas.height = swapped ? w : h;
+
+  ctx.save();
+  ctx.translate(canvas.width/2, canvas.height/2);
+  ctx.rotate((r * Math.PI) / 180);
+  ctx.drawImage(_scanImg, -w/2, -h/2);
+  ctx.restore();
+
+  // Contraste + brillo via pixel manipulation
+  const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d = id.data;
+  const c = _scanContrast, b = _scanBrightness;
+  for (let i = 0; i < d.length; i += 4) {
+    d[i]   = Math.min(255, Math.max(0, ((d[i]   / 255 - 0.5) * c + 0.5) * 255 * b));
+    d[i+1] = Math.min(255, Math.max(0, ((d[i+1] / 255 - 0.5) * c + 0.5) * 255 * b));
+    d[i+2] = Math.min(255, Math.max(0, ((d[i+2] / 255 - 0.5) * c + 0.5) * 255 * b));
+  }
+  ctx.putImageData(id, 0, 0);
+}
+
+function scanRotate() { _scanRotate = (_scanRotate + 90) % 360; scanDraw(); }
+function scanEnhance() { _scanContrast = _scanContrast < 2 ? 2.2 : 1.4; _scanBrightness = _scanBrightness < 1.2 ? 1.15 : 1.1; scanDraw(); }
+function scanReset()  { _scanRotate = 0; _scanContrast = 1.4; _scanBrightness = 1.1; scanDraw(); }
+
+function scanConfirm() {
+  const canvas = document.getElementById('scanCanvas');
+  if (!canvas || !_scanDir) return;
+  const data = canvas.toDataURL('image/jpeg', 0.88);
+  fotosDir[_scanDir].push({ data });
+  renderFotosZone(_scanDir);
+  document.getElementById('scannerModal').remove();
+  showToast('📷','Foto agregada','Imagen procesada y guardada');
 }
 
 function removeFoto(dir, idx) {
@@ -1489,14 +1677,18 @@ function filtrarH(cat) { curFiltro = cat; renderHistorial(); }
 async function buscarOps(q) {
   if (!q.trim()) { renderHistorial(); return; }
   const ops = await getOpsEmpresa();
-  const t = q.toLowerCase();
-  renderHistorial(ops.filter(o =>
-    (o.plate||'').toLowerCase().includes(t) ||
-    (o.folio||'').toLowerCase().includes(t) ||
-    (o.fecha||'').includes(t) ||
-    (o.docType||'').toLowerCase().includes(t) ||
-    (o.deptoNombre||'').toLowerCase().includes(t)
-  ));
+  const t = q.toLowerCase().trim();
+  renderHistorial(ops.filter(o => {
+    const fields = [
+      o.plate, o.folio, o.fecha, o.hora,
+      o.docType, o.deptoNombre, o.depto,
+      o.operador, o.empresa, o.rut,
+      o.obs, o.tipo, o.estado,
+      o.destinatario, o.conductor, o.camion,
+      o.contenedor, o.guia, o.sello
+    ];
+    return fields.some(f => (f||'').toLowerCase().includes(t));
+  }));
 }
 
 // ══════════════════════════════════════
@@ -1520,13 +1712,15 @@ async function verDetalle(id) {
       } catch(e){}
     }
     if (fotosData.length > 0) {
+      _zpFotoArr = fotosData; // cache global para evitar JSON.stringify en onclick
       if (fotosData.length === 1) {
-        fotoHtml = `<img src="${fotosData[0]}" class="modal-foto" alt="Documento">`;
+        fotoHtml = `<img src="${fotosData[0]}" class="modal-foto" alt="Documento" style="cursor:pointer" onclick="verFotoHistorial(_zpFotoArr,0)" title="Toca para ver en pantalla completa">`;
       } else {
         const thumbs = fotosData.map((d, i) => `
-          <div style="position:relative;cursor:pointer" onclick="this.querySelector('img').style.width=this.querySelector('img').style.width?'':'100%'">
+          <div style="position:relative;cursor:pointer" onclick="verFotoHistorial(_zpFotoArr,${i})">
             <img src="${d}" style="width:100%;border-radius:8px;border:1px solid var(--brd);display:block" alt="Foto ${i+1}">
             <span style="position:absolute;top:4px;left:6px;background:rgba(0,0,0,.65);color:#fff;font-family:var(--mono);font-size:9px;border-radius:4px;padding:1px 6px">Foto ${i+1}</span>
+            <span style="position:absolute;bottom:4px;right:6px;background:rgba(0,0,0,.65);color:#52b788;font-family:var(--mono);font-size:9px;border-radius:4px;padding:1px 6px">👁 VER</span>
           </div>`).join('');
         fotoHtml = `
           <div style="margin-bottom:14px">
@@ -1834,16 +2028,22 @@ function eliminarDoc(doc) {
 // ══════════════════════════════════════
 
 function setTema(tema, btn) {
-  document.documentElement.setAttribute('data-theme', tema==='oscuro'?'':tema);
+  const root = document.documentElement;
+  root.removeAttribute('data-theme');
+  if (tema !== 'oscuro') root.setAttribute('data-theme', tema);
   localStorage.setItem(K_TEMA, tema);
-  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  showToast('🎨','Tema aplicado','');
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('on'));
+  // btn puede ser el hijo — subir al .theme-btn si hace falta
+  const themeBtn = btn.closest ? btn.closest('.theme-btn') || btn : btn;
+  themeBtn.classList.add('on');
+  showToast('🎨', 'Tema ' + tema, '');
 }
 
 function setFontSize(size) {
-  document.body.style.fontSize = size+'px';
+  const scale = size === 14 ? 0.88 : size === 18 ? 1.13 : 1.0;
+  document.getElementById('app').style.zoom = scale;
   localStorage.setItem('zp5_font', size);
+  showToast('🔤', size===14?'Texto pequeño':size===18?'Texto grande':'Texto normal','');
 }
 
 function cargarTema() {
@@ -2173,28 +2373,253 @@ async function loadAISuggestions(el, ops) {
   } catch(e) { el.style.display = 'none'; }
 }
 
+// ══════════════════════════════════════
+//  ASISTENTE IA — ZeroAI APP
+// ══════════════════════════════════════
+
+const ZP_KB = [
+  {k:['eir'],r:'📄 **EIR — Equipment Interchange Receipt**\n\nRecibo de intercambio de equipo (contenedor). Documento que certifica la transferencia física de un contenedor entre una terminal y un transportista. Incluye descripción del estado del equipo al momento del intercambio.'},
+  {k:['intercheck'],r:'✅ **Intercheck**\n\nInspección de integridad del contenedor antes de ingreso o salida. Verifica: número de sello, estado exterior, daños visibles. Es obligatorio en operaciones de Gate IN/OUT.'},
+  {k:['booking'],r:'📋 **Booking**\n\nReserva de espacio en un buque o almacén. Confirma que hay lugar reservado para una carga específica. Es el primer documento en la cadena de exportación.'},
+  {k:['dus','documento único de salida'],r:'📤 **DUS — Documento Único de Salida**\n\nFormulario aduanero obligatorio en Chile que respalda la exportación de mercancías. Lo exige el Servicio Nacional de Aduanas (SAG/Aduana).'},
+  {k:['dam','declaración de importación','declaracion de importacion'],r:'📥 **DAM — Declaración de Aceptación de Mercancías**\n\nDocumento oficial de Aduana que acredita el ingreso legal de mercancías al país. Requerido para levante de mercadería.'},
+  {k:['aforo'],r:'🔎 **Aforo Aduanero**\n\nProceso de verificación física que realiza Aduana sobre una mercancía para confirmar que los datos declarados coincidan con la realidad (peso, cantidad, descripción).'},
+  {k:['levante'],r:'✅ **Levante**\n\nAutorización de Aduana que permite retirar la mercancía de la zona primaria. Solo se otorga una vez que el DAM o DUS está aprobado y los impuestos pagados.'},
+  {k:['mic','dta','mic/dta','manifiesto internacional'],r:'🚛 **MIC/DTA — Manifiesto Internacional de Carga**\n\nDocumento de tránsito aduanero internacional de carretera. Acompaña la carga en transporte terrestre entre países de la región (Chile, Argentina, Bolivia, Perú).'},
+  {k:['conocimiento de embarque','bill of lading','b/l','bl'],r:'🚢 **Conocimiento de Embarque (B/L)**\n\nContrato entre el exportador y la naviera. Certifica que la mercancía fue recibida a bordo del buque. Documento clave en comercio exterior marítimo.'},
+  {k:['gate in','gatein'],r:'📥 **Gate IN**\n\nRegistro de ingreso de un vehículo o contenedor a la terminal. Incluye datos del conductor, patente, contenedor, sello y tipo de carga.'},
+  {k:['gate out','gateout'],r:'📤 **Gate OUT**\n\nRegistro de salida de un vehículo o contenedor desde la terminal. Debe coincidir con el Gate IN correspondiente. Cierra el ciclo de la operación.'},
+  {k:['guía de despacho','guia de despacho'],r:'📦 **Guía de Despacho**\n\nDocumento tributario que acompaña el traslado de mercancías sin factura. Obligatorio en Chile para movimientos de mercadería entre bodegas o hacia clientes.'},
+  {k:['buscar','como busco','cómo busco','encontrar','historial','patente'],r:'🔍 **Cómo buscar en ZeroPaper**\n\nVe a la pestaña **HISTORIAL** y escribe en el buscador:\n• Patente del camión (ej: HJKL-72)\n• Nombre de la empresa\n• Número de folio\n• Tipo de documento\n• Nombre del operador\n• Fecha\n\nO escríbeme directamente aquí: _"Buscar [patente o empresa]"_ y te busco en tu historial.'},
+  {k:['exportar','excel','csv','reporte','informe'],r:'📊 **Exportar datos**\n\nVe a **HISTORIAL** → botón **📊 Exportar** (esquina superior derecha). Descarga un CSV con todas las operaciones, compatible con Excel, SAP u otros sistemas.\n\nTambién puedes ir a **CONFIG** → Exportar CSV.'},
+  {k:['turno','cambio de turno','cierre de turno'],r:'🔄 **Gestión de turnos**\n\nVe a la pestaña **TURNO**. Puedes:\n• Ver el resumen del turno actual\n• Iniciar / cerrar turno\n• Ver quién registró cada operación\n\nAl cerrar el turno, el historial queda disponible para el turno siguiente.'},
+  {k:['tema','color','oscuro','azul','verde','apariencia'],r:'🎨 **Cambiar tema de color**\n\nVe a **CONFIG** → sección Apariencia → elige entre tema Verde, Azul u Oscuro. También puedes ajustar el tamaño del texto (S/M/L).'},
+  {k:['foto','fotografia','fotografía','imagen','escanear','scanner'],r:'📷 **Captura de documentos**\n\nEn la pestaña de Ingreso o Salida, toca el botón **📷 Añadir foto**. Puedes:\n• Tomar foto con la cámara del celular\n• Seleccionar desde galería\n• Después de capturar: rotar, mejorar contraste y recortar\n\nLas fotos se asocian al registro y quedan en el historial.'},
+  {k:['sync','sincronizar','nube','offline','sin internet'],r:'☁️ **Sincronización**\n\nZeroPaper guarda todo localmente en el dispositivo. Cuando hay conexión, sincroniza automáticamente con Firebase. Si no hay internet, sigue funcionando — se sube cuando vuelve la señal.'},
+  {k:['hola','buenos','buenas','hey'],r:'¡Hola! Soy el asistente IA de ZeroPaper 🤖\n\nPuedo ayudarte a:\n• **Buscar** operaciones por patente, empresa o folio\n• **Explicar** términos portuarios (EIR, DAM, DUS, Intercheck...)\n• **Guiarte** en el uso de la app\n\n¿Qué necesitas?'},
+];
+
+let _zpChatHistory = [];
+
+function renderIA() {
+  const msgs = document.getElementById('zpMsgs');
+  if (!msgs) return;
+  if (_zpChatHistory.length === 0) {
+    zpAddMsg('bot', '¡Hola! Soy el asistente IA de ZeroPaper 🤖\n\nPuedo buscar operaciones en tu historial, explicar términos portuarios o ayudarte con la app.\n\n¿Qué necesitas?');
+  } else {
+    msgs.innerHTML = '';
+    _zpChatHistory.forEach(m => zpRenderMsg(m.role, m.text));
+  }
+}
+
+function zpAddMsg(role, text) {
+  _zpChatHistory.push({ role, text });
+  zpRenderMsg(role, text);
+}
+
+function zpRenderMsg(role, text) {
+  const msgs = document.getElementById('zpMsgs');
+  if (!msgs) return;
+  const d = document.createElement('div');
+  const isBot = role === 'bot';
+  d.style.cssText = `align-self:${isBot?'flex-start':'flex-end'};max-width:90%;background:${isBot?'var(--bg3)':'var(--g1)'};color:var(--fg);border-radius:${isBot?'4px 14px 14px 14px':'14px 14px 4px 14px'};padding:10px 14px;font-size:13px;line-height:1.6;white-space:pre-wrap;border:1px solid ${isBot?'var(--brd)':'transparent'}`;
+  d.innerHTML = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/_(.*?)_/g,'<em>$1</em>');
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function zpSend() {
+  const inp = document.getElementById('zpInput');
+  const q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+  zpAsk(q);
+}
+
+async function zpAsk(q) {
+  zpAddMsg('user', q);
+  const ql = q.toLowerCase();
+
+  // ── 1. Búsqueda local por patente
+  const plateMatch = q.match(/\b([A-ZÁÉÍÓÚ]{2,4}[-·\s]?\d{2,4})\b/i);
+  if (plateMatch) { await zpSearchOps(plateMatch[1].toUpperCase()); return; }
+
+  // ── 2. Resumen local del día
+  if (ql.includes('hoy') || ql.includes('resumen') || (ql.includes('turno') && ql.includes('cuánto'))) {
+    await zpResumenHoy(); return;
+  }
+
+  // ── 3. Claude via /api/chat con streaming
+  await zpCallIA(q);
+}
+
+async function zpCallIA(q) {
+  const msgs = document.getElementById('zpMsgs');
+  if (!msgs) return;
+
+  // Historial para la API (últimos 8, sin el mensaje actual)
+  const history = _zpChatHistory.slice(-9, -1)
+    .filter(m => m.role === 'user' || m.role === 'bot')
+    .map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
+
+  // Contexto local resumido
+  let ctx = '';
+  try {
+    const ops = await dbGetAll('ops');
+    const hoy = new Date().toLocaleDateString('es-CL');
+    const todayCount = ops.filter(o => o.fecha === hoy).length;
+    ctx = ` [Contexto: ${ops.length} ops totales, ${todayCount} hoy]`;
+  } catch {}
+
+  const messages = [...history, { role: 'user', content: q + ctx }];
+
+  // Burbuja de streaming
+  const bubble = document.createElement('div');
+  const isBot = true;
+  bubble.style.cssText = `align-self:flex-start;max-width:90%;background:var(--bg3);color:var(--fg);border-radius:4px 14px 14px 14px;padding:10px 14px;font-size:13px;line-height:1.6;white-space:pre-wrap;border:1px solid var(--brd)`;
+  bubble.innerHTML = '<span style="opacity:.5">⏳ pensando...</span>';
+  msgs.appendChild(bubble);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  function render(text) {
+    const tmp = document.createElement('div');
+    tmp.textContent = text;
+    bubble.innerHTML = tmp.innerHTML
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/_(.*?)_/g,'<em>$1</em>');
+  }
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages })
+    });
+
+    if (!res.ok) {
+      render(res.status === 500
+        ? '⚠️ El asistente IA no tiene créditos. Contacta al administrador.'
+        : 'Error al conectar con el asistente. Intenta nuevamente.');
+      _zpChatHistory.push({ role: 'bot', text: bubble.textContent });
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '', fullText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') break;
+        try {
+          const ev = JSON.parse(data);
+          if (ev.text)   { fullText += ev.text; render(fullText + '▋'); msgs.scrollTop = msgs.scrollHeight; }
+          if (ev.status) { bubble.innerHTML = `<span style="opacity:.6">${ev.status}</span>`; }
+          if (ev.error)  { render(ev.error); }
+        } catch {}
+      }
+    }
+    render(fullText || '...');
+    _zpChatHistory.push({ role: 'bot', text: fullText });
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch {
+    render('Sin conexión. Intenta cuando tengas internet.');
+    _zpChatHistory.push({ role: 'bot', text: bubble.textContent });
+  }
+}
+
+async function zpSearchOps(term) {
+  zpAddMsg('bot', `🔍 Buscando "${term}" en el historial...`);
+  try {
+    const ops = await dbGetAll('ops');
+    const t = term.toLowerCase().replace(/[-·\s]/g,'');
+    const found = ops.filter(o => {
+      const fields = [o.plate,o.empresa,o.empresaNombre,o.folio,o.docType,o.operador,o.destinatario,o.conductor,o.contenedor,o.guia,o.sello,o.obs,o.depto,o.deptoNombre,o.fecha].filter(Boolean);
+      return fields.some(f => f.toString().toLowerCase().replace(/[-·\s]/g,'').includes(t));
+    }).sort((a,b) => (b.ts||0)-(a.ts||0)).slice(0,8);
+
+    if (!found.length) {
+      zpAddMsg('bot', `No encontré operaciones con "${term}".\n\nVerifica que el texto esté correcto o ve al **HISTORIAL** para buscar manualmente.`);
+      return;
+    }
+
+    const lines = found.map(o =>
+      `• **${o.tipo}** · ${o.plate||'?'} · ${(o.docType||'').replace(/_/g,' ')} · ${o.fecha||''} ${o.hora||''}\n  Empresa: ${o.empresaNombre||o.empresa||'—'} · Op: ${o.operador||'—'}${o.folio?' · Folio: '+o.folio:''}`
+    ).join('\n\n');
+
+    zpAddMsg('bot', `✅ ${found.length} operación(es) encontrada(s) para "${term}":\n\n${lines}\n\nVe al **HISTORIAL** para ver detalles y fotos.`);
+  } catch(e) {
+    zpAddMsg('bot', 'Error al acceder al historial. Intenta desde la pestaña HISTORIAL.');
+  }
+}
+
+async function zpResumenHoy() {
+  try {
+    const ops = await dbGetAll('ops');
+    const hoy = new Date().toLocaleDateString('es-CL');
+    const todayOps = ops.filter(o => o.fecha === hoy);
+    if (!todayOps.length) {
+      zpAddMsg('bot', `📅 **Hoy (${hoy})** no hay operaciones registradas aún.`);
+      return;
+    }
+    const ingresos = todayOps.filter(o=>o.tipo==='INGRESO').length;
+    const salidas  = todayOps.filter(o=>o.tipo==='SALIDA').length;
+    const conFoto  = todayOps.filter(o=>o.fotoIds?.length||o.fotoId).length;
+    const docs = {};
+    todayOps.forEach(o => { if(o.docType) docs[o.docType]=(docs[o.docType]||0)+1; });
+    const topDoc = Object.entries(docs).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([d,n])=>`${d.replace(/_/g,' ')} (${n})`).join(', ');
+    zpAddMsg('bot', `📅 **Resumen de hoy — ${hoy}**\n\n📥 Ingresos: **${ingresos}**\n📤 Salidas: **${salidas}**\n📷 Con foto: ${conFoto}\n📊 Total: **${todayOps.length}**\n\n📋 Documentos más registrados: ${topDoc||'—'}`);
+  } catch(e) {
+    zpAddMsg('bot', 'No pude cargar el resumen. Intenta de nuevo.');
+  }
+}
+
+function zpClearChat() {
+  _zpChatHistory = [];
+  const msgs = document.getElementById('zpMsgs');
+  if (msgs) msgs.innerHTML = '';
+  zpAddMsg('bot', '¡Hola de nuevo! ¿En qué puedo ayudarte?');
+}
+
+// ══════════════════════════════════════
+//  DEMO
+// ══════════════════════════════════════
 
 async function accesoDemoRapido() {
   const btn = document.querySelector('#loginScreen .auth-demo-btn');
   if (btn) { btn.textContent = '⏳ Preparando demo...'; btn.disabled = true; }
+  const DEMO_EMAIL  = 'demo@zeropaper.cl';
+  const DEMO_UID    = 'demo_zeropaper_cl';
+  const DEMO_EMP_ID = 'emp_demo0001';
+  const DEMO_EMP    = 'Puerto Demo — ZeroPaper';
   session = {
-    uid:'demo_zeropaper_cl', email:'demo@zeropaper.cl', localToken:genToken(),
-    expiresAt:Date.now()+12*3600*1000, nombre:'Operador Demo',
-    empresaId:'emp_demo0001', empresaNombre:'Puerto Demo — ZeroPaper', rol:'admin'
+    uid: DEMO_UID, email: DEMO_EMAIL, localToken: genToken(),
+    expiresAt: Date.now() + 12 * 3600 * 1000,
+    nombre: 'Operador Demo', empresaId: DEMO_EMP_ID, empresaNombre: DEMO_EMP, rol: 'admin'
   };
   saveSession();
   if (!db) await initDB();
   const existing = await getOpsEmpresa();
-  if (!existing.length) await _seedDemoOps('emp_demo0001','Puerto Demo — ZeroPaper');
-  iniciarApp(); await renderHome();
-  turnoInicio = localStorage.getItem(K_TURNO)||new Date().toISOString();
-  if (!localStorage.getItem(K_TURNO)) localStorage.setItem(K_TURNO,turnoInicio);
-  sincronizarDeptos(); startPolling();
-  if (btn) { btn.textContent='⚡ ACCESO DEMO — Sin registro'; btn.disabled=false; }
+  if (!existing.length) await _seedDemoOps(DEMO_EMP_ID, DEMO_EMP);
+  iniciarApp();
+  await renderHome();
+  turnoInicio = localStorage.getItem(K_TURNO) || new Date().toISOString();
+  if (!localStorage.getItem(K_TURNO)) localStorage.setItem(K_TURNO, turnoInicio);
+  sincronizarDeptos();
+  startPolling();
+  if (btn) { btn.textContent = '⚡ ACCESO DEMO — Sin registro'; btn.disabled = false; }
 }
-async function _seedDemoOps(empId,empNombre) {
-  const now=Date.now();
-  const seed=[
+
+async function _seedDemoOps(empId, empNombre) {
+  const now = Date.now();
+  const seed = [
     {plate:'BDZK-56',tipo:'INGRESO',docType:'EIR',folio:'EIR-00234',depto:'control',deptoNombre:'Control',obs:'',operador:'Carlos Rojas',offset:5},
     {plate:'HJKL-72',tipo:'INGRESO',docType:'BOOKING',folio:'BK-01872',depto:'control',deptoNombre:'Control',obs:'Contenedor lleno',operador:'María Soto',offset:4},
     {plate:'XMNP-44',tipo:'SALIDA',docType:'EIR',folio:'EIR-00201',depto:'control',deptoNombre:'Control',obs:'',operador:'Carlos Rojas',offset:3},
@@ -2202,14 +2627,18 @@ async function _seedDemoOps(empId,empNombre) {
     {plate:'QQMN-21',tipo:'INGRESO',docType:'GUIA_DESPACHO',folio:'GD-0087',depto:'recepcion',deptoNombre:'Recepción General',obs:'',operador:'Operador Demo',offset:1},
     {plate:'BDZK-56',tipo:'SALIDA',docType:'EIR',folio:'EIR-00234',depto:'control',deptoNombre:'Control',obs:'',operador:'Turno T2',offset:0},
   ];
-  for(let i=0;i<seed.length;i++){
-    const d=seed[i],ts=now-d.offset*2700000,h=new Date(ts);
-    await dbPut('ops',{id:'op_demo_'+i,tipo:d.tipo,plate:d.plate,folio:d.folio,docType:d.docType,obs:d.obs,
-      depto:d.depto,deptoNombre:d.deptoNombre,fecha:h.toLocaleDateString('es-CL'),
-      hora:h.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),ts,
-      uid:'demo_zeropaper_cl',empresaId:empId,empresaNombre:empNombre,
-      operador:d.operador,fotoId:null,fotoIds:[],syncStatus:'synced',estado:'PENDIENTE',
-      logs:[{accion:'CREADO',usuario:d.operador,ts,comentario:''}]});
+  for (let i = 0; i < seed.length; i++) {
+    const d = seed[i];
+    const ts = now - d.offset * 2700000;
+    const h  = new Date(ts);
+    await dbPut('ops', {
+      id:'op_demo_'+i, tipo:d.tipo, plate:d.plate, folio:d.folio, docType:d.docType, obs:d.obs,
+      depto:d.depto, deptoNombre:d.deptoNombre,
+      fecha:h.toLocaleDateString('es-CL'), hora:h.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),
+      ts, uid:'demo_zeropaper_cl', empresaId:empId, empresaNombre:empNombre,
+      operador:d.operador, fotoId:null, fotoIds:[], syncStatus:'synced', estado:'PENDIENTE',
+      logs:[{accion:'CREADO',usuario:d.operador,ts,comentario:''}]
+    });
   }
 }
 
@@ -2228,7 +2657,11 @@ async function init() {
   const tema = localStorage.getItem(K_TEMA);
   if (tema && tema!=='oscuro') document.documentElement.setAttribute('data-theme', tema);
   const font = localStorage.getItem('zp5_font');
-  if (font) document.body.style.fontSize = font+'px';
+  if (font) {
+    const scale = +font === 14 ? 0.88 : +font === 18 ? 1.13 : 1.0;
+    const appEl = document.getElementById('app');
+    if (appEl) appEl.style.zoom = scale;
+  }
 
   // DB
   await initDB();
@@ -2255,6 +2688,7 @@ async function init() {
     sincronizarDeptos();
     startPolling();
   } else {
+    // Auto-demo via URL param ?demo=1
     if (new URLSearchParams(window.location.search).get('demo') === '1') {
       await accesoDemoRapido();
     } else {
