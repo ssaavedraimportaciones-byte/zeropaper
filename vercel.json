@@ -1,9 +1,36 @@
 {
-  "framework": "nextjs",
+  "crons": [
+    { "path": "/api/exportar", "schedule": "0 10 * * 1" },
+    { "path": "/api/reporte",  "schedule": "0 11 1 * *" }
+  ],
   "rewrites": [
-    { "source": "/login",     "destination": "/login.html" },
-    { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/app",       "destination": "/zeropaper_deploy/zeropaper_app.html" },
-    { "source": "/owner",     "destination": "/zeropaper_deploy/zeropaper_owner.html" }
+    { "source": "/",              "destination": "/zeropaper_deploy/zeropaper_landing.html" },
+    { "source": "/login",         "destination": "/zeropaper_deploy/zeropaper_app.html" },
+    { "source": "/app",           "destination": "/zeropaper_deploy/zeropaper_app.html" },
+    { "source": "/zeropaper_app.html", "destination": "/zeropaper_deploy/zeropaper_app.html" },
+    { "source": "/admin",         "destination": "/zeropaper_deploy/zeropaper_admin.html" },
+    { "source": "/owner",         "destination": "/zeropaper_deploy/zeropaper_owner.html" },
+    { "source": "/dashboard",     "destination": "/zeropaper_deploy/zeropaper_owner.html" },
+    { "source": "/negocio",       "destination": "/zeropaper_deploy/zeropaper_negocio.html" },
+    { "source": "/tv",            "destination": "/zeropaper_deploy/zeropaper_tv.html" },
+    { "source": "/certificado",   "destination": "/zeropaper_deploy/zeropaper_certificado.html" },
+    { "source": "/seguimiento",   "destination": "/zeropaper_deploy/zeropaper_seguimiento.html" },
+    { "source": "/soporte",       "destination": "/zeropaper_deploy/zeropaper_soporte.html" }
+  ],
+  "headers": [
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
+    },
+    {
+      "source": "/zeropaper_deploy/(.*)\\.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+      ]
+    }
   ]
 }

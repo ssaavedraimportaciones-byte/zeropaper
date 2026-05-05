@@ -228,20 +228,53 @@ body{background:var(--bg);color:#e8f5ea;font-family:var(--font);min-height:100vh
 
 <script>
 // ── CONFIG ──
-const ADMIN_PASS = 'zeropaper2026';          // cambia esto
+const ADMIN_PASS = 'zeropaper2026';
 const FS_PROXY   = '/api/proxy';
 const K_AUTH     = 'zp_owner_auth';
 
+// ── ANTI-FUERZA BRUTA (panel owner) ──
+const OBF_MAX = 5, OBF_LOCKOUT = 30 * 60 * 1000, K_OBF = 'zp_owner_bf';
+function obfLoad() { try { return JSON.parse(localStorage.getItem(K_OBF)||'{}'); } catch { return {}; } }
+function obfSave(s) { localStorage.setItem(K_OBF, JSON.stringify(s)); }
+function obfCheck() {
+  const st = obfLoad();
+  if (!st.until) return null;
+  if (Date.now() > st.until) { localStorage.removeItem(K_OBF); return null; }
+  return st;
+}
+function obfFail() {
+  const st = obfLoad();
+  st.count = (st.count || 0) + 1;
+  if (st.count >= OBF_MAX) { st.until = Date.now() + OBF_LOCKOUT; st.count = 0; }
+  obfSave(st);
+  return st;
+}
+
 // ── AUTH ──
 function doAuth() {
+  const lock = obfCheck();
+  const err  = document.getElementById('authErr');
+  if (lock) {
+    const mins = Math.ceil((lock.until - Date.now()) / 60000);
+    err.textContent = `Bloqueado por seguridad. Espera ${mins} min.`;
+    err.style.display = 'block';
+    return;
+  }
   const v = document.getElementById('authPass').value;
-  const err = document.getElementById('authErr');
   if (v === ADMIN_PASS) {
+    localStorage.removeItem(K_OBF);
     localStorage.setItem(K_AUTH, '1');
     document.getElementById('authScreen').style.display = 'none';
     document.getElementById('panel').style.display = 'block';
     cargarClientes();
   } else {
+    const att = obfFail();
+    if (att.until > Date.now()) {
+      err.textContent = 'Contraseña incorrecta. Cuenta bloqueada 30 min.';
+    } else {
+      const restantes = OBF_MAX - att.count;
+      err.textContent = `Contraseña incorrecta${restantes > 0 ? ` (${restantes} intentos restantes)` : ''}`;
+    }
     err.style.display = 'block';
     document.getElementById('authPass').value = '';
   }
@@ -255,24 +288,43 @@ if (localStorage.getItem(K_AUTH) === '1') {
   document.getElementById('panel').style.display = 'block';
 }
 
-// ── FIRESTORE ──
+// ── FIRESTORE HELPERS ──
+function toFsDoc(obj) {
+  const fields = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v === null || v === undefined) continue;
+    if (typeof v === 'number')       fields[k] = { integerValue: String(Math.round(v)) };
+    else if (typeof v === 'boolean') fields[k] = { booleanValue: v };
+    else                             fields[k] = { stringValue: String(v) };
+  }
+  return { fields };
+}
+
 async function fsGet(path) {
   const r = await fetch(`${FS_PROXY}?path=${encodeURIComponent(path)}`);
   if (!r.ok) throw new Error(r.status);
   return r.json();
 }
 async function fsList(path) {
-  const r = await fetch(`${FS_PROXY}?path=${encodeURIComponent(path)}&list=1`);
+  const r = await fetch(`${FS_PROXY}?path=${encodeURIComponent(path)}&pageSize=200`);
   if (!r.ok) throw new Error(r.status);
   return r.json();
 }
 async function fsSet(path, data) {
-  const r = await fetch(FS_PROXY, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ path, data }) });
+  const r = await fetch(`${FS_PROXY}?path=${encodeURIComponent(path)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(toFsDoc(data))
+  });
   if (!r.ok) throw new Error(r.status);
   return r.json();
 }
 async function fsPatch(path, data) {
-  const r = await fetch(FS_PROXY, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ path, data }) });
+  const r = await fetch(`${FS_PROXY}?path=${encodeURIComponent(path)}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(toFsDoc(data))
+  });
   if (!r.ok) throw new Error(r.status);
   return r.json();
 }
@@ -430,6 +482,7 @@ function renderClientes() {
       <div class="date-str">${c.creadoEn}</div>
       <div class="row-actions">
         <button class="act-btn" onclick="verDetalle('${c.id}')">Ver</button>
+        <button class="act-btn" style="border-color:#2563eb;color:#60a5fa" onclick="entrarComoAdmin('${c.id}','${c.nombre.replace(/'/g,'&#39;')}','${c.codigo}')">Admin →</button>
         <button class="act-btn danger" onclick="toggleEstado('${c.id}')">${c.estado === 'suspendido' ? 'Activar' : 'Suspender'}</button>
       </div>
     </div>`).join('');
@@ -575,6 +628,47 @@ function showToast(msg) {
 
 // ── INIT ──
 if (localStorage.getItem(K_AUTH) === '1') cargarClientes();
+
+// ── ENTRAR COMO ADMIN (inyecta contexto de empresa en sessionStorage) ──
+function entrarComoAdmin(empresaId, empresaNombre, empresaCodigo) {
+  // admin.html usa localStorage('zp5_admin_session') — debe ser localStorage para compartir entre pestañas
+  localStorage.setItem('zp5_admin_session', JSON.stringify({
+    uid: 'owner_impersonating',
+    email: 'owner@zeropaper.cl',
+    nombre: 'Propietario',
+    empresaId,
+    empresaNombre,
+    rol: 'admin',
+    localToken: 'owner',
+    expiresAt: Date.now() + 8 * 3600 * 1000,
+  }));
+  window.open('/admin', '_blank');
+}
+</script>
+
+<!-- ── ROLE BADGE (unified session) ── -->
+<div id="zp-role-badge" style="position:fixed;top:12px;right:12px;z-index:9999;background:rgba(13,27,42,.92);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 14px;font-family:'JetBrains Mono','Courier New',monospace;font-size:10px;color:#94a3b8;display:none;backdrop-filter:blur(10px);cursor:default;max-width:220px">
+  <div id="zp-rb-role" style="font-weight:700;font-size:9px;letter-spacing:1.5px;margin-bottom:2px"></div>
+  <div id="zp-rb-name" style="color:#f1f5f9;font-weight:600;font-size:11px"></div>
+  <div id="zp-rb-company" style="font-size:9px;margin-top:1px"></div>
+  <div style="margin-top:6px;border-top:1px solid rgba(255,255,255,.08);padding-top:5px;display:flex;gap:10px">
+    <span style="color:#13b48a;cursor:pointer" onclick="window.location.href='/login'">Salir</span>
+    <span style="color:#3b82f6;cursor:pointer" onclick="window.location.href='/'">Inicio</span>
+  </div>
+</div>
+<script>
+(function(){
+  try {
+    const s = JSON.parse(sessionStorage.getItem('zp_unified_session')||'null');
+    if (!s) return;
+    const roleLabels = { owner:'👑 OWNER', jefatura:'🏢 JEFATURA', admin:'🔧 ADMIN', operador:'⚙ OPERADOR', usuario:'👤 USUARIO' };
+    const b = document.getElementById('zp-role-badge');
+    document.getElementById('zp-rb-role').textContent    = roleLabels[s.role] || s.role.toUpperCase();
+    document.getElementById('zp-rb-name').textContent    = s.name || s.email || '';
+    document.getElementById('zp-rb-company').textContent = s.company || '';
+    b.style.display = 'block';
+  } catch {}
+})();
 </script>
 </body>
 </html>

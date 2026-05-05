@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZeroPaper™ — Seguimiento de Vehículo</title>
+<meta name="description" content="Portal de seguimiento en tiempo real — ZeroPaper™">
+<meta name="theme-color" content="#0d0d1a">
+<style>
+:root {
+  --bg:#0d0d1a; --bg2:#13132a; --bg3:#1a1a35;
+  --fg:#e8e8f0; --mu:#6b7280; --brd:rgba(255,255,255,.08);
+  --g:#2D6A4F; --g2:#40916C; --o:#ff6d00; --r:#ef4444;
+  --card:rgba(255,255,255,.04); --mono:'Courier New',monospace;
+  --disp:system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--fg);font-family:var(--disp);min-height:100vh;}
+
+/* HEADER */
+.header{background:var(--bg2);border-bottom:1px solid var(--brd);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.header-brand{font-weight:800;font-size:18px;color:var(--g);}
+.header-sub{font-family:var(--mono);font-size:8px;color:var(--mu);letter-spacing:2px;margin-top:2px;}
+.live-dot{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--mu);}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--g);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* SEARCH */
+.search-section{padding:24px 20px;max-width:600px;margin:0 auto;}
+.search-title{font-size:20px;font-weight:700;margin-bottom:6px;}
+.search-desc{font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:1px;margin-bottom:20px;}
+.search-row{display:flex;gap:10px;}
+.search-inp{flex:1;background:var(--bg2);border:1px solid var(--brd);border-radius:12px;padding:13px 16px;color:var(--fg);font-size:16px;font-family:var(--mono);letter-spacing:2px;text-transform:uppercase;}
+.search-inp:focus{outline:none;border-color:var(--g);}
+.search-inp::placeholder{letter-spacing:1px;text-transform:none;}
+.search-btn{padding:13px 20px;background:linear-gradient(135deg,var(--g),var(--g2));border:none;border-radius:12px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;}
+.search-btn:active{opacity:.8;}
+
+/* RESULT */
+.result-section{padding:0 20px 40px;max-width:600px;margin:0 auto;}
+
+/* PLANTA OVERVIEW */
+.planta-card{background:var(--bg2);border:1px solid var(--brd);border-radius:16px;padding:20px;margin-bottom:20px;}
+.planta-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.planta-title{font-weight:700;font-size:15px;}
+.planta-count{font-family:var(--mono);font-size:11px;color:var(--mu);}
+.plate-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;}
+.plate-chip{background:var(--bg3);border:1px solid var(--brd);border-radius:8px;padding:8px 10px;text-align:center;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .15s;}
+.plate-chip:hover,.plate-chip.active{border-color:var(--g);background:rgba(45,106,79,.1);color:var(--g);}
+
+/* VEHICLE RESULT */
+.vehicle-card{background:var(--bg2);border:1px solid var(--brd);border-radius:16px;overflow:hidden;margin-bottom:20px;}
+.vehicle-header{padding:20px;border-bottom:1px solid var(--brd);}
+.vehicle-plate{font-family:var(--mono);font-size:32px;font-weight:800;letter-spacing:4px;}
+.vehicle-status{display:flex;align-items:center;gap:8px;margin-top:8px;}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:1px;}
+.status-in{background:rgba(45,106,79,.2);color:var(--g2);border:1px solid rgba(45,106,79,.3);}
+.status-out{background:rgba(255,109,0,.15);color:#ff8c00;border:1px solid rgba(255,109,0,.2);}
+.vehicle-time{font-family:var(--mono);font-size:10px;color:var(--mu);margin-top:4px;}
+
+/* TIMELINE */
+.timeline{padding:20px;}
+.timeline-title{font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:2px;margin-bottom:14px;}
+.tl-item{display:flex;gap:14px;margin-bottom:0;}
+.tl-line{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.tl-circle{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.tl-circle-in{background:var(--g2);}
+.tl-circle-out{background:#ff8c00;}
+.tl-bar{width:2px;flex:1;background:var(--brd);min-height:16px;}
+.tl-content{padding-bottom:20px;flex:1;}
+.tl-tipo{font-weight:700;font-size:13px;margin-bottom:2px;}
+.tl-tipo-in{color:var(--g2);}
+.tl-tipo-out{color:#ff8c00;}
+.tl-meta{font-family:var(--mono);font-size:10px;color:var(--mu);line-height:1.8;}
+.tl-doc{display:inline-block;background:var(--bg3);border:1px solid var(--brd);border-radius:4px;padding:1px 6px;font-family:var(--mono);font-size:9px;margin-top:4px;}
+
+/* EMPRESA INFO */
+.empresa-info{background:var(--bg2);border:1px solid var(--brd);border-radius:12px;padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.empresa-icon{font-size:28px;}
+.empresa-name{font-weight:700;font-size:14px;}
+.empresa-sub{font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:1px;margin-top:2px;}
+
+/* EMPTY / ERROR */
+.empty-box{text-align:center;padding:40px 20px;}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+.empty-title{font-weight:700;font-size:16px;margin-bottom:6px;}
+.empty-sub{font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:1px;}
+
+/* REFRESH */
+.refresh-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.refresh-info{font-family:var(--mono);font-size:9px;color:var(--mu);}
+.refresh-btn{font-family:var(--mono);font-size:9px;color:var(--g);background:none;border:none;cursor:pointer;padding:0;}
+
+/* LOADING */
+.loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:40px;font-family:var(--mono);font-size:11px;color:var(--mu);}
+.spinner{width:16px;height:16px;border:2px solid var(--brd);border-top-color:var(--g);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* FOOTER */
+.footer{text-align:center;padding:20px;font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:1px;}
+
+@media(max-width:480px){
+  .search-row{flex-direction:column;}
+  .search-btn{width:100%;}
+  .vehicle-plate{font-size:24px;letter-spacing:3px;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-brand">ZeroPaper™</div>
+    <div class="header-sub">PORTAL DE SEGUIMIENTO</div>
+  </div>
+  <div class="live-dot"><div class="dot"></div><span id="liveLabel">EN VIVO</span></div>
+</div>
+
+<div class="search-section">
+  <div class="search-title">Consulta tu vehículo</div>
+  <div class="search-desc">INGRESA LA PATENTE PARA VER EL ESTADO EN TIEMPO REAL</div>
+  <div class="search-row">
+    <input class="search-inp" id="plateInput" type="text" maxlength="8" placeholder="Ej: ABCD12" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')buscar()">
+    <button class="search-btn" onclick="buscar()">Consultar</button>
+  </div>
+</div>
+
+<div class="result-section" id="resultSection" style="display:none"></div>
+
+<div class="footer">ZeroPaper™ · Sistema de Control Portuario · Chile<br>Actualización automática cada 60 segundos</div>
+
+<script>
+'use strict';
+
+const FB = {
+  projectId: 'zeropaper-prod',
+  apiKey:    'AIzaSyCli7F4hLi-XEmmekGZpO2KQ1SO612I85Y'
+};
+const FS_BASE = `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
+
+let empresaId    = '';
+let empresaNombre= '';
+let empresaCodigo= '';
+let allOps       = [];
+let refreshTimer = null;
+let lastUpdated  = null;
+
+// ── INIT ──
+function init() {
+  const params = new URLSearchParams(location.search);
+  empresaId = params.get('e') || '';
+  if (!empresaId) {
+    showError('Link inválido', 'Este link no contiene información de empresa. Solicita uno nuevo al operador.');
+    return;
+  }
+  cargarEmpresa();
+  cargarOps();
+  startAutoRefresh();
+}
+
+async function cargarEmpresa() {
+  try {
+    const r = await fetch(`${FS_BASE}/empresas/${empresaId}/perfil/datos?key=${FB.apiKey}`);
+    if (!r.ok) return;
+    const d = await r.json();
+    const data = parseFs(d);
+    empresaNombre = data.nombre || data.empresaNombre || 'Empresa';
+    empresaCodigo = data.codigo || '';
+  } catch(e) {}
+}
+
+async function cargarOps() {
+  if (!empresaId) return;
+  try {
+    const r = await fetch(`${FS_BASE}/empresas/${empresaId}/ops?pageSize=500&key=${FB.apiKey}`);
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    allOps = (d.documents || []).map(parseFs).sort((a,b) => (b.ts||0) - (a.ts||0));
+    lastUpdated = new Date();
+    updateLiveLabel();
+
+    // Si hay búsqueda activa, re-renderizar
+    const plate = document.getElementById('plateInput')?.value?.trim().toUpperCase();
+    if (plate && plate.length >= 3) {
+      renderResultado(plate);
+    } else {
+      renderOverview();
+    }
+  } catch(e) {
+    document.getElementById('liveLabel').textContent = 'SIN CONEXIÓN';
+  }
+}
+
+function startAutoRefresh() {
+  clearInterval(refreshTimer);
+  refreshTimer = setInterval(cargarOps, 60000);
+}
+
+function updateLiveLabel() {
+  const el = document.getElementById('liveLabel');
+  if (lastUpdated) {
+    const min = Math.round((Date.now() - lastUpdated.getTime()) / 60000);
+    el.textContent = min === 0 ? 'EN VIVO' : `HACE ${min} MIN`;
+  }
+}
+setInterval(updateLiveLabel, 30000);
+
+// ── FIRESTORE ──
+function parseFs(doc) {
+  if (!doc || !doc.fields) return {};
+  const out = { _id: doc.name?.split('/').pop() };
+  for (const [k, v] of Object.entries(doc.fields)) {
+    if (v.stringValue   !== undefined) out[k] = v.stringValue;
+    else if (v.integerValue !== undefined) out[k] = parseInt(v.integerValue);
+    else if (v.booleanValue !== undefined) out[k] = v.booleanValue;
+    else if (v.doubleValue  !== undefined) out[k] = parseFloat(v.doubleValue);
+  }
+  return out;
+}
+
+// ── BUSCAR ──
+function buscar() {
+  const plate = document.getElementById('plateInput')?.value?.trim().toUpperCase();
+  if (!plate || plate.length < 2) return;
+  if (!allOps.length) {
+    document.getElementById('resultSection').style.display = 'block';
+    document.getElementById('resultSection').innerHTML = `<div class="loading"><div class="spinner"></div>Consultando...</div>`;
+    cargarOps().then(() => renderResultado(plate));
+    return;
+  }
+  renderResultado(plate);
+}
+
+function renderResultado(plate) {
+  const section = document.getElementById('resultSection');
+  section.style.display = 'block';
+
+  const opsVehiculo = allOps.filter(o => (o.plate||'').toUpperCase() === plate);
+
+  if (!opsVehiculo.length) {
+    section.innerHTML = `
+      <div class="empresa-info">
+        <div class="empresa-icon">🏗</div>
+        <div>
+          <div class="empresa-name">${escH(empresaNombre || 'Empresa')}</div>
+          <div class="empresa-sub">SISTEMA DE CONTROL PORTUARIO</div>
+        </div>
+      </div>
+      <div class="empty-box">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">Vehículo no encontrado</div>
+        <div class="empty-sub" style="margin-top:6px">Patente <strong>${escH(plate)}</strong> sin registros en este sistema</div>
+      </div>`;
+    return;
+  }
+
+  const sorted  = [...opsVehiculo].sort((a,b) => (b.ts||0) - (a.ts||0));
+  const ultimo  = sorted[0];
+  const enPlanta = calcularEnPlanta(opsVehiculo);
+
+  const statusHtml = enPlanta
+    ? `<div class="status-badge status-in">⬤ EN PLANTA</div>`
+    : `<div class="status-badge status-out">◯ RETIRADO</div>`;
+
+  const ultimaAct = ultimo.fecha
+    ? `Último registro: ${ultimo.fecha} ${ultimo.hora||''}`
+    : '';
+
+  // Timeline
+  const timelineItems = sorted.slice(0, 20).map((op, i) => {
+    const isIn  = op.tipo === 'INGRESO';
+    const isLast = i === sorted.slice(0,20).length - 1;
+    return `<div class="tl-item">
+      <div class="tl-line">
+        <div class="tl-circle ${isIn?'tl-circle-in':'tl-circle-out'}"></div>
+        ${!isLast ? '<div class="tl-bar"></div>' : ''}
+      </div>
+      <div class="tl-content">
+        <div class="tl-tipo ${isIn?'tl-tipo-in':'tl-tipo-out'}">${op.tipo}</div>
+        <div class="tl-meta">
+          ${op.fecha||'—'} ${op.hora||''}<br>
+          ${op.deptoNombre||op.depto||''} ${op.operador ? '· '+op.operador : ''}
+        </div>
+        ${op.docType ? `<div class="tl-doc">${op.docType.replace(/_/g,' ')}</div>` : ''}
+        ${op.folio ? `<div class="tl-doc">FOLIO ${op.folio}</div>` : ''}
+        ${op.obs ? `<div style="font-family:var(--mono);font-size:10px;color:var(--mu);margin-top:4px">${escH(op.obs)}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  const lastRefresh = lastUpdated
+    ? `Actualizado ${lastUpdated.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})}`
+    : '';
+
+  section.innerHTML = `
+    <div class="empresa-info">
+      <div class="empresa-icon">🏗</div>
+      <div>
+        <div class="empresa-name">${escH(empresaNombre || 'Empresa')}</div>
+        <div class="empresa-sub">SISTEMA DE CONTROL PORTUARIO</div>
+      </div>
+    </div>
+
+    <div class="refresh-row">
+      <div class="refresh-info">${lastRefresh}</div>
+      <button class="refresh-btn" onclick="cargarOps()">↻ Actualizar</button>
+    </div>
+
+    <div class="vehicle-card">
+      <div class="vehicle-header">
+        <div class="vehicle-plate">${escH(plate)}</div>
+        <div class="vehicle-status">${statusHtml}</div>
+        <div class="vehicle-time">${ultimaAct}</div>
+      </div>
+      <div class="timeline">
+        <div class="timeline-title">HISTORIAL DE MOVIMIENTOS</div>
+        ${timelineItems}
+        ${opsVehiculo.length > 20 ? `<div style="font-family:var(--mono);font-size:9px;color:var(--mu);text-align:center;margin-top:8px">Mostrando 20 de ${opsVehiculo.length} registros</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderOverview() {
+  const section = document.getElementById('resultSection');
+  const enPlanta = calcularEnPlantaLista(allOps);
+  if (!enPlanta.length) return;
+
+  section.style.display = 'block';
+
+  const chips = enPlanta.map(p =>
+    `<div class="plate-chip" onclick="selectPlate('${p}')">${escH(p)}</div>`
+  ).join('');
+
+  section.innerHTML = `
+    <div class="empresa-info">
+      <div class="empresa-icon">🏗</div>
+      <div>
+        <div class="empresa-name">${escH(empresaNombre || 'Empresa')}</div>
+        <div class="empresa-sub">SISTEMA DE CONTROL PORTUARIO</div>
+      </div>
+    </div>
+    <div class="planta-card">
+      <div class="planta-header">
+        <div class="planta-title">Vehículos en planta ahora</div>
+        <div class="planta-count">${enPlanta.length} vehículo${enPlanta.length !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="plate-grid">${chips}</div>
+    </div>`;
+}
+
+function selectPlate(plate) {
+  document.getElementById('plateInput').value = plate;
+  renderResultado(plate);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── CÁLCULOS ──
+function calcularEnPlanta(ops) {
+  const sorted = [...ops].sort((a,b) => (a.ts||0) - (b.ts||0));
+  let pendientes = 0;
+  for (const op of sorted) {
+    if (op.tipo === 'INGRESO') pendientes++;
+    else if (op.tipo === 'SALIDA') pendientes = Math.max(0, pendientes - 1);
+  }
+  return pendientes > 0;
+}
+
+function calcularEnPlantaLista(ops) {
+  const map = {};
+  const sorted = [...ops].sort((a,b) => (a.ts||0) - (b.ts||0));
+  for (const op of sorted) {
+    if (!op.plate) continue;
+    const p = op.plate.toUpperCase();
+    if (op.tipo === 'INGRESO')     map[p] = (map[p]||0) + 1;
+    else if (op.tipo === 'SALIDA') map[p] = Math.max(0, (map[p]||0) - 1);
+  }
+  return Object.entries(map).filter(([,v]) => v > 0).map(([p]) => p);
+}
+
+function showError(title, sub) {
+  const section = document.getElementById('resultSection');
+  section.style.display = 'block';
+  section.innerHTML = `
+    <div class="empty-box">
+      <div class="empty-icon">⚠️</div>
+      <div class="empty-title">${escH(title)}</div>
+      <div class="empty-sub" style="margin-top:8px">${escH(sub)}</div>
+    </div>`;
+}
+
+function escH(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── BOOT ──
+init();
+</script>
+</body>
+</html>
