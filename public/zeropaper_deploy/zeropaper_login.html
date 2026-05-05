@@ -9,10 +9,10 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#0d1b2a;--bg2:#152538;--bg3:#1f3349;
-  --fg:#f1f5f9;--fg2:#cbd5e1;--mu:#94a3b8;--brd:rgba(255,255,255,.1);
-  --g:#0d7c66;--g1:#10a37f;--g2:#13b48a;
-  --b:#2563eb;--b2:#3b82f6;--r:#ef4444;
+  --bg:#061a0a;--bg2:#0b2811;--bg3:#123318;
+  --fg:#f0fff4;--fg2:#d1fae5;--mu:#6ee7b7;--brd:rgba(74,222,128,.13);
+  --g:#15803d;--g1:#16a34a;--g2:#22c55e;
+  --b:#0891b2;--b2:#22d3ee;--r:#ef4444;
   --mono:'JetBrains Mono','Courier New',monospace;
   --disp:'Inter',system-ui,-apple-system,sans-serif;
   --radius:16px;--ease:cubic-bezier(.4,0,.2,1);
@@ -55,15 +55,18 @@ body{display:flex;align-items:center;justify-content:center;padding:24px;min-hei
 <body>
 <div class="wrap">
   <div class="logo">
-    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:76px;height:76px;margin-bottom:12px">
-      <defs><linearGradient id="lg0" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0D3D8A"/><stop offset="100%" stop-color="#1976D2"/></linearGradient></defs>
-      <polygon points="32,3 58,17 58,47 32,61 6,47 6,17" fill="url(#lg0)" stroke="#2196F3" stroke-width="1.5"/>
-      <rect x="20" y="15" width="24" height="30" rx="3" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
-      <line x1="25" y1="23" x2="39" y2="23" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.95"/>
-      <line x1="25" y1="29" x2="39" y2="29" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.95"/>
-      <line x1="25" y1="35" x2="33" y2="35" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.95"/>
-      <circle cx="46" cy="47" r="11" fill="#21C55D" stroke="#0c1a2e" stroke-width="2"/>
-      <polyline points="41,47 44.5,51 51,43" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:80px;height:80px;margin-bottom:14px">
+      <defs><linearGradient id="eco0" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#052e16"/><stop offset="55%" stop-color="#15803d"/><stop offset="100%" stop-color="#16a34a"/></linearGradient></defs>
+      <polygon points="32,3 58,17 58,47 32,61 6,47 6,17" fill="url(#eco0)" stroke="#4ade80" stroke-width="1.5"/>
+      <rect x="20" y="14" width="24" height="30" rx="3" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+      <line x1="25" y1="22" x2="39" y2="22" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="25" y1="28" x2="39" y2="28" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="25" y1="34" x2="33" y2="34" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="46" cy="47" r="11" fill="#22c55e" stroke="#052e16" stroke-width="2"/>
+      <path d="M46,38 C39,40 37,52 46,55 C55,52 53,40 46,38Z" fill="#052e16" opacity="0.85"/>
+      <path d="M46,38 C41,41 40,51 46,55 C52,51 51,41 46,38Z" fill="#86efac" opacity="0.5"/>
+      <line x1="46" y1="55" x2="46" y2="47" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="46" y1="43" x2="50" y2="47" stroke="#4ade80" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
     </svg>
     <div class="logo-mark">ZeroPaper<span class="logo-tm">™</span></div>
     <div class="logo-sub">GESTIÓN PORTUARIA DIGITAL</div>

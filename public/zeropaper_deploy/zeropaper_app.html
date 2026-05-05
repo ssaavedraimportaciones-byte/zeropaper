@@ -16,15 +16,17 @@
 <style>
 /* ══ TEMAS ══ */
 :root {
-  --bg:#0c1a2e; --bg2:#132240; --bg3:#1c3055;
-  --fg:#f0f6ff; --fg2:#c8d8ee; --mu:#8aa6c4; --brd:rgba(100,160,255,.12);
-  --g:#0e6fbe; --g1:#1a80d4; --g2:#2196f3; --g3:#7ec8ff; --o:#f59e0b; --o2:#fbbf24;
-  --b:#2563eb; --b2:#3b82f6; --r:#ef4444; --y:#eab308;
-  --nav:rgba(12,26,46,.97); --card:rgba(33,150,243,.05);
-  --glass:rgba(33,150,243,.06); --glass-brd:rgba(100,160,255,.14);
-  --shadow:0 4px 24px rgba(0,0,0,.5);
-  --shadow-sm:0 2px 8px rgba(0,0,0,.35);
-  --shadow-glow:0 0 24px rgba(33,150,243,.22);
+  /* ── Paleta Ambiental ZeroPaper™ ── */
+  --bg:#061a0a; --bg2:#0b2811; --bg3:#123318;
+  --fg:#f0fff4; --fg2:#d1fae5; --mu:#6ee7b7; --brd:rgba(74,222,128,.13);
+  --g:#15803d; --g1:#16a34a; --g2:#22c55e; --g3:#86efac;
+  --o:#f59e0b; --o2:#fbbf24;
+  --b:#0891b2; --b2:#22d3ee; --r:#ef4444; --y:#eab308;
+  --nav:rgba(6,26,10,.97); --card:rgba(34,197,94,.05);
+  --glass:rgba(34,197,94,.07); --glass-brd:rgba(74,222,128,.15);
+  --shadow:0 4px 24px rgba(0,0,0,.55);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.4);
+  --shadow-glow:0 0 28px rgba(74,222,128,.25);
   --mono:'JetBrains Mono','Courier New',monospace;
   --disp:'Inter',system-ui,-apple-system,sans-serif;
   --radius:16px; --radius-lg:22px; --radius-sm:10px; --pad:16px;
@@ -187,12 +189,12 @@ nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px
 .act-btn:active{transform:scale(.95);}
 .act-btn::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--x,50%) var(--y,50%),rgba(255,255,255,.14) 0%,transparent 60%);opacity:0;transition:opacity .3s;}
 .act-btn:hover::after{opacity:1;}
-.ab-g{background:linear-gradient(140deg,#0d3d8a,#1565c0,#1976d2);border:1px solid rgba(33,150,243,.35);box-shadow:0 6px 24px rgba(21,101,192,.25);}
-.ab-o{background:linear-gradient(140deg,#7b3e00,#b85a00,#e65100);border:1px solid rgba(255,160,0,.35);box-shadow:0 6px 24px rgba(230,81,0,.2);}
+.ab-g{background:linear-gradient(140deg,#052e16,#15803d,#16a34a);border:1px solid rgba(74,222,128,.35);box-shadow:0 6px 24px rgba(21,128,61,.3);}
+.ab-o{background:linear-gradient(140deg,#7c2d12,#c2410c,#ea580c);border:1px solid rgba(251,146,60,.35);box-shadow:0 6px 24px rgba(194,65,12,.25);}
 .ab-icon{font-size:34px;margin-bottom:10px;display:block;}
 .ab-label{font-family:var(--disp);font-size:12px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.7);display:block;text-transform:uppercase;}
 .ab-title{font-weight:900;font-size:20px;display:block;margin-top:5px;letter-spacing:-.3px;}
-.cg{color:var(--g2);} .co{color:var(--o2);}
+.cg{color:#86efac;} .co{color:#fed7aa;}
 
 /* ══ ESCANEAR ══ */
 .scan-zone{background:var(--card);border:2px dashed var(--brd);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;margin-bottom:12px;transition:all .2s var(--ease);}
@@ -390,20 +392,24 @@ nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px
 <div class="auth-screen" id="loginScreen">
   <div class="auth-box">
     <div class="auth-logo">
-      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:72px;height:72px;margin-bottom:12px">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:80px;height:80px;margin-bottom:14px">
         <defs>
-          <linearGradient id="lg1" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#0D3D8A"/>
-            <stop offset="100%" stop-color="#1976D2"/>
+          <linearGradient id="eco1" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#052e16"/>
+            <stop offset="55%" stop-color="#15803d"/>
+            <stop offset="100%" stop-color="#16a34a"/>
           </linearGradient>
         </defs>
-        <polygon points="32,3 58,17 58,47 32,61 6,47 6,17" fill="url(#lg1)" stroke="#2196F3" stroke-width="1.5"/>
-        <rect x="20" y="15" width="24" height="30" rx="3" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
-        <line x1="25" y1="23" x2="39" y2="23" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.95"/>
-        <line x1="25" y1="29" x2="39" y2="29" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.95"/>
-        <line x1="25" y1="35" x2="33" y2="35" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.95"/>
-        <circle cx="46" cy="47" r="11" fill="#21C55D" stroke="#0c1a2e" stroke-width="2"/>
-        <polyline points="41,47 44.5,51 51,43" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <polygon points="32,3 58,17 58,47 32,61 6,47 6,17" fill="url(#eco1)" stroke="#4ade80" stroke-width="1.5"/>
+        <rect x="20" y="14" width="24" height="30" rx="3" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+        <line x1="25" y1="22" x2="39" y2="22" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="25" y1="28" x2="39" y2="28" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="25" y1="34" x2="33" y2="34" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="46" cy="47" r="11" fill="#22c55e" stroke="#052e16" stroke-width="2"/>
+        <path d="M46,38 C39,40 37,52 46,55 C55,52 53,40 46,38Z" fill="#052e16" opacity="0.85"/>
+        <path d="M46,38 C41,41 40,51 46,55 C52,51 51,41 46,38Z" fill="#86efac" opacity="0.5"/>
+        <line x1="46" y1="55" x2="46" y2="47" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="46" y1="43" x2="50" y2="47" stroke="#4ade80" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
       </svg>
       <div class="auth-logo-title">ZeroPaper<span class="auth-logo-tm">™</span></div>
       <div class="auth-logo-sub">GESTIÓN PORTUARIA DIGITAL</div>
@@ -449,14 +455,16 @@ nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px
 <div class="topbar">
   <div class="zp-logo-wrap">
     <svg id="zpLogoSvg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px;flex-shrink:0">
-      <defs><linearGradient id="lg2" x1="4" y1="2" x2="36" y2="38" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0D3D8A"/><stop offset="100%" stop-color="#1976D2"/></linearGradient></defs>
-      <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="url(#lg2)" stroke="#2196F3" stroke-width="1"/>
-      <rect x="13" y="10" width="14" height="18" rx="2" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.85)" stroke-width="1.4"/>
-      <line x1="16" y1="16" x2="24" y2="16" stroke="white" stroke-width="1.3" stroke-linecap="round" opacity="0.9"/>
-      <line x1="16" y1="20" x2="24" y2="20" stroke="white" stroke-width="1.3" stroke-linecap="round" opacity="0.9"/>
-      <line x1="16" y1="24" x2="21" y2="24" stroke="white" stroke-width="1.3" stroke-linecap="round" opacity="0.9"/>
-      <circle cx="29" cy="30" r="7" fill="#21C55D" stroke="#0c1a2e" stroke-width="1.5"/>
-      <polyline points="26,30 28.5,32.5 32,27.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <defs><linearGradient id="eco2" x1="4" y1="2" x2="36" y2="38" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#052e16"/><stop offset="100%" stop-color="#16a34a"/></linearGradient></defs>
+      <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="url(#eco2)" stroke="#4ade80" stroke-width="1"/>
+      <rect x="13" y="9" width="14" height="19" rx="2" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.85)" stroke-width="1.4"/>
+      <line x1="16" y1="15" x2="24" y2="15" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+      <line x1="16" y1="19" x2="24" y2="19" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+      <line x1="16" y1="23" x2="21" y2="23" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+      <circle cx="29" cy="30" r="7" fill="#22c55e" stroke="#052e16" stroke-width="1.5"/>
+      <path d="M29,24 C25,26 24,33 29,35 C34,33 33,26 29,24Z" fill="#052e16" opacity="0.85"/>
+      <path d="M29,24 C26,26 26,33 29,35 C32,33 32,26 29,24Z" fill="#86efac" opacity="0.5"/>
+      <line x1="29" y1="35" x2="29" y2="30" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
     </svg>
     <img id="empresaLogoImg" class="zp-logo-img" alt="" hidden>
     <div style="display:flex;flex-direction:column;min-width:0;gap:0">
@@ -3135,26 +3143,28 @@ document.addEventListener('DOMContentLoaded', init);
 
     const gate = document.createElement('div');
     gate.id = 'zp-pwa-gate';
-    gate.style.cssText = `position:fixed;inset:0;background:#0c1a2e;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;font-family:'Inter',sans-serif;`;
+    gate.style.cssText = `position:fixed;inset:0;background:#061a0a;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;font-family:'Inter',sans-serif;`;
     gate.innerHTML = `
-      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:80px;height:80px;margin-bottom:20px">
-        <defs><linearGradient id="lg3" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0D3D8A"/><stop offset="100%" stop-color="#1976D2"/></linearGradient></defs>
-        <polygon points="32,3 58,17 58,47 32,61 6,47 6,17" fill="url(#lg3)" stroke="#2196F3" stroke-width="1.5"/>
-        <rect x="20" y="15" width="24" height="30" rx="3" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
-        <line x1="25" y1="23" x2="39" y2="23" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-        <line x1="25" y1="29" x2="39" y2="29" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-        <line x1="25" y1="35" x2="33" y2="35" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-        <circle cx="46" cy="47" r="11" fill="#21C55D" stroke="#0c1a2e" stroke-width="2"/>
-        <polyline points="41,47 44.5,51 51,43" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:88px;height:88px;margin-bottom:20px">
+        <defs><linearGradient id="eco3" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#052e16"/><stop offset="55%" stop-color="#15803d"/><stop offset="100%" stop-color="#16a34a"/></linearGradient></defs>
+        <polygon points="32,3 58,17 58,47 32,61 6,47 6,17" fill="url(#eco3)" stroke="#4ade80" stroke-width="1.5"/>
+        <rect x="20" y="14" width="24" height="30" rx="3" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+        <line x1="25" y1="22" x2="39" y2="22" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="25" y1="28" x2="39" y2="28" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="25" y1="34" x2="33" y2="34" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="46" cy="47" r="11" fill="#22c55e" stroke="#052e16" stroke-width="2"/>
+        <path d="M46,38 C39,40 37,52 46,55 C55,52 53,40 46,38Z" fill="#052e16" opacity="0.85"/>
+        <path d="M46,38 C41,41 40,51 46,55 C52,51 51,41 46,38Z" fill="#86efac" opacity="0.5"/>
+        <line x1="46" y1="55" x2="46" y2="47" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
-      <div style="color:#f0f6ff;font-size:26px;font-weight:900;letter-spacing:-1px;margin-bottom:8px">ZeroPaper™</div>
-      <div style="color:#8aa6c4;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;margin-bottom:28px">GESTIÓN PORTUARIA DIGITAL</div>
-      <div style="color:#c8d8ee;font-size:16px;font-weight:600;margin-bottom:10px">Este sistema solo funciona<br>como aplicación instalada</div>
-      <div style="color:#8aa6c4;font-size:13px;margin-bottom:28px;line-height:1.6">Instala ZeroPaper™ en tu dispositivo<br>para acceder al sistema.</div>
-      <button id="zpInstallBtn" style="background:linear-gradient(135deg,#0e6fbe,#2196f3);color:#fff;border:none;border-radius:14px;padding:18px 32px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.5px;box-shadow:0 4px 20px rgba(33,150,243,.35);" onclick="zpInstalar()">
+      <div style="color:#f0fff4;font-size:26px;font-weight:900;letter-spacing:-1px;margin-bottom:8px">ZeroPaper™</div>
+      <div style="color:#6ee7b7;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;margin-bottom:28px">GESTIÓN PORTUARIA · ECO DIGITAL</div>
+      <div style="color:#d1fae5;font-size:16px;font-weight:600;margin-bottom:10px">Este sistema solo funciona<br>como aplicación instalada</div>
+      <div style="color:#6ee7b7;font-size:13px;margin-bottom:28px;line-height:1.6">Instala ZeroPaper™ en tu dispositivo<br>para acceder al sistema.</div>
+      <button id="zpInstallBtn" style="background:linear-gradient(135deg,#15803d,#22c55e);color:#fff;border:none;border-radius:14px;padding:18px 32px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.5px;box-shadow:0 4px 20px rgba(34,197,94,.35);" onclick="zpInstalar()">
         📲 Instalar ZeroPaper™
       </button>
-      <div style="margin-top:16px;color:#8aa6c4;font-size:12px">iOS Safari: <strong style="color:#c8d8ee">Compartir →</strong> Agregar a inicio<br>Android Chrome: menú <strong style="color:#c8d8ee">⋮ → Instalar app</strong></div>
+      <div style="margin-top:16px;color:#6ee7b7;font-size:12px">iOS Safari: <strong style="color:#d1fae5">Compartir →</strong> Agregar a inicio<br>Android Chrome: menú <strong style="color:#d1fae5">⋮ → Instalar app</strong></div>
     `;
     document.body.appendChild(gate);
 
