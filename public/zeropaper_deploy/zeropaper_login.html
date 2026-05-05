@@ -47,6 +47,9 @@ body{display:flex;align-items:center;justify-content:center;padding:24px;min-hei
 .role-operador{color:var(--g2);}
 .role-usuario{color:var(--mu);}
 .loading{display:none;text-align:center;font-family:var(--mono);font-size:11px;color:var(--mu);margin-top:10px;letter-spacing:1px;}
+.inp{font-size:16px;}
+.btn{font-size:16px;padding:18px;}
+.box-title{font-size:22px;}
 </style>
 </head>
 <body>
@@ -65,27 +68,6 @@ body{display:flex;align-items:center;justify-content:center;padding:24px;min-hei
     <input class="inp" id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password">
     <button class="btn" id="loginBtn" onclick="doLogin()">Ingresar al sistema →</button>
     <div class="loading" id="loadingMsg">⏳ Verificando credenciales...</div>
-
-    <div class="divider"></div>
-    <div class="demo-title">ACCESO RÁPIDO — DEMO</div>
-    <div class="demo-grid">
-      <div class="demo-btn" onclick="loginDemo('propietario@zeropaper.cl','Owner2026!')">
-        <div class="demo-role role-owner">👑 OWNER</div>
-        <div class="demo-email">propietario@zeropaper.cl</div>
-      </div>
-      <div class="demo-btn" onclick="loginDemo('jefatura@demo.cl','Jefe2026!')">
-        <div class="demo-role role-jefatura">🏢 JEFATURA</div>
-        <div class="demo-email">jefatura@demo.cl</div>
-      </div>
-      <div class="demo-btn" onclick="loginDemo('operador@demo.cl','Oper2026!')">
-        <div class="demo-role role-operador">⚙ OPERADOR</div>
-        <div class="demo-email">operador@demo.cl</div>
-      </div>
-      <div class="demo-btn" onclick="loginDemo('usuario@demo.cl','User2026!')">
-        <div class="demo-role role-usuario">👤 USUARIO</div>
-        <div class="demo-email">usuario@demo.cl</div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -138,13 +120,6 @@ function redirect(role) {
     if (s?.role && s?.email) { redirect(s.role); }
   } catch {}
 })();
-
-// ── DEMO LOGIN ──
-function loginDemo(email, pass) {
-  document.getElementById('loginEmail').value = email;
-  document.getElementById('loginPass').value  = pass;
-  doLogin();
-}
 
 // ── MAIN LOGIN ──
 async function doLogin() {
