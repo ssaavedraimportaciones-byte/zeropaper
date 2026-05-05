@@ -390,8 +390,23 @@ nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px
 <div class="auth-screen" id="loginScreen">
   <div class="auth-box">
     <div class="auth-logo">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:72px;height:72px;margin-bottom:12px">
+        <defs>
+          <linearGradient id="lg1" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#0D3D8A"/>
+            <stop offset="100%" stop-color="#1976D2"/>
+          </linearGradient>
+        </defs>
+        <polygon points="32,3 58,17 58,47 32,61 6,47 6,17" fill="url(#lg1)" stroke="#2196F3" stroke-width="1.5"/>
+        <rect x="20" y="15" width="24" height="30" rx="3" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+        <line x1="25" y1="23" x2="39" y2="23" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.95"/>
+        <line x1="25" y1="29" x2="39" y2="29" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.95"/>
+        <line x1="25" y1="35" x2="33" y2="35" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.95"/>
+        <circle cx="46" cy="47" r="11" fill="#21C55D" stroke="#0c1a2e" stroke-width="2"/>
+        <polyline points="41,47 44.5,51 51,43" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
       <div class="auth-logo-title">ZeroPaper<span class="auth-logo-tm">™</span></div>
-      <div class="auth-logo-sub">GESTIÓN PORTUARIA</div>
+      <div class="auth-logo-sub">GESTIÓN PORTUARIA DIGITAL</div>
     </div>
     <div class="auth-title">Iniciar sesión</div>
     <div class="auth-sub">OPERADOR · EMPRESA</div>
@@ -433,6 +448,16 @@ nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px
 <!-- TOPBAR -->
 <div class="topbar">
   <div class="zp-logo-wrap">
+    <svg id="zpLogoSvg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px;flex-shrink:0">
+      <defs><linearGradient id="lg2" x1="4" y1="2" x2="36" y2="38" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0D3D8A"/><stop offset="100%" stop-color="#1976D2"/></linearGradient></defs>
+      <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="url(#lg2)" stroke="#2196F3" stroke-width="1"/>
+      <rect x="13" y="10" width="14" height="18" rx="2" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.85)" stroke-width="1.4"/>
+      <line x1="16" y1="16" x2="24" y2="16" stroke="white" stroke-width="1.3" stroke-linecap="round" opacity="0.9"/>
+      <line x1="16" y1="20" x2="24" y2="20" stroke="white" stroke-width="1.3" stroke-linecap="round" opacity="0.9"/>
+      <line x1="16" y1="24" x2="21" y2="24" stroke="white" stroke-width="1.3" stroke-linecap="round" opacity="0.9"/>
+      <circle cx="29" cy="30" r="7" fill="#21C55D" stroke="#0c1a2e" stroke-width="1.5"/>
+      <polyline points="26,30 28.5,32.5 32,27.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
     <img id="empresaLogoImg" class="zp-logo-img" alt="" hidden>
     <div style="display:flex;flex-direction:column;min-width:0;gap:0">
       <div class="zp-logo" id="empresaLogoTxt">ZeroPaper™</div>
@@ -2387,14 +2412,17 @@ function pintarLogoEmpresa() {
   const txtTop  = document.getElementById('empresaLogoTxt');
   const wmTop   = document.getElementById('empresaLogoWm');
   const preview = document.getElementById('cfgLogoPreview');
+  const svgMark = document.getElementById('zpLogoSvg');
   if (dataUrl) {
     if (imgTop) { imgTop.src = dataUrl; imgTop.hidden = false; }
-    // Empresa toma el nombre principal, ZeroPaper queda como marca secundaria inamovible
-    if (txtTop) { txtTop.textContent = (session?.empresaNombre || 'Empresa'); txtTop.style.fontSize = '16px'; }
+    if (svgMark) svgMark.style.display = 'none';
+    // Empresa toma el nombre principal, ZeroPaper™ permanece como marca secundaria inamovible
+    if (txtTop) { txtTop.textContent = (session?.empresaNombre || 'Empresa'); txtTop.style.fontSize = '15px'; }
     if (wmTop)  { wmTop.textContent = 'ZEROPAPER™'; wmTop.style.color = 'var(--g2)'; wmTop.style.opacity = '1'; }
     if (preview) preview.src = dataUrl;
   } else {
     if (imgTop) { imgTop.hidden = true; imgTop.removeAttribute('src'); }
+    if (svgMark) svgMark.style.display = 'block';
     if (txtTop) { txtTop.textContent = 'ZeroPaper™'; txtTop.style.fontSize = '18px'; }
     if (wmTop)  { wmTop.textContent = 'GESTIÓN PORTUARIA'; wmTop.style.color = 'var(--mu)'; wmTop.style.opacity = '.8'; }
     if (preview) preview.removeAttribute('src');
@@ -2859,10 +2887,10 @@ async function zpCallIA(q) {
     });
 
     if (!res.ok) {
-      render(res.status === 500
-        ? '⚠️ El asistente IA no tiene créditos. Contacta al administrador.'
-        : 'Error al conectar con el asistente. Intenta nuevamente.');
-      _zpChatHistory.push({ role: 'bot', text: bubble.textContent });
+      // Fallback: base de conocimiento local cuando no hay API key configurada
+      const respLocal = await zpKBLocal(q);
+      render(respLocal);
+      _zpChatHistory.push({ role: 'bot', text: respLocal });
       return;
     }
 
@@ -2962,6 +2990,52 @@ function iniciarApp() {
   pintarLogoEmpresa();
 }
 
+// ── BASE DE CONOCIMIENTO LOCAL (funciona sin API key) ──
+async function zpKBLocal(q) {
+  const ql = q.toLowerCase();
+  const kb = [
+    { k:['eir','equipment interchange'],
+      r:'**EIR (Equipment Interchange Receipt)** — Documento que registra el intercambio de contenedores vacíos. Incluye: número de contenedor, estado físico, sellos, transportista y responsables. Se registra en ZeroPaper bajo el departamento de Control.' },
+    { k:['dam','declaracion aduanas'],
+      r:'**DAM (Declaración de Aduanas de Mercancía)** — Documento oficial de aduana para importación/exportación. En ZeroPaper se registra como tipo de documento en Control de Puertas junto con el número de folio y patente del camión.' },
+    { k:['dus','declaracion unica'],
+      r:'**DUS (Declaración Única de Salida)** — Documento de aduana para exportaciones. Registra la salida de mercancía del país. Se adjunta foto del documento al momento del registro en ZeroPaper.' },
+    { k:['booking','reserva'],
+      r:'**Booking** — Reserva de espacio en buque o bodega. Contiene número de booking, naviera, fecha de zarpe y descripción de carga. Se registra en el departamento de Control en ZeroPaper.' },
+    { k:['conocimiento','bill of lading','bl'],
+      r:'**Conocimiento de Embarque (Bill of Lading)** — Documento que acredita la recepción de la carga a bordo del buque. Funciona como contrato de transporte y título de propiedad de la mercancía.' },
+    { k:['intercheck','gate in','gate out'],
+      r:'**Gate In/Out e Intercheck** — Registros de entrada y salida de contenedores en terminal. El Intercheck verifica el estado del contenedor. Ambos se registran fotográficamente en ZeroPaper.' },
+    { k:['instalar','install','pwa','agregar inicio'],
+      r:'**Instalar ZeroPaper™:**\n• **Android:** Chrome → menú ⋮ → "Instalar app" o "Agregar a pantalla de inicio"\n• **iPhone/iPad:** Safari → botón compartir ↑ → "Agregar a pantalla de inicio"\n• **PC/Mac:** Chrome → icono 📲 en la barra de dirección\n\nUna vez instalada, el acceso queda en tu pantalla de inicio.' },
+    { k:['no sincroniza','sin conexion','offline','no guarda'],
+      r:'**Problema de sincronización:**\n1. Verifica que tengas internet activo\n2. Fuerza recarga: Cmd+Shift+R (Mac) o Ctrl+Shift+R (Windows)\n3. En Configuración → Datos → Sincronizar\n4. Si persiste: cierra sesión, vuelve a entrar\n\nZeroPaper guarda localmente aunque estés sin internet y sincroniza al recuperar conexión.' },
+    { k:['ocr','leer documento','no lee','foto'],
+      r:'**Para mejor lectura OCR:**\n• Buena iluminación (sin sombras ni reflejos)\n• Foto enfocada y sin movimiento\n• Documento plano, sin arrugas\n• Encuadra solo el documento en la foto\n\nEl OCR funciona mejor con documentos impresos. Para documentos manuscritos, ingresa los datos manualmente.' },
+    { k:['patente','buscar','folio','encontrar'],
+      r:'Para buscar una operación escríbeme directamente la **patente** (ej: AB-CD-12) o el **número de folio** y la busco en la base de datos local.' },
+    { k:['turno','cerrar turno','traspaso'],
+      r:'**Cierre de turno:**\nVe a la pestaña **TURNO** → escribe notas para el próximo operador → botón "Cerrar turno y traspasar". El siguiente operador verá las novedades al iniciar su turno.' },
+    { k:['agregar departamento','nuevo depto','crear departamento'],
+      r:'**Agregar departamento:**\nVe a la pestaña **DEPTOS** → "+ Agregar depto". Elige nombre, ícono y tipo (Control de Puertas o Gestión Documental). También puedes agregar tipos de documento específicos para ese departamento.' },
+    { k:['logo','empresa','imagen','marca'],
+      r:'**Logo de empresa:**\nVe a **Config (⚙)** → IDENTIDAD DE EMPRESA → "Subir logo". El logo aparece en la barra superior. ZeroPaper™ se mantiene como marca secundaria inamovible. Formatos: JPG, PNG. Máx 600KB.' },
+    { k:['exportar','excel','csv','reporte','informe'],
+      r:'**Exportar datos:**\n• Desde la app: Config → Datos → "Exportar CSV"\n• Desde el panel Admin (/admin): Exportar por rango de fechas\n• El archivo incluye: fecha, hora, tipo, patente, documento, operador, estado\n\nAbrir en Excel: Datos → Desde texto/CSV → UTF-8.' },
+    { k:['contraseña','password','clave','no puedo entrar'],
+      r:'**Problemas de acceso:**\n1. Verifica el correo exacto (sin espacios)\n2. La contraseña tiene mínimo 8 caracteres\n3. Prueba Ctrl+Shift+R para limpiar caché\n4. Si olvidaste la clave, contacta al administrador de tu empresa' },
+    { k:['admin','administrador','panel'],
+      r:'**Panel Admin (/admin):**\n• Ver todas las operaciones de la empresa\n• Aprobar o rechazar operaciones pendientes\n• Exportar reportes CSV\n• Gestionar usuarios y departamentos\n• Ver estadísticas en tiempo real\n\nAccede desde Config → "Abrir Panel Admin" o directamente en /admin' },
+  ];
+
+  for (const item of kb) {
+    if (item.k.some(kw => ql.includes(kw))) return item.r;
+  }
+
+  // Respuesta genérica con información del sistema
+  return `Soy el asistente local de ZeroPaper™. Puedo ayudarte con:\n\n• **Documentos:** EIR, DAM, DUS, Booking, Conocimiento de Embarque\n• **Operaciones:** buscar por patente o folio, resumen del día\n• **Sistema:** instalación, sincronización, exportar datos, departamentos\n• **Turnos:** cierre, traspaso, novedades\n\nEscribe tu consulta y te respondo. Para buscar una operación específica, escribe la **patente** o **folio** directamente.`;
+}
+
 async function init() {
   // Tema + font
   const tema = localStorage.getItem(K_TEMA);
@@ -3016,6 +3090,80 @@ async function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+// ═══════════════════════════════════════════
+//  ZEROPAPER™ — PROTECCIÓN DE SISTEMA
+//  © 2026 ZeroPaper™. Todos los derechos reservados.
+//  Uso no autorizado está prohibido por ley.
+// ═══════════════════════════════════════════
+(function() {
+  'use strict';
+
+  // ── 1. Anti-DevTools / Anti-inspección ──
+  document.addEventListener('keydown', function(e) {
+    const c = e.ctrlKey || e.metaKey, s = e.shiftKey, k = (e.key||'').toUpperCase();
+    if (e.key === 'F12')                         { e.preventDefault(); e.stopPropagation(); return false; }
+    if (c && s && ['I','J','C','K'].includes(k)) { e.preventDefault(); e.stopPropagation(); return false; }
+    if (c && k === 'U')                          { e.preventDefault(); e.stopPropagation(); return false; }
+    if (c && k === 'S')                          { e.preventDefault(); e.stopPropagation(); return false; }
+    if (c && k === 'P' && !s)                    { e.preventDefault(); e.stopPropagation(); return false; }
+  }, true);
+
+  // ── 2. Anti-clic derecho ──
+  document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }, true);
+
+  // ── 3. Anti-selección de texto en elementos de la app ──
+  document.addEventListener('selectstart', function(e) {
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
+  });
+
+  // ── 4. Console anti-debug ──
+  const _warn = '%c⛔ ZeroPaper™ — Sistema Protegido\n%c© 2026 ZeroPaper™. Todos los derechos reservados.\nAcceso no autorizado puede ser sancionado por la ley.';
+  setInterval(function() { console.clear(); console.log(_warn,'color:#ef4444;font-size:15px;font-weight:bold','color:#94a3b8;font-size:11px'); }, 3000);
+
+  // ── 5. Fingerprint de licencia ──
+  Object.defineProperty(window, '__ZP', { value: Object.freeze({ v:'2.0', owner:'ZeroPaper™', year:2026 }), writable:false, configurable:false });
+
+  // ── 6. PWA-Only Gate: solo funciona instalada ──
+  const isPWA = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true
+    || document.referrer.includes('android-app://');
+
+  if (!isPWA) {
+    let _deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); _deferredPrompt = e; });
+
+    const gate = document.createElement('div');
+    gate.id = 'zp-pwa-gate';
+    gate.style.cssText = `position:fixed;inset:0;background:#0c1a2e;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;font-family:'Inter',sans-serif;`;
+    gate.innerHTML = `
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:80px;height:80px;margin-bottom:20px">
+        <defs><linearGradient id="lg3" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#0D3D8A"/><stop offset="100%" stop-color="#1976D2"/></linearGradient></defs>
+        <polygon points="32,3 58,17 58,47 32,61 6,47 6,17" fill="url(#lg3)" stroke="#2196F3" stroke-width="1.5"/>
+        <rect x="20" y="15" width="24" height="30" rx="3" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+        <line x1="25" y1="23" x2="39" y2="23" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="25" y1="29" x2="39" y2="29" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="25" y1="35" x2="33" y2="35" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="46" cy="47" r="11" fill="#21C55D" stroke="#0c1a2e" stroke-width="2"/>
+        <polyline points="41,47 44.5,51 51,43" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div style="color:#f0f6ff;font-size:26px;font-weight:900;letter-spacing:-1px;margin-bottom:8px">ZeroPaper™</div>
+      <div style="color:#8aa6c4;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;margin-bottom:28px">GESTIÓN PORTUARIA DIGITAL</div>
+      <div style="color:#c8d8ee;font-size:16px;font-weight:600;margin-bottom:10px">Este sistema solo funciona<br>como aplicación instalada</div>
+      <div style="color:#8aa6c4;font-size:13px;margin-bottom:28px;line-height:1.6">Instala ZeroPaper™ en tu dispositivo<br>para acceder al sistema.</div>
+      <button id="zpInstallBtn" style="background:linear-gradient(135deg,#0e6fbe,#2196f3);color:#fff;border:none;border-radius:14px;padding:18px 32px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.5px;box-shadow:0 4px 20px rgba(33,150,243,.35);" onclick="zpInstalar()">
+        📲 Instalar ZeroPaper™
+      </button>
+      <div style="margin-top:16px;color:#8aa6c4;font-size:12px">iOS Safari: <strong style="color:#c8d8ee">Compartir →</strong> Agregar a inicio<br>Android Chrome: menú <strong style="color:#c8d8ee">⋮ → Instalar app</strong></div>
+    `;
+    document.body.appendChild(gate);
+
+    window.zpInstalar = function() {
+      if (_deferredPrompt) { _deferredPrompt.prompt(); }
+      else { showToast && showToast('📲','Instalar manualmente','Usa el menú del navegador → Instalar app / Agregar a inicio'); }
+    };
+  }
+})();
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
