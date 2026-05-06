@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#0d1b2a">
-<title>Sin Papel</title>
+<meta name="theme-color" content="#061a0a">
+<title>ZeroPaper™ — Gestión Portuaria</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Sin Papel">
+<meta name="apple-mobile-web-app-title" content="ZeroPaper™">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -900,7 +900,25 @@ function saveSession() {
 function loadSession() {
   try {
     const s = sessionStorage.getItem(K_SESSION);
-    if (s) session = JSON.parse(s);
+    if (s) { session = JSON.parse(s); return; }
+    // Puente: sesión creada por zeropaper_login.html (clave unificada)
+    const u = sessionStorage.getItem('zp_unified_session');
+    if (u) {
+      const p = JSON.parse(u);
+      if (p?.email && p?.role) {
+        session = {
+          uid:          p.uid || emailToUid(p.email),
+          email:        p.email,
+          localToken:   genToken(),
+          expiresAt:    Date.now() + 12 * 3600 * 1000,
+          nombre:       p.name || p.nombre || p.email.split('@')[0],
+          empresaId:    p.empresaId || '',
+          empresaNombre:p.company  || p.empresaNombre || '',
+          rol:          p.role || 'operador'
+        };
+        saveSession();
+      }
+    }
   } catch(e) { session = null; }
 }
 
@@ -1058,6 +1076,7 @@ async function doLogin() {
       });
     } catch(e) {}
     iniciarApp();
+    await renderHome();
   } catch(e) {
     errEl.textContent = 'Correo o contraseña incorrectos';
   }
@@ -1136,6 +1155,7 @@ async function doRegister() {
     };
     saveSession();
     iniciarApp();
+    await renderHome();
   } catch(e) {
     errEl.textContent = 'Error al crear cuenta. Intenta nuevamente.';
   }
@@ -2873,7 +2893,6 @@ async function zpCallIA(q) {
 
   // Burbuja de streaming
   const bubble = document.createElement('div');
-  const isBot = true;
   bubble.style.cssText = `align-self:flex-start;max-width:90%;background:var(--bg3);color:var(--fg);border-radius:4px 14px 14px 14px;padding:10px 14px;font-size:13px;line-height:1.6;white-space:pre-wrap;border:1px solid var(--brd)`;
   bubble.innerHTML = '<span style="opacity:.5">⏳ pensando...</span>';
   msgs.appendChild(bubble);
@@ -3187,12 +3206,12 @@ if ('serviceWorker' in navigator) {
 
 <!-- ZeroPaper™ Soporte IA Widget -->
 <div id="zp-support-btn" onclick="window.open('https://wa.me/56995854721','_blank')" title="Soporte WhatsApp"
-  style="position:fixed;bottom:24px;right:24px;z-index:9999;width:52px;height:52px;border-radius:50%;
+  style="position:fixed;bottom:24px;right:24px;z-index:190;width:52px;height:52px;border-radius:50%;
   background:#1B4332;color:white;font-size:22px;display:flex;align-items:center;justify-content:center;
   cursor:pointer;box-shadow:0 4px 20px rgba(27,67,50,0.35);transition:transform .2s,box-shadow .2s"
   onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(27,67,50,0.5)'"
   onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(27,67,50,0.35)'">💬</div>
-<div style="position:fixed;bottom:82px;right:18px;z-index:9998;background:#1B4332;color:white;
+<div style="position:fixed;bottom:82px;right:18px;z-index:189;background:#1B4332;color:white;
   font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;white-space:nowrap;
   pointer-events:none;opacity:0;transition:opacity .3s" id="zp-support-tooltip">Soporte WhatsApp</div>
 <script>
