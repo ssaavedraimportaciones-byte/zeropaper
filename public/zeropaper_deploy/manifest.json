@@ -1,0 +1,29 @@
+{
+  "name": "ZeroPaper™",
+  "short_name": "ZeroPaper",
+  "description": "Gestión portuaria digital. Cero papel. Cero huella. Registra operaciones en 30 segundos.",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#061a0a",
+  "theme_color": "#22c55e",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='28' fill='%23061a0a'/><polygon points='96,14 166,54 166,134 96,174 26,134 26,54' fill='%23052e16' stroke='%234ade80' stroke-width='5'/><rect x='68' y='46' width='60' height='76' rx='7' fill='rgba(255,255,255,0.09)' stroke='rgba(255,255,255,0.88)' stroke-width='5'/><line x1='80' y1='70' x2='116' y2='70' stroke='white' stroke-width='4.5' stroke-linecap='round'/><line x1='80' y1='86' x2='116' y2='86' stroke='white' stroke-width='4.5' stroke-linecap='round'/><line x1='80' y1='102' x2='100' y2='102' stroke='white' stroke-width='4.5' stroke-linecap='round'/><circle cx='136' cy='134' r='28' fill='%2322c55e' stroke='%23052e16' stroke-width='5'/><path d='M136,108 C118,114 115,148 136,155 C157,148 154,114 136,108Z' fill='%23052e16' opacity='0.85'/><path d='M136,108 C124,116 123,147 136,155 C149,147 148,116 136,108Z' fill='%2386efac' opacity='0.5'/><line x1='136' y1='155' x2='136' y2='136' stroke='%234ade80' stroke-width='4' stroke-linecap='round'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='72' fill='%23061a0a'/><polygon points='256,36 440,140 440,372 256,476 72,372 72,140' fill='%23052e16' stroke='%234ade80' stroke-width='12'/><rect x='178' y='122' width='160' height='204' rx='18' fill='rgba(255,255,255,0.09)' stroke='rgba(255,255,255,0.88)' stroke-width='13'/><line x1='210' y1='188' x2='302' y2='188' stroke='white' stroke-width='12' stroke-linecap='round'/><line x1='210' y1='228' x2='302' y2='228' stroke='white' stroke-width='12' stroke-linecap='round'/><line x1='210' y1='268' x2='262' y2='268' stroke='white' stroke-width='12' stroke-linecap='round'/><circle cx='360' cy='360' r='74' fill='%2322c55e' stroke='%23052e16' stroke-width='13'/><path d='M360,288 C314,302 308,390 360,410 C412,390 406,302 360,288Z' fill='%23052e16' opacity='0.85'/><path d='M360,288 C332,306 330,388 360,410 C389,388 388,306 360,288Z' fill='%2386efac' opacity='0.5'/><line x1='360' y1='410' x2='360' y2='360' stroke='%234ade80' stroke-width='10' stroke-linecap='round'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "es",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+}
