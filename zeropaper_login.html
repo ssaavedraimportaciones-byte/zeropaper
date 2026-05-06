@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#061a0a">
+<title>ZeroPaper™ — Acceso</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#061a0a;--bg2:#0b2811;--bg3:#123318;
+  --fg:#f0fff4;--fg2:#d1fae5;--mu:#6ee7b7;--brd:rgba(74,222,128,.13);
+  --g:#15803d;--g1:#16a34a;--g2:#22c55e;
+  --b:#0891b2;--b2:#22d3ee;--r:#ef4444;
+  --mono:'JetBrains Mono','Courier New',monospace;
+  --disp:'Inter',system-ui,-apple-system,sans-serif;
+  --radius:16px;--ease:cubic-bezier(.4,0,.2,1);
+}
+html,body{min-height:100%;background:var(--bg);color:var(--fg);font-family:var(--disp);-webkit-font-smoothing:antialiased;}
+body{display:flex;align-items:center;justify-content:center;padding:24px;min-height:100vh;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.wrap{width:100%;max-width:400px;animation:fadeUp .4s var(--ease) both;}
+.logo{text-align:center;margin-bottom:32px;}
+.logo-mark{font-weight:900;font-size:36px;color:var(--g2);letter-spacing:-1.5px;line-height:1;}
+.logo-tm{font-size:16px;vertical-align:super;color:var(--mu);}
+.logo-sub{font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:3px;margin-top:6px;}
+.box{background:rgba(255,255,255,.04);border:1px solid var(--brd);border-radius:22px;padding:32px 28px;}
+.box-title{font-weight:800;font-size:20px;margin-bottom:4px;}
+.box-sub{font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:1.5px;margin-bottom:24px;}
+.lbl{font-weight:700;font-size:12px;letter-spacing:.5px;color:var(--fg2);display:block;margin-bottom:6px;text-transform:uppercase;}
+.inp{width:100%;background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:14px 16px;color:var(--fg);font-size:15px;font-family:var(--disp);margin-bottom:14px;transition:border-color .2s;}
+.inp:focus{outline:none;border-color:var(--g2);box-shadow:0 0 0 3px rgba(19,180,138,.1);}
+.btn{width:100%;padding:16px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--g),var(--g2));color:#fff;font-weight:700;font-size:15px;font-family:var(--disp);letter-spacing:.3px;cursor:pointer;transition:all .2s var(--ease);box-shadow:0 4px 16px rgba(19,180,138,.2);}
+.btn:active{transform:scale(.97);}
+.err{color:var(--r);font-size:12px;font-family:var(--mono);min-height:18px;margin-bottom:10px;text-align:center;}
+.divider{height:1px;background:var(--brd);margin:20px 0;}
+.demo-title{font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:2px;margin-bottom:12px;text-align:center;}
+.demo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.demo-btn{padding:10px 12px;border:1px solid var(--brd);border-radius:12px;background:rgba(255,255,255,.03);cursor:pointer;text-align:left;transition:all .2s var(--ease);}
+.demo-btn:hover{border-color:var(--g2);background:rgba(19,180,138,.06);}
+.demo-btn:active{transform:scale(.97);}
+.demo-role{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:1px;margin-bottom:3px;}
+.demo-email{font-size:10px;color:var(--mu);}
+.role-owner{color:#f59e0b;}
+.role-jefatura{color:var(--b2);}
+.role-operador{color:var(--g2);}
+.role-usuario{color:var(--mu);}
+.loading{display:none;text-align:center;font-family:var(--mono);font-size:11px;color:var(--mu);margin-top:10px;letter-spacing:1px;}
+.inp{font-size:16px;}
+.btn{font-size:16px;padding:18px;}
+.box-title{font-size:22px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">
+    <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:80px;height:80px;margin-bottom:14px">
+      <defs><linearGradient id="eco0" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#052e16"/><stop offset="55%" stop-color="#15803d"/><stop offset="100%" stop-color="#16a34a"/></linearGradient></defs>
+      <polygon points="32,3 58,17 58,47 32,61 6,47 6,17" fill="url(#eco0)" stroke="#4ade80" stroke-width="1.5"/>
+      <rect x="20" y="14" width="24" height="30" rx="3" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+      <line x1="25" y1="22" x2="39" y2="22" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="25" y1="28" x2="39" y2="28" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="25" y1="34" x2="33" y2="34" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="46" cy="47" r="11" fill="#22c55e" stroke="#052e16" stroke-width="2"/>
+      <path d="M46,38 C39,40 37,52 46,55 C55,52 53,40 46,38Z" fill="#052e16" opacity="0.85"/>
+      <path d="M46,38 C41,41 40,51 46,55 C52,51 51,41 46,38Z" fill="#86efac" opacity="0.5"/>
+      <line x1="46" y1="55" x2="46" y2="47" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="46" y1="43" x2="50" y2="47" stroke="#4ade80" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+    </svg>
+    <div class="logo-mark">ZeroPaper<span class="logo-tm">™</span></div>
+    <div class="logo-sub">GESTIÓN PORTUARIA DIGITAL</div>
+  </div>
+  <div class="box">
+    <div class="box-title">Iniciar sesión</div>
+    <div class="box-sub">SELECCIONA TU ACCESO</div>
+    <div class="err" id="loginErr"></div>
+    <label class="lbl">Correo electrónico</label>
+    <input class="inp" id="loginEmail" type="email" placeholder="correo@empresa.cl" autocomplete="email">
+    <label class="lbl">Contraseña</label>
+    <input class="inp" id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password">
+    <button class="btn" id="loginBtn" onclick="doLogin()">Ingresar al sistema →</button>
+    <div class="loading" id="loadingMsg">⏳ Verificando credenciales...</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ── FIREBASE CONFIG ──
+const FB = { projectId:'zeropaper-prod', apiKey:'AIzaSyCli7F4hLi-XEmmekGZpO2KQ1SO612I85Y' };
+const FS_BASE = `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
+const K_SESSION = 'zp_unified_session';
+
+// ── DEMO USERS (hardcoded) ──
+const DEMO_USERS = {
+  'propietario@zeropaper.cl': { pass:'Owner2026!', role:'owner',    name:'Propietario ZeroPaper', company:'ZeroPaper™' },
+  'jefatura@demo.cl':         { pass:'Jefe2026!',  role:'jefatura', name:'Jefatura Demo',         company:'Demo Terminal S.A.' },
+  'operador@demo.cl':         { pass:'Oper2026!',  role:'operador', name:'Operador Demo',          company:'Demo Terminal S.A.' },
+  'usuario@demo.cl':          { pass:'User2026!',  role:'usuario',  name:'Usuario Demo',           company:'Demo Terminal S.A.' },
+};
+
+// ── ROLE → REDIRECT ──
+const ROLE_REDIRECT = {
+  owner:    '/owner',
+  jefatura: '/negocio',
+  admin:    '/negocio',
+  operador: '/app',
+  usuario:  '/certificado',
+};
+
+// ── SHA-256 ──
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+function emailToUid(email) {
+  return email.toLowerCase().replace(/[^a-z0-9]/g,'_').slice(0,40);
+}
+
+// ── SESSION ──
+function saveSession(data) {
+  sessionStorage.setItem(K_SESSION, JSON.stringify(data));
+}
+function redirect(role) {
+  window.location.href = ROLE_REDIRECT[role] || '/app';
+}
+
+// ── CHECK IF ALREADY LOGGED IN ──
+(function() {
+  try {
+    const s = JSON.parse(sessionStorage.getItem(K_SESSION) || 'null');
+    if (s?.role && s?.email) { redirect(s.role); }
+  } catch {}
+})();
+
+// ── MAIN LOGIN ──
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginErr');
+  const btn   = document.getElementById('loginBtn');
+  const load  = document.getElementById('loadingMsg');
+  errEl.textContent = '';
+
+  if (!email || !pass) { errEl.textContent = 'Ingresa correo y contraseña'; return; }
+
+  btn.disabled = true;
+  load.style.display = 'block';
+
+  try {
+    // 1. Verificar demo users primero
+    const demo = DEMO_USERS[email];
+    if (demo && demo.pass === pass) {
+      saveSession({ email, role: demo.role, name: demo.name, company: demo.company, demo: true });
+      redirect(demo.role);
+      return;
+    }
+
+    // 2. Verificar en Firestore (usuarios reales)
+    const uid  = emailToUid(email);
+    const hash = await sha256(email + '::' + pass);
+    const res  = await fetch(`${FS_BASE}/usuarios/${uid}?key=${FB.apiKey}`);
+    if (!res.ok) { errEl.textContent = 'Correo o contraseña incorrectos'; return; }
+    const doc    = await res.json();
+    const fields = doc.fields || {};
+    const stored = (k) => fields[k]?.stringValue || '';
+
+    if (!stored('passHash') || stored('passHash') !== hash) {
+      errEl.textContent = 'Correo o contraseña incorrectos';
+      return;
+    }
+
+    const rolRaw = stored('rol') || 'operador';
+    const role   = ROLE_REDIRECT[rolRaw] ? rolRaw : 'operador';
+    saveSession({
+      email,
+      role,
+      name:    stored('nombre') || email.split('@')[0],
+      company: stored('empresaNombre') || '',
+      uid,
+      empresaId: stored('empresaId') || '',
+    });
+    redirect(role);
+  } catch(e) {
+    errEl.textContent = 'Error de conexión. Intenta nuevamente.';
+  } finally {
+    btn.disabled = false;
+    load.style.display = 'none';
+  }
+}
+
+// ── ENTER KEY ──
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('loginEmail').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('loginPass').focus(); });
+</script>
+</body>
+</html>
