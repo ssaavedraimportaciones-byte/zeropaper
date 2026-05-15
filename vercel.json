@@ -15,7 +15,9 @@
     { "source": "/tv",            "destination": "/zeropaper_deploy/zeropaper_tv.html" },
     { "source": "/certificado",   "destination": "/zeropaper_deploy/zeropaper_certificado.html" },
     { "source": "/seguimiento",   "destination": "/zeropaper_deploy/zeropaper_seguimiento.html" },
-    { "source": "/soporte",       "destination": "/zeropaper_deploy/zeropaper_soporte.html" }
+    { "source": "/soporte",       "destination": "/zeropaper_deploy/zeropaper_soporte.html" },
+    { "source": "/config",        "destination": "/zeropaper_deploy/zeropaper_config.html" },
+    { "source": "/presentacion",  "destination": "/zeropaper_deploy/zeropaper_presentacion.html" }
   ],
   "headers": [
     {
