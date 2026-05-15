@@ -3411,6 +3411,330 @@ function applyBranding(cfg) {
   root.style.setProperty('--bg', cfg.colorBg || '#061a0a');
 
   showToast('🎨', cfg.nombre || 'Tu empresa', 'Identidad aplicada');
+
+  // Aplicar piel según industria
+  if (cfg.industria && cfg.industria !== 'puertos') {
+    aplicarPielIndustria(cfg.industria, cfg.nombre);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   PIELES DE INDUSTRIA — Cambian la cara, no la mecánica
+   La lógica de ingreso/salida/OCR/Firebase queda intacta.
+   Solo se reemplazan labels, departamentos y tipos de docs.
+════════════════════════════════════════════════════════════ */
+
+const INDUSTRY_SKINS = {
+  legal: {
+    appTitle: 'LegalDocs™',
+    appSubtitle: 'Gestión de Expedientes',
+    tabs:  { home:'INICIO', historial:'EXPEDIENTES', archivos:'ARCHIVO', turno:'TURNO', ia:'IA' },
+    labels: {
+      // Formulario de ingreso/salida
+      'Patente':              'N° Expediente',
+      'AB-CD-12':             'EXP-2024-001',
+      'inPlateLbl':           'N° Expediente',
+      'outPlateLbl':          'N° Expediente',
+      'Folio':                'N° Causa / Folio',
+      'Empresa / Proveedor':  'Cliente / Contraparte',
+      // Home / turno
+      'VEHÍCULOS EN PLANTA':  'EXPEDIENTES ABIERTOS',
+      'INGRESOS HOY':         'ENTRADAS HOY',
+      'SALIDAS HOY':          'ARCHIVADOS HOY',
+      'EN PLANTA':            'EN PROCESO',
+      // Botones
+      '📥 Nuevo Ingreso':     '📝 Nuevo Expediente',
+      '📤 Nueva Salida':      '📁 Archivar',
+      '✓ Confirmar Ingreso':  '✓ Registrar',
+      '✓ Confirmar Salida':   '✓ Archivar',
+    },
+    departments: [
+      { id:'civil',    nombre:'Civil',    icon:'📜', tipo:'documentos', desc:'Demandas y contratos civiles',
+        docs:['DEMANDA','CONTRATO','SENTENCIA','ESCRITURA','PODER_NOTARIAL','RECURSO','APELACION'] },
+      { id:'penal',    nombre:'Penal',    icon:'🔒', tipo:'documentos', desc:'Causas penales',
+        docs:['DENUNCIA','ACUSACION','SENTENCIA','RECURSO_APELACION','OFICIO','ACTA'] },
+      { id:'laboral',  nombre:'Laboral',  icon:'👷', tipo:'documentos', desc:'Derecho del trabajo',
+        docs:['FINIQUITO','CONTRATO_TRABAJO','LIQUIDACION','CARTA_AVISO','DEMANDA_LABORAL'] },
+      { id:'familia',  nombre:'Familia',  icon:'👨‍👩‍👧', tipo:'documentos', desc:'Derecho de familia',
+        docs:['DEMANDA_DIVORCIO','PENSION','CUSTODIA','PARTICION_BIENES','ACTA_MATRIMONIO'] },
+      { id:'notarial', nombre:'Notarial', icon:'🏛', tipo:'documentos', desc:'Escrituras y protocolos',
+        docs:['ESCRITURA_PUBLICA','PODER','PROTOCOLIZACION','HIPOTECA','TESTAMENTO'] }
+    ]
+  },
+
+  oficina: {
+    appTitle: 'OfficeDoc™',
+    appSubtitle: 'Gestión Documental',
+    tabs:  { home:'INICIO', historial:'REGISTROS', archivos:'ARCHIVO', turno:'TURNO', ia:'IA' },
+    labels: {
+      'Patente':              'Referencia',
+      'AB-CD-12':             'REF-001',
+      'Empresa / Proveedor':  'Departamento',
+      'VEHÍCULOS EN PLANTA':  'DOCUMENTOS EN PROCESO',
+      'INGRESOS HOY':         'ENTRADAS HOY',
+      'SALIDAS HOY':          'ENVIADOS HOY',
+      'EN PLANTA':            'EN PROCESO',
+      '📥 Nuevo Ingreso':     '📥 Nuevo Documento',
+      '📤 Nueva Salida':      '📤 Despachar',
+    },
+    departments: [
+      { id:'rrhh',      nombre:'Recursos Humanos', icon:'👥', tipo:'documentos', desc:'Contratos y personal',
+        docs:['CONTRATO_TRABAJO','FINIQUITO','EVALUACION','CARTA_AMONESTACION','VACACIONES','LICENCIA'] },
+      { id:'finanzas',  nombre:'Finanzas',         icon:'💰', tipo:'documentos', desc:'Contabilidad y pagos',
+        docs:['FACTURA','BOLETA','NOTA_DEBITO','NOTA_CREDITO','LIQUIDACION','BALANCE'] },
+      { id:'operaciones',nombre:'Operaciones',      icon:'⚙️', tipo:'documentos', desc:'Gestión de operaciones',
+        docs:['ORDEN_TRABAJO','INFORME','ACTA_REUNION','CIRCULAR','MEMO','REPORTE'] },
+      { id:'gerencia',  nombre:'Gerencia',          icon:'🎯', tipo:'documentos', desc:'Dirección y estrategia',
+        docs:['ACTA_DIRECTORIO','INFORME_GESTION','PRESUPUESTO','PROPUESTA','PROYECTO'] }
+    ]
+  },
+
+  salud: {
+    appTitle: 'ClínicaDoc™',
+    appSubtitle: 'Gestión Clínica Digital',
+    tabs:  { home:'INICIO', historial:'ATENCIONES', archivos:'FICHAS', turno:'TURNO', ia:'IA' },
+    labels: {
+      'Patente':              'N° Ficha / RUT',
+      'AB-CD-12':             'RUT Paciente',
+      'Empresa / Proveedor':  'Médico / Unidad',
+      'VEHÍCULOS EN PLANTA':  'PACIENTES EN ATENCIÓN',
+      'INGRESOS HOY':         'ADMISIONES HOY',
+      'SALIDAS HOY':          'ALTAS HOY',
+      'EN PLANTA':            'EN ATENCIÓN',
+      '📥 Nuevo Ingreso':     '🏥 Nueva Admisión',
+      '📤 Nueva Salida':      '🏥 Dar de Alta',
+      '✓ Confirmar Ingreso':  '✓ Admitir Paciente',
+    },
+    departments: [
+      { id:'admision',    nombre:'Admisión',      icon:'🪑', tipo:'acceso',     desc:'Ingreso de pacientes',
+        docs:['FICHA_PACIENTE','ORDEN_MEDICA','VOUCHER','SEGURO','CONSENTIMIENTO','ANAMNESIS'] },
+      { id:'consulta',    nombre:'Consulta',      icon:'🩺', tipo:'documentos', desc:'Atención médica',
+        docs:['RECETA','ORDEN_EXAMEN','INFORME_MEDICO','EPICRISIS','CERTIFICADO_MEDICO','DERIVACION'] },
+      { id:'laboratorio', nombre:'Laboratorio',   icon:'🧪', tipo:'documentos', desc:'Exámenes y resultados',
+        docs:['SOLICITUD_EXAMEN','RESULTADO_EXAMEN','INFORME_LAB','MUESTRA','CULTIVO'] },
+      { id:'farmacia',    nombre:'Farmacia',      icon:'💊', tipo:'documentos', desc:'Despacho de medicamentos',
+        docs:['RECETA','DESPACHO','CONTROL_STOCK','FACTURA_MEDICAMENTOS'] }
+    ]
+  },
+
+  educacion: {
+    appTitle: 'EduDoc™',
+    appSubtitle: 'Gestión Educacional',
+    tabs:  { home:'INICIO', historial:'REGISTROS', archivos:'BIBLIOTECA', turno:'TURNO', ia:'IA' },
+    labels: {
+      'Patente':              'RUT Alumno',
+      'AB-CD-12':             '12.345.678-9',
+      'Empresa / Proveedor':  'Curso / Carrera',
+      'VEHÍCULOS EN PLANTA':  'ALUMNOS PRESENTES',
+      'INGRESOS HOY':         'ENTRADAS HOY',
+      'SALIDAS HOY':          'SALIDAS HOY',
+      'EN PLANTA':            'EN CLASES',
+      '📥 Nuevo Ingreso':     '📝 Registrar Ingreso',
+      '📤 Nueva Salida':      '📝 Registrar Salida',
+    },
+    departments: [
+      { id:'secretaria', nombre:'Secretaría',  icon:'📝', tipo:'documentos', desc:'Documentación académica',
+        docs:['MATRICULA','CERTIFICADO_NOTAS','CONSTANCIA','DECRETO','CIRCULAR','PERMISO'] },
+      { id:'biblioteca', nombre:'Biblioteca',  icon:'📚', tipo:'documentos', desc:'Préstamos y devoluciones',
+        docs:['PRESTAMO','DEVOLUCION','INVENTARIO','SOLICITUD','INFORME_MENSUAL'] },
+      { id:'direccion',  nombre:'Dirección',   icon:'🏫', tipo:'documentos', desc:'Administración directiva',
+        docs:['ACTA_CONSEJO','INFORME_GESTION','PROYECTO','MEMO','RESOLUCION','CIRCULAR_APODERADOS'] },
+      { id:'inspectoria',nombre:'Inspectoría', icon:'👁', tipo:'acceso',     desc:'Control de asistencia',
+        docs:['REGISTRO_ASISTENCIA','PARTE_INASISTENCIA','ANOTACION','CITACION_APODERADO'] }
+    ]
+  },
+
+  retail: {
+    appTitle: 'RetailDoc™',
+    appSubtitle: 'Control Comercial Digital',
+    tabs:  { home:'INICIO', historial:'TRANSACCIONES', archivos:'ARCHIVO', turno:'TURNO', ia:'IA' },
+    labels: {
+      'Patente':              'N° Documento',
+      'AB-CD-12':             'BOL-001',
+      'Empresa / Proveedor':  'Proveedor / Cliente',
+      'VEHÍCULOS EN PLANTA':  'PEDIDOS PENDIENTES',
+      'INGRESOS HOY':         'RECEPCIONES HOY',
+      'SALIDAS HOY':          'DESPACHOS HOY',
+      'EN PLANTA':            'EN BODEGA',
+      '📥 Nuevo Ingreso':     '📦 Recepción',
+      '📤 Nueva Salida':      '🚛 Despacho',
+    },
+    departments: [
+      { id:'caja',    nombre:'Caja',    icon:'💵', tipo:'acceso',     desc:'Ventas y pagos',
+        docs:['BOLETA','FACTURA','NOTA_CREDITO','VOUCHER_TARJETA','CIERRE_CAJA','DEVOLUCION'] },
+      { id:'bodega',  nombre:'Bodega',  icon:'📦', tipo:'documentos', desc:'Inventario y recepciones',
+        docs:['ORDEN_COMPRA','GUIA_DESPACHO','NOTA_ENTREGA','AJUSTE_INVENTARIO','DEVOLUCION','TOMA_INVENTARIO'] },
+      { id:'compras', nombre:'Compras', icon:'🛒', tipo:'documentos', desc:'Proveedores y OC',
+        docs:['ORDEN_COMPRA','COTIZACION','FACTURA_PROVEEDOR','COMPARATIVO','CONTRATO_PROVEEDOR'] }
+    ]
+  },
+
+  construccion: {
+    appTitle: 'ObraDoc™',
+    appSubtitle: 'Gestión de Obras Digital',
+    tabs:  { home:'INICIO', historial:'PARTES', archivos:'ARCHIVO', turno:'TURNO', ia:'IA' },
+    labels: {
+      'Patente':              'Código Obra / RUT',
+      'AB-CD-12':             'OBR-2024-001',
+      'Empresa / Proveedor':  'Empresa / Subcontrato',
+      'VEHÍCULOS EN PLANTA':  'TRABAJADORES EN OBRA',
+      'INGRESOS HOY':         'ENTRADAS HOY',
+      'SALIDAS HOY':          'SALIDAS HOY',
+      'EN PLANTA':            'EN OBRA',
+      '📥 Nuevo Ingreso':     '⛏ Registro de Entrada',
+      '📤 Nueva Salida':      '⛏ Registro de Salida',
+    },
+    departments: [
+      { id:'terreno',    nombre:'Obra en Terreno', icon:'⛏', tipo:'acceso',     desc:'Control de acceso y partes diarios',
+        docs:['ORDEN_TRABAJO','PARTE_DIARIO','CERTIFICADO_AVANCE','ACTA_ENTREGA','CONTROL_MATERIALES'] },
+      { id:'presupuesto',nombre:'Presupuesto',     icon:'📊', tipo:'documentos', desc:'Costos y cotizaciones',
+        docs:['COTIZACION','PRESUPUESTO','ADICIONAL','COMPARATIVO','CONTRATO','SUBCONTRATO'] },
+      { id:'calidad',    nombre:'Calidad / HSEC',  icon:'🪺', tipo:'documentos', desc:'Seguridad y calidad',
+        docs:['INSPECCION','PROTOCOLO','ACCIDENTE','CAPACITACION','CERTIFICADO_CALIDAD','CHECK_LIST'] }
+    ]
+  },
+
+  hoteleria: {
+    appTitle: 'HotelDoc™',
+    appSubtitle: 'Gestión de Alojamiento',
+    tabs:  { home:'INICIO', historial:'RESERVAS', archivos:'ARCHIVO', turno:'TURNO', ia:'IA' },
+    labels: {
+      'Patente':              'N° Habitación / Reserva',
+      'AB-CD-12':             'HAB-101',
+      'Empresa / Proveedor':  'Empresa / Agencia',
+      'VEHÍCULOS EN PLANTA':  'HUÉSPEDES ALOJADOS',
+      'INGRESOS HOY':         'CHECK-IN HOY',
+      'SALIDAS HOY':          'CHECK-OUT HOY',
+      'EN PLANTA':            'ALOJADOS',
+      '📥 Nuevo Ingreso':     '🛎 Check-In',
+      '📤 Nueva Salida':      '🛎 Check-Out',
+      '✓ Confirmar Ingreso':  '✓ Realizar Check-In',
+      '✓ Confirmar Salida':   '✓ Realizar Check-Out',
+    },
+    departments: [
+      { id:'recepcion', nombre:'Recepción',    icon:'🛎', tipo:'acceso',     desc:'Check-in y check-out',
+        docs:['RESERVA','CHECKIN','CHECKOUT','FACTURA','COMPROBANTE','VOUCHER_TOUR'] },
+      { id:'reservas',  nombre:'Reservas',     icon:'📅', tipo:'documentos', desc:'Grupos y eventos',
+        docs:['CONTRATO_GRUPO','COTIZACION_EVENTO','PROPUESTA','CONFIRMACION','GARANTIA'] },
+      { id:'admin_h',   nombre:'Administración',icon:'📋', tipo:'documentos', desc:'Gestión interna',
+        docs:['INFORME_OCUPACION','BALANCE','CONTRATO_PROVEEDOR','MEMO','PARTE_NOVEDADES'] }
+    ]
+  },
+
+  manufactura: {
+    appTitle: 'FabricaDoc™',
+    appSubtitle: 'Control de Producción',
+    tabs:  { home:'INICIO', historial:'PRODUCCIÓN', archivos:'ARCHIVO', turno:'TURNO', ia:'IA' },
+    labels: {
+      'Patente':              'Código Lote / OT',
+      'AB-CD-12':             'OT-2024-001',
+      'Empresa / Proveedor':  'Cliente / Línea',
+      'VEHÍCULOS EN PLANTA':  'ÓRDENES EN PROCESO',
+      'INGRESOS HOY':         'INGRESOS HOY',
+      'SALIDAS HOY':          'DESPACHOS HOY',
+      'EN PLANTA':            'EN PRODUCCIÓN',
+      '📥 Nuevo Ingreso':     '🏭 Orden de Producción',
+      '📤 Nueva Salida':      '🚛 Despacho',
+    },
+    departments: [
+      { id:'produccion', nombre:'Producción',   icon:'⚙️', tipo:'documentos', desc:'Órdenes y partes',
+        docs:['ORDEN_PRODUCCION','PARTE_PRODUCCION','MATERIA_PRIMA','SCRAP','RENDIMIENTO'] },
+      { id:'calidad_m',  nombre:'Calidad',      icon:'✅', tipo:'documentos', desc:'Control de calidad',
+        docs:['CERTIFICADO_CALIDAD','INSPECCION','NO_CONFORMIDAD','ACCION_CORRECTIVA','MUESTREO'] },
+      { id:'despacho_m', nombre:'Despacho',     icon:'🚛', tipo:'acceso',     desc:'Salida de productos',
+        docs:['GUIA_DESPACHO','FACTURA','NOTA_EMPAQUE','CONTROL_FLETE','LISTA_CARGA'] }
+    ]
+  },
+
+  contabilidad: {
+    appTitle: 'ContaDoc™',
+    appSubtitle: 'Gestión Contable Digital',
+    tabs:  { home:'INICIO', historial:'DOCUMENTOS', archivos:'ARCHIVO', turno:'TURNO', ia:'IA' },
+    labels: {
+      'Patente':              'N° Documento / RUT',
+      'AB-CD-12':             'RUT / Folio',
+      'Empresa / Proveedor':  'Cliente / Proveedor',
+      'VEHÍCULOS EN PLANTA':  'DOCUMENTOS PENDIENTES',
+      'INGRESOS HOY':         'RECIBIDOS HOY',
+      'SALIDAS HOY':          'PROCESADOS HOY',
+      'EN PLANTA':            'POR PROCESAR',
+      '📥 Nuevo Ingreso':     '📄 Nuevo Documento',
+      '📤 Nueva Salida':      '📤 Enviar / Procesar',
+    },
+    departments: [
+      { id:'contabilidad_d', nombre:'Contabilidad',    icon:'📒', tipo:'documentos', desc:'Registro contable',
+        docs:['FACTURA','BOLETA','NOTA_DEBITO','NOTA_CREDITO','COMPROBANTE','CONCILIACION'] },
+      { id:'impuestos',      nombre:'Impuestos / SII', icon:'🏛', tipo:'documentos', desc:'Declaraciones tributarias',
+        docs:['DECLARACION_IVA','F29','F22','LIBROS_IVA','RETENCION','IMPUESTO_RENTA','RC-IVA'] },
+      { id:'auditoria',      nombre:'Auditoría',       icon:'🔍', tipo:'documentos', desc:'Control e informes',
+        docs:['INFORME_AUDITORIA','BALANCE','ESTADO_RESULTADOS','FLUJO_CAJA','NOTAS_EE_FF'] }
+    ]
+  }
+};
+
+/* Aplica la piel de industria sobre la UI actual sin tocar la mecánica */
+function aplicarPielIndustria(industriaId, nombreEmpresa) {
+  const skin = INDUSTRY_SKINS[industriaId];
+  if (!skin) return; // puertos u otro sin skin → no hace nada
+
+  // 1. Título del documento
+  if (skin.appTitle) document.title = `${skin.appTitle} — ${nombreEmpresa || skin.appSubtitle}`;
+
+  // 2. Reemplazar tabs del nav
+  if (skin.tabs) {
+    const tabMap = { home:'t-home', historial:'t-historial', archivos:'t-archivos', turno:'t-turno', ia:'t-ia' };
+    Object.entries(tabMap).forEach(([key, id]) => {
+      if (!skin.tabs[key]) return;
+      const el = document.getElementById(id)?.querySelector('.ftab-l');
+      if (el) el.textContent = skin.tabs[key];
+    });
+  }
+
+  // 3. Reemplazar labels de texto en el DOM
+  if (skin.labels) {
+    // Recorrer todos los nodos de texto y reemplazar
+    const walker = document.createTreeWalker(
+      document.getElementById('mainScroll') || document.body,
+      NodeFilter.SHOW_TEXT,
+      null
+    );
+    const replacements = Object.entries(skin.labels);
+    let node;
+    while ((node = walker.nextNode())) {
+      let val = node.nodeValue;
+      replacements.forEach(([from, to]) => {
+        if (val.includes(from)) val = val.split(from).join(to);
+      });
+      node.nodeValue = val;
+    }
+    // Placeholders de inputs
+    Object.entries(skin.labels).forEach(([from, to]) => {
+      document.querySelectorAll(`input[placeholder="${from}"]`).forEach(el => el.placeholder = to);
+    });
+  }
+
+  // 4. Sobreescribir departamentos predeterminados con los de la skin
+  if (skin.departments && deptos.length === 0 || (deptos.length > 0 && deptos[0]?.id === 'recepcion')) {
+    // Solo si no hay config de empresa custom desde Firestore
+    const savedCustom = localStorage.getItem(K_DEPTOS);
+    if (!savedCustom) {
+      const mapped = skin.departments.map(d => ({
+        id: d.id,
+        nombre: d.nombre,
+        icon: d.icon,
+        tipo: d.tipo,
+        desc: d.desc || '',
+        docs: d.docs || []
+      }));
+      deptos = mapped;
+      deptoActivo = mapped[0];
+      actualizarSelectorDepto();
+      if (typeof renderHome === 'function') renderHome();
+    }
+  }
+
+  // 5. Toast de bienvenida con la industria
+  showToast(skin.departments?.[0]?.icon || '🏢', skin.appTitle, skin.appSubtitle);
 }
 
 // Carga departamentos de empresa desde Firestore (override DEPTOS_DEFAULT)
