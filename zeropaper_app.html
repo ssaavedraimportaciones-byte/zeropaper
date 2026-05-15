@@ -1,0 +1,4090 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#061a0a">
+<title>ZeroPaper™ — Gestión Portuaria</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ZeroPaper™">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+/* ── BRAND DYNAMIC (override by empresa config) ── */
+:root {
+  --brand1:#22c55e; --brand2:#4ade80; --brand-bg:#061a0a;
+  --logo-display:none; /* se muestra cuando hay logo */
+}
+/* ── ARCHIVADORES ── */
+.arch-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:4px 2px;}
+.arch-folder{
+  background:var(--bg2);border:1px solid var(--brd);border-radius:16px;
+  padding:16px;cursor:pointer;transition:all .25s var(--ease);
+  display:flex;flex-direction:column;gap:8px;
+}
+.arch-folder:hover{border-color:var(--g2);transform:translateY(-2px);box-shadow:0 6px 20px rgba(34,197,94,.15);}
+.arch-folder-icon{font-size:32px;}
+.arch-folder-name{font-weight:700;font-size:13px;}
+.arch-folder-count{font-size:11px;color:var(--mu);font-family:var(--mono);}
+.arch-folder-bar{height:3px;border-radius:2px;background:var(--brd);overflow:hidden;}
+.arch-folder-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--g),var(--g2));}
+.arch-doc-item{
+  background:var(--bg2);border:1px solid var(--brd);border-radius:12px;
+  padding:12px;display:flex;align-items:center;gap:12px;cursor:pointer;
+  transition:all .2s;margin-bottom:8px;
+}
+.arch-doc-item:hover{border-color:var(--g);}
+.arch-doc-thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;border:1px solid var(--brd);}
+.arch-doc-thumb-placeholder{
+  width:48px;height:48px;border-radius:8px;background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+}
+.arch-doc-info{flex:1;min-width:0;}
+.arch-doc-name{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.arch-doc-meta{font-size:10px;color:var(--mu);font-family:var(--mono);margin-top:2px;}
+.arch-doc-type{font-size:10px;padding:2px 8px;border-radius:6px;background:rgba(34,197,94,.12);color:var(--g2);font-weight:700;}
+.arch-breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mu);margin-bottom:14px;flex-wrap:wrap;}
+.arch-breadcrumb-sep{color:var(--brd);}
+.arch-breadcrumb-item{cursor:pointer;color:var(--g2);}
+.arch-breadcrumb-item:hover{text-decoration:underline;}
+/* ── SCANNER MODAL ── */
+.scanner-modal{
+  position:fixed;inset:0;background:#000;z-index:99999;
+  display:flex;flex-direction:column;
+}
+.scanner-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px;background:rgba(0,0,0,.8);backdrop-filter:blur(10px);
+}
+.scanner-close{
+  width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.3);
+  background:rgba(255,255,255,.1);color:#fff;font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.scanner-video-wrap{flex:1;position:relative;overflow:hidden;}
+#scannerVideo{width:100%;height:100%;object-fit:cover;}
+#scannerCanvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.scanner-guide{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:75%;aspect-ratio:1.414;  /* A4 ratio */
+  border:2px solid rgba(34,197,94,.7);border-radius:8px;pointer-events:none;
+}
+.scanner-guide-corner{
+  position:absolute;width:20px;height:20px;
+  border-color:#22c55e;border-style:solid;
+}
+.scanner-guide-corner.tl{top:-2px;left:-2px;border-width:3px 0 0 3px;}
+.scanner-guide-corner.tr{top:-2px;right:-2px;border-width:3px 3px 0 0;}
+.scanner-guide-corner.bl{bottom:-2px;left:-2px;border-width:0 0 3px 3px;}
+.scanner-guide-corner.br{bottom:-2px;right:-2px;border-width:0 3px 3px 0;}
+.scanner-hint{
+  position:absolute;top:16px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.7);color:#fff;font-size:12px;padding:6px 14px;
+  border-radius:20px;white-space:nowrap;font-family:var(--mono);
+}
+.scanner-detected{border-color:#4ade80 !important;box-shadow:0 0 20px rgba(74,222,128,.4);}
+.scanner-footer{padding:20px;background:rgba(0,0,0,.9);display:flex;flex-direction:column;gap:12px;}
+.scanner-capture-btn{
+  width:72px;height:72px;border-radius:50%;border:4px solid #fff;
+  background:rgba(255,255,255,.2);cursor:pointer;margin:0 auto;
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+  transition:all .2s;box-shadow:0 0 0 4px rgba(34,197,94,.4);
+}
+.scanner-capture-btn:active{transform:scale(0.9);}
+.scanner-mode-btns{display:flex;gap:8px;justify-content:center;}
+.scanner-mode-btn{
+  padding:8px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.08);color:#fff;font-size:12px;cursor:pointer;
+  transition:all .2s;
+}
+.scanner-mode-btn.active{background:rgba(34,197,94,.3);border-color:#22c55e;}
+/* ── OCR PROGRESS ── */
+.ocr-progress{
+  background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:12px;
+  padding:12px;margin-top:8px;display:none;
+}
+.ocr-progress.visible{display:block;animation:fadeIn .3s;}
+.ocr-bar-wrap{height:4px;background:var(--brd);border-radius:2px;margin:8px 0;}
+.ocr-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--g),var(--g2));width:0%;transition:width .3s;}
+.ocr-status{font-size:11px;color:var(--mu);font-family:var(--mono);}
+</style>
+/* ══ TEMAS ══ */
+:root {
+  /* ── Paleta Ambiental ZeroPaper™ ── */
+  --bg:#061a0a; --bg2:#0b2811; --bg3:#123318;
+  --fg:#f0fff4; --fg2:#d1fae5; --mu:#6ee7b7; --brd:rgba(74,222,128,.13);
+  --g:#15803d; --g1:#16a34a; --g2:#22c55e; --g3:#86efac;
+  --o:#f59e0b; --o2:#fbbf24;
+  --b:#0891b2; --b2:#22d3ee; --r:#ef4444; --y:#eab308;
+  --nav:rgba(6,26,10,.97); --card:rgba(34,197,94,.05);
+  --glass:rgba(34,197,94,.07); --glass-brd:rgba(74,222,128,.15);
+  --shadow:0 4px 24px rgba(0,0,0,.55);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.4);
+  --shadow-glow:0 0 28px rgba(74,222,128,.25);
+  --mono:'JetBrains Mono','Courier New',monospace;
+  --disp:'Inter',system-ui,-apple-system,sans-serif;
+  --radius:16px; --radius-lg:22px; --radius-sm:10px; --pad:16px;
+  --ease:cubic-bezier(.4,0,.2,1);
+  --fs-base:16px; --fs-sm:14px; --fs-lg:18px;
+}
+html,body{font-size:var(--fs-base);}
+[data-theme="claro"] {
+  --bg:#f8fafc; --bg2:#ffffff; --bg3:#eef2f7;
+  --fg:#0f172a; --fg2:#334155; --mu:#64748b; --brd:rgba(15,23,42,.1);
+  --nav:rgba(255,255,255,.97); --card:rgba(15,23,42,.03);
+  --glass:rgba(255,255,255,.85); --glass-brd:rgba(15,23,42,.08);
+  --shadow:0 4px 24px rgba(15,23,42,.08); --shadow-sm:0 2px 8px rgba(15,23,42,.05);
+}
+[data-theme="azul"] {
+  --bg:#080f20; --bg2:#0c1830; --bg3:#10264a;
+  --fg:#e2f0ff; --fg2:#a0c4e8; --mu:#7eadd4; --brd:rgba(59,130,246,.12);
+  --nav:rgba(8,15,32,.95); --card:rgba(59,130,246,.05);
+  --glass:rgba(59,130,246,.06); --glass-brd:rgba(59,130,246,.12);
+}
+[data-theme="contraste"] {
+  --bg:#000000; --bg2:#0a0a0a; --bg3:#1a1a1a;
+  --fg:#ffffff; --fg2:#dddddd; --mu:#bbbbbb; --brd:rgba(255,255,255,.25);
+  --g:#00ff88; --g2:#00ff88; --o:#ffaa00; --nav:#000000;
+  --card:rgba(255,255,255,.06); --glass:rgba(255,255,255,.08);
+}
+/* ── Temas corporativos ── */
+[data-theme="marino"] {
+  --bg:#0a1628; --bg2:#102040; --bg3:#1a3060;
+  --fg:#e8f0fc; --fg2:#b0c4e8; --mu:#7090b8; --brd:rgba(30,80,160,.25);
+  --g:#1e6fb5; --g1:#2e85d5; --g2:#3b9ae8; --g3:#7bc0ff;
+  --o:#f59e0b; --o2:#fbbf24; --b:#3b9ae8;
+  --nav:rgba(10,22,40,.96); --card:rgba(30,80,160,.08);
+  --glass:rgba(30,80,160,.1); --glass-brd:rgba(30,80,160,.2);
+  --shadow-glow:0 0 24px rgba(59,154,232,.2);
+}
+[data-theme="corporativo"] {
+  --bg:#f0f4f8; --bg2:#ffffff; --bg3:#e2e8f0;
+  --fg:#1a202c; --fg2:#2d3748; --mu:#718096; --brd:rgba(0,0,0,.1);
+  --g:#2b6cb0; --g1:#3182ce; --g2:#4299e1; --g3:#bee3f8;
+  --o:#c05621; --o2:#dd6b20; --b:#2b6cb0;
+  --nav:rgba(255,255,255,.97); --card:rgba(43,108,176,.04);
+  --glass:rgba(255,255,255,.9); --glass-brd:rgba(43,108,176,.12);
+  --shadow:0 4px 24px rgba(0,0,0,.1); --shadow-glow:0 0 20px rgba(66,153,225,.15);
+  --ftab-on:rgba(43,108,176,.1);
+}
+[data-theme="ejecutivo"] {
+  --bg:#1c1c1e; --bg2:#2c2c2e; --bg3:#3a3a3c;
+  --fg:#f5f5f7; --fg2:#d1d1d6; --mu:#8e8e93; --brd:rgba(255,255,255,.12);
+  --g:#30d158; --g1:#34c759; --g2:#30d158; --g3:#a8f0be;
+  --o:#ff9f0a; --o2:#ffcc02; --b:#0a84ff;
+  --nav:rgba(28,28,30,.97); --card:rgba(255,255,255,.05);
+  --glass:rgba(255,255,255,.06); --glass-brd:rgba(255,255,255,.12);
+  --shadow-glow:0 0 24px rgba(48,209,88,.15);
+}
+[data-theme="vinotinto"] {
+  --bg:#1a0a0f; --bg2:#2a1018; --bg3:#3d1824;
+  --fg:#f5eef0; --fg2:#d4bfc5; --mu:#9a7a82; --brd:rgba(180,30,60,.2);
+  --g:#c0392b; --g1:#e74c3c; --g2:#e84565; --g3:#f7a8b5;
+  --o:#f39c12; --o2:#f1c40f; --b:#8e44ad;
+  --nav:rgba(26,10,15,.97); --card:rgba(180,30,60,.06);
+  --glass:rgba(180,30,60,.07); --glass-brd:rgba(180,30,60,.18);
+  --shadow-glow:0 0 24px rgba(200,50,80,.18);
+}
+/* ══ BASE ══ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:var(--bg);color:var(--fg);font-family:var(--disp);overflow:hidden;-webkit-font-smoothing:antialiased;}
+#app{height:100%;display:flex;flex-direction:column;max-width:500px;margin:0 auto;position:relative;}
+/* ══ ANIMATIONS ══ */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes ripple{to{transform:scale(2.5);opacity:0}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes glow{0%,100%{box-shadow:0 0 8px rgba(82,183,136,.2)}50%{box-shadow:0 0 20px rgba(82,183,136,.4)}}
+.fade-in{animation:fadeIn .3s var(--ease) both;}
+.skeleton{background:linear-gradient(90deg,var(--bg3) 25%,var(--card) 50%,var(--bg3) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px;}
+
+/* ══ LOGIN / SETUP ══ */
+.auth-screen{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;z-index:500;
+}
+.auth-box{
+  background:var(--bg2);border:1px solid var(--brd);border-radius:22px;
+  padding:32px 24px;width:100%;max-width:380px;
+}
+.auth-logo{text-align:center;margin-bottom:24px;}
+.auth-logo-title{font-family:var(--disp);font-weight:900;font-size:28px;color:var(--g2);letter-spacing:-1px;}
+.auth-logo-tm{font-size:14px;color:var(--mu);vertical-align:super;}
+.auth-logo-sub{font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:3px;margin-top:4px;}
+.auth-title{font-weight:700;font-size:20px;margin-bottom:4px;}
+.auth-sub{font-family:var(--mono);font-size:12px;color:var(--mu);letter-spacing:1px;margin-bottom:22px;}
+.auth-inp{
+  width:100%;background:var(--bg3);border:1px solid var(--brd);
+  border-radius:11px;padding:14px 16px;color:var(--fg);font-size:16px;
+  margin-bottom:12px;
+}
+.auth-inp:focus{outline:none;border-color:var(--g2);}
+.auth-btn{
+  width:100%;padding:17px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,var(--g),var(--g2));
+  color:#fff;font-weight:700;font-size:16px;font-family:var(--disp);
+  letter-spacing:.5px;cursor:pointer;margin-bottom:10px;position:relative;overflow:hidden;
+  box-shadow:0 4px 16px rgba(33,150,243,.3);transition:transform .15s var(--ease),box-shadow .15s var(--ease);
+}
+.auth-btn:active{transform:scale(.97);box-shadow:0 2px 8px rgba(82,183,136,.15);}
+.auth-link{
+  text-align:center;font-family:var(--mono);font-size:10px;
+  color:var(--mu);cursor:pointer;margin-top:6px;
+}
+.auth-link span{color:var(--g2);text-decoration:underline;}
+.auth-err{color:var(--r);font-size:13px;font-family:var(--mono);min-height:16px;margin-bottom:8px;text-align:center;}
+.auth-divider{height:1px;background:var(--brd);margin:14px 0;}
+.auth-empresa-code{
+  background:rgba(74,124,89,.08);border:1px solid rgba(74,124,89,.2);
+  border-radius:10px;padding:10px 14px;margin-bottom:10px;
+}
+.auth-empresa-code-lbl{font-family:var(--mono);font-size:9px;color:var(--g2);letter-spacing:1px;margin-bottom:4px;}
+.auth-empresa-code-val{font-family:var(--mono);font-size:16px;font-weight:700;letter-spacing:4px;}
+
+/* ══ TOPBAR ══ */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top)+12px) var(--pad) 12px;background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-brd);flex-shrink:0;gap:8px;z-index:10;}
+.zp-logo-wrap{display:flex;align-items:center;gap:10px;min-width:0;}
+.zp-logo-img{height:40px;width:40px;border-radius:10px;object-fit:cover;background:var(--bg3);border:2px solid var(--glass-brd);flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,.3);}
+.zp-logo-img[hidden]{display:none;}
+.zp-logo{font-family:var(--disp);font-weight:900;font-size:18px;color:var(--fg);letter-spacing:-.5px;white-space:nowrap;line-height:1;}
+.zp-logo-wm{font-family:var(--mono);font-size:8px;font-weight:700;color:var(--g2);letter-spacing:2px;line-height:1;margin-top:4px;opacity:.9;}
+.depto-sel{flex:1;background:var(--bg3);border:1px solid var(--brd);border-radius:var(--radius-sm);padding:10px 12px;color:var(--fg);font-size:14px;font-family:var(--disp);font-weight:700;cursor:pointer;max-width:170px;transition:border-color .2s var(--ease);}
+.depto-sel:focus{border-color:var(--g2);outline:none;}
+.topbar-btns{display:flex;gap:6px;}
+.ico-btn{background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius-sm);width:38px;height:38px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;flex-shrink:0;transition:all .2s var(--ease);}
+.ico-btn:active{transform:scale(.9);background:var(--bg3);}
+
+/* ══ VIEWS ══ */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:var(--pad);padding-bottom:80px;}
+.view{display:none;}
+.view.active{display:block;}
+
+/* ══ NAV ══ */
+nav{display:flex;justify-content:space-around;align-items:center;padding:6px 4px calc(env(safe-area-inset-bottom)+6px);background:var(--nav);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--glass-brd);flex-shrink:0;}
+.ftab{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:7px 10px;border-radius:12px;min-width:54px;position:relative;transition:all .2s var(--ease);}
+.ftab:active{transform:scale(.92);}
+.ftab-i{font-size:23px;color:var(--mu);transition:all .2s var(--ease);}
+.ftab-l{font-family:var(--disp);font-size:11px;font-weight:700;color:var(--mu);letter-spacing:.3px;transition:all .2s var(--ease);}
+.ftab.on{background:rgba(33,150,243,.1);}
+.ftab.on .ftab-i{color:var(--g2);transform:scale(1.12);}
+.ftab.on .ftab-l{color:var(--g2);font-weight:800;}
+.ftab.on::after{content:'';position:absolute;bottom:0;left:25%;right:25%;height:3px;background:var(--g2);border-radius:3px;}
+
+/* ══ CARDS ══ */
+.card{background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--glass-brd);border-radius:var(--radius);padding:16px;margin-bottom:12px;transition:border-color .2s var(--ease);}
+.card:hover{border-color:rgba(255,255,255,.12);}
+.card-title{font-family:var(--disp);font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--mu);margin-bottom:10px;text-transform:uppercase;}
+
+/* ══ BOTONES ACCIÓN ══ */
+.act-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.act-btn{border:none;border-radius:var(--radius-lg);padding:28px 20px;cursor:pointer;text-align:left;transition:transform .2s var(--ease),box-shadow .2s var(--ease);position:relative;overflow:hidden;}
+.act-btn:active{transform:scale(.95);}
+.act-btn::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--x,50%) var(--y,50%),rgba(255,255,255,.14) 0%,transparent 60%);opacity:0;transition:opacity .3s;}
+.act-btn:hover::after{opacity:1;}
+.ab-g{background:linear-gradient(140deg,#052e16,#15803d,#16a34a);border:1px solid rgba(74,222,128,.35);box-shadow:0 6px 24px rgba(21,128,61,.3);}
+.ab-o{background:linear-gradient(140deg,#7c2d12,#c2410c,#ea580c);border:1px solid rgba(251,146,60,.35);box-shadow:0 6px 24px rgba(194,65,12,.25);}
+.ab-icon{font-size:34px;margin-bottom:10px;display:block;}
+.ab-label{font-family:var(--disp);font-size:12px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.7);display:block;text-transform:uppercase;}
+.ab-title{font-weight:900;font-size:20px;display:block;margin-top:5px;letter-spacing:-.3px;}
+.cg{color:#86efac;} .co{color:#fed7aa;}
+
+/* ══ ESCANEAR ══ */
+.scan-zone{background:var(--card);border:2px dashed var(--brd);border-radius:var(--radius);padding:28px;text-align:center;cursor:pointer;margin-bottom:12px;transition:all .2s var(--ease);}
+.scan-zone:active{border-color:var(--g2);background:rgba(82,183,136,.05);}
+.scan-icon{font-size:40px;margin-bottom:8px;}
+.scan-label{font-family:var(--disp);font-size:14px;font-weight:600;color:var(--mu);}
+
+/* ══ FORMULARIO ══ */
+.flbl{font-family:var(--disp);font-size:14px;font-weight:700;letter-spacing:.5px;color:var(--fg2);display:block;margin-bottom:8px;text-transform:uppercase;}
+.finp{width:100%;background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:15px 16px;color:var(--fg);font-size:17px;font-family:var(--disp);margin-bottom:14px;transition:border-color .2s var(--ease),box-shadow .2s var(--ease);}
+.fsel{width:100%;background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:15px 16px;color:var(--fg);font-size:16px;font-family:var(--disp);margin-bottom:14px;appearance:none;transition:border-color .2s var(--ease);}
+.finp:focus,.fsel:focus{outline:none;border-color:var(--g2);box-shadow:0 0 0 3px rgba(33,150,243,.15);}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* ══ BOTÓN PRIMARIO ══ */
+.btn-prime{width:100%;padding:18px;border:none;border-radius:14px;font-family:var(--disp);font-size:16px;letter-spacing:.3px;cursor:pointer;font-weight:700;transition:all .2s var(--ease);position:relative;overflow:hidden;}
+.btn-green{background:linear-gradient(135deg,var(--g),var(--g2));color:#fff;box-shadow:0 4px 16px rgba(82,183,136,.25);}
+.btn-orange{background:linear-gradient(135deg,var(--o),var(--o2));color:#fff;box-shadow:0 4px 16px rgba(255,123,0,.25);}
+.btn-blue{background:linear-gradient(135deg,#3b82f6,#60a5fa);color:#fff;box-shadow:0 4px 16px rgba(59,130,246,.25);}
+.btn-gray{background:var(--bg3);color:var(--mu);border:1px solid var(--brd);}
+.btn-prime:active{transform:scale(.97);opacity:.9;}
+
+/* ══ HISTORIAL ══ */
+.search-bar{position:relative;margin-bottom:10px;}
+.search-inp{width:100%;background:var(--bg3);border:1px solid var(--brd);border-radius:10px;padding:12px 14px 12px 40px;color:var(--fg);font-size:15px;font-family:var(--mono);}
+.search-inp::placeholder{color:var(--mu);}
+.search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--mu);font-size:13px;pointer-events:none;}
+.h-item{display:flex;align-items:center;gap:12px;background:var(--glass);border:1px solid var(--glass-brd);border-radius:14px;padding:15px 16px;margin-bottom:10px;cursor:pointer;transition:all .2s var(--ease);}
+.h-item:active{transform:scale(.98);border-color:var(--g2);}
+.h-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.hd-g{background:var(--g2);box-shadow:0 0 8px rgba(82,183,136,.4);} .hd-o{background:var(--o);box-shadow:0 0 8px rgba(255,123,0,.4);}
+.h-body{flex:1;min-width:0;}
+.h-top{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.h-tipo{font-family:var(--disp);font-size:11px;font-weight:700;letter-spacing:1px;}
+.h-pat{font-weight:800;font-size:16px;letter-spacing:.5px;}
+.h-depto{font-family:var(--disp);font-size:10px;font-weight:600;color:var(--mu);background:var(--bg3);padding:2px 8px;border-radius:6px;}
+.h-meta{font-size:13px;color:var(--mu);margin-top:2px;}
+.h-badge{font-size:18px;flex-shrink:0;}
+
+/* ══ ESTADO DOCUMENTAL ══ */
+.estado-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.8px;padding:2px 8px;border-radius:100px;flex-shrink:0;}
+.est-pendiente{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3);}
+.est-aprobado {background:rgba(34,197,94,.15); color:#4ade80;border:1px solid rgba(34,197,94,.3);}
+.est-rechazado{background:rgba(239,68,68,.15); color:#f87171;border:1px solid rgba(239,68,68,.3);}
+.est-revision {background:rgba(59,130,246,.15); color:#60a5fa;border:1px solid rgba(59,130,246,.3);}
+.rechazo-alert{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:14px;padding:14px;margin-bottom:12px;}
+.rechazo-alert-title{font-weight:700;font-size:14px;color:#f87171;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.rechazo-item{font-size:13px;color:var(--fg2);padding:6px 0;border-bottom:1px solid rgba(239,68,68,.1);display:flex;align-items:center;justify-content:space-between;}
+.rechazo-item:last-child{border-bottom:none}
+.log-list{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.log-item{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--fg2);}
+.log-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:3px;}
+.log-ld-c{background:#4ade80;}.log-ld-a{background:#4ade80;}.log-ld-r{background:#f87171;}.log-ld-v{background:#60a5fa;}
+.log-ts{font-family:var(--mono);font-size:10px;color:var(--mu);}
+
+/* ══ PILLS ══ */
+.pills{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:12px;scrollbar-width:none;}
+.pills::-webkit-scrollbar{display:none;}
+.pill{flex-shrink:0;background:var(--glass);border:1px solid var(--glass-brd);border-radius:22px;padding:8px 16px;font-family:var(--disp);font-size:12px;font-weight:600;cursor:pointer;color:var(--mu);white-space:nowrap;transition:all .2s var(--ease);}
+.pill:active{transform:scale(.95);}
+.pill.on{background:rgba(82,183,136,.15);border-color:rgba(82,183,136,.4);color:var(--g2);font-weight:700;}
+
+/* ══ BIBLIOTECA (depto tipo documentos) ══ */
+.bib-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.bib-card{background:var(--glass);border:1px solid var(--glass-brd);border-radius:14px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:transform .15s var(--ease),border-color .2s var(--ease);}
+.bib-card:active{transform:scale(.97);}
+.bib-card:hover{border-color:rgba(19,180,138,.35);}
+.bib-thumb{width:100%;aspect-ratio:1/1;background:var(--bg3);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--mu);font-size:32px;}
+.bib-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.bib-thumb-count{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.7);color:#fff;font-family:var(--mono);font-size:10px;font-weight:700;border-radius:6px;padding:2px 7px;letter-spacing:.5px;}
+.bib-meta{padding:10px 11px 11px;display:flex;flex-direction:column;gap:3px;}
+.bib-meta-type{font-family:var(--disp);font-weight:700;font-size:12px;color:var(--fg);line-height:1.2;letter-spacing:.2px;text-transform:uppercase;}
+.bib-meta-folio{font-family:var(--mono);font-size:11px;color:var(--g2);font-weight:700;}
+.bib-meta-date{font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:.5px;margin-top:1px;}
+.bib-empty{grid-column:1/-1;text-align:center;padding:48px 20px;color:var(--mu);}
+.bib-empty-i{font-size:48px;margin-bottom:8px;}
+.bib-empty-t{font-family:var(--mono);font-size:12px;letter-spacing:1px;}
+
+/* ══ STATS ══ */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+.stat-box{background:var(--glass);border:1px solid var(--glass-brd);border-radius:14px;padding:16px;text-align:center;transition:border-color .2s var(--ease);}
+.stat-box:hover{border-color:rgba(255,255,255,.12);}
+.stat-n{font-family:var(--disp);font-size:32px;font-weight:900;color:var(--fg);letter-spacing:-1px;}
+.stat-l{font-family:var(--disp);font-size:11px;font-weight:600;color:var(--mu);letter-spacing:.5px;margin-top:4px;}
+
+/* ══ TURNO ══ */
+.turno-header{background:linear-gradient(135deg,rgba(74,124,89,.15),rgba(74,124,89,.05));border:1px solid rgba(74,124,89,.25);border-radius:14px;padding:14px;margin-bottom:12px;}
+.turno-op-name{font-weight:800;font-size:19px;margin-bottom:4px;}
+.turno-empresa{font-family:var(--mono);font-size:12px;color:var(--g2);letter-spacing:1px;}
+.turno-time{font-family:var(--mono);font-size:12px;color:var(--mu);margin-top:6px;}
+
+.pendiente-item{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,109,0,.06);border:1px solid rgba(255,109,0,.2);
+  border-radius:12px;padding:11px 12px;margin-bottom:6px;
+}
+.pendiente-icon{font-size:20px;flex-shrink:0;}
+.pendiente-body{flex:1;}
+.pendiente-plate{font-weight:700;font-size:14px;}
+.pendiente-meta{font-family:var(--mono);font-size:9px;color:var(--mu);margin-top:2px;}
+.pendiente-time{font-family:var(--mono);font-size:9px;color:var(--o2);}
+
+.link-portal{
+  background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);
+  border-radius:12px;padding:12px;margin-bottom:10px;
+}
+.link-portal-lbl{font-family:var(--mono);font-size:9px;color:#60a5fa;letter-spacing:1px;margin-bottom:6px;}
+.link-portal-url{font-family:var(--mono);font-size:10px;color:var(--fg);word-break:break-all;line-height:1.5;}
+.btn-copy{
+  margin-top:8px;width:100%;padding:9px;border:1px solid rgba(59,130,246,.3);
+  border-radius:9px;background:rgba(59,130,246,.1);color:#60a5fa;
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:1px;cursor:pointer;
+}
+.btn-copy:active{opacity:.7;}
+
+.handover-box{margin-bottom:12px;}
+.btn-cerrar-turno{
+  width:100%;padding:15px;border:none;border-radius:13px;
+  background:linear-gradient(135deg,#3d1a00,#6b3000);
+  border:1px solid rgba(255,109,0,.4);
+  color:var(--o2);font-family:var(--mono);font-size:12px;
+  font-weight:700;letter-spacing:1.5px;cursor:pointer;
+}
+.btn-cerrar-turno:active{opacity:.8;}
+
+/* ══ MODAL ══ */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.85);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+.modal-box{background:var(--bg2);border-radius:var(--radius-lg) var(--radius-lg) 0 0;width:100%;max-width:500px;padding:24px 20px 40px;max-height:88vh;overflow-y:auto;animation:slideUp .3s var(--ease);box-shadow:0 -8px 40px rgba(0,0,0,.5);}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.modal-title{font-family:var(--disp);font-weight:800;font-size:18px;}
+.modal-x{font-size:22px;cursor:pointer;color:var(--mu);background:var(--bg3);border:none;padding:6px 10px;border-radius:var(--radius-sm);transition:all .2s var(--ease);}
+.modal-x:active{background:var(--brd);transform:scale(.92);}
+.modal-foto{width:100%;border-radius:14px;margin-bottom:14px;border:1px solid var(--brd);}
+.modal-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--brd);}
+.modal-lbl{font-family:var(--disp);font-size:11px;font-weight:600;color:var(--mu);letter-spacing:1px;}
+.modal-val{font-weight:600;font-size:15px;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--disp);}
+
+/* ══ TEMAS SELECTOR ══ */
+.theme-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.theme-btn{border:2px solid var(--brd);border-radius:12px;padding:10px 6px;text-align:center;cursor:pointer;font-size:9px;font-family:var(--mono);color:var(--mu);transition:border-color .2s;}
+.theme-btn.on{border-color:var(--g2);color:var(--g2);}
+.theme-preview{width:24px;height:24px;border-radius:6px;margin:0 auto 4px;pointer-events:none;}
+
+/* ══ DEPTOS MANAGER ══ */
+.depto-card{background:var(--card);border:1px solid var(--brd);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.depto-icon-big{font-size:24px;flex-shrink:0;}
+.depto-info{flex:1;}
+.depto-name{font-weight:700;font-size:14px;margin-bottom:2px;}
+.depto-docs{font-family:var(--mono);font-size:9px;color:var(--mu);}
+.depto-badge-act{background:rgba(74,124,89,.2);color:var(--g2);border:1px solid rgba(74,124,89,.3);border-radius:6px;padding:2px 8px;font-size:9px;font-family:var(--mono);}
+
+/* ══ EMPTY ══ */
+.empty{text-align:center;padding:40px 20px;color:var(--mu);}
+.empty-i{font-size:40px;margin-bottom:10px;}
+.empty-t{font-family:var(--mono);font-size:11px;letter-spacing:1px;}
+
+/* ══ TOAST ══ */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid var(--glass-brd);border-radius:16px;padding:12px 18px;display:flex;align-items:center;gap:12px;opacity:0;transition:all .35s var(--ease);z-index:300;pointer-events:none;max-width:340px;width:92%;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:var(--shadow);}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.t-icon{font-size:22px;flex-shrink:0;}
+.t-title{font-weight:700;font-size:14px;}
+.t-sub{font-size:12px;color:var(--mu);}
+
+/* ══ OFFLINE ══ */
+#offBadge{display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#f44336;color:#fff;padding:4px 14px;border-radius:20px;font-size:11px;font-family:var(--mono);z-index:400;}
+#offBadge.show{display:block;}
+
+/* ══ MULTI-FOTOS ══ */
+.fotos-zone{margin-bottom:14px;}
+.fotos-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.foto-thumb{position:relative;width:88px;height:88px;border-radius:12px;overflow:hidden;border:1px solid var(--brd);flex-shrink:0;background:var(--bg3);}
+.foto-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.foto-remove{position:absolute;top:4px;right:4px;background:rgba(220,38,38,.92);border:none;border-radius:50%;width:22px;height:22px;color:#fff;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1;padding:0;}
+.foto-add-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:var(--card);border:2px dashed var(--brd);border-radius:12px;cursor:pointer;font-family:var(--mono);font-size:12px;color:var(--mu);letter-spacing:1px;width:100%;transition:border-color .2s,color .2s;}
+.foto-add-btn:active{border-color:var(--g2);color:var(--g2);}
+.foto-count{background:var(--g2);color:#fff;border-radius:100px;padding:2px 10px;font-size:11px;font-weight:700;}
+.foto-num{position:absolute;bottom:3px;left:4px;background:rgba(0,0,0,.6);color:#fff;font-family:var(--mono);font-size:9px;border-radius:4px;padding:1px 5px;}
+
+/* ══ MISC ══ */
+.sec-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.sec-l{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--mu);text-transform:uppercase;}
+.sec-a{font-family:var(--mono);font-size:9px;color:var(--g2);cursor:pointer;}
+.divider{height:1px;background:var(--brd);margin:12px 0;}
+.tag{display:inline-block;background:var(--bg3);border:1px solid var(--brd);border-radius:6px;padding:2px 8px;font-family:var(--mono);font-size:9px;color:var(--mu);margin:2px;}
+.user-badge{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:8px 12px;margin-bottom:12px;}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--g2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0;}
+.user-name{font-weight:600;font-size:13px;}
+.user-empresa{font-family:var(--mono);font-size:9px;color:var(--mu);}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div class="auth-screen" id="loginScreen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:80px;height:80px;margin-bottom:14px">
+        <defs>
+          <linearGradient id="eco1" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#052e16"/>
+            <stop offset="55%" stop-color="#15803d"/>
+            <stop offset="100%" stop-color="#16a34a"/>
+          </linearGradient>
+        </defs>
+        <polygon points="32,3 58,17 58,47 32,61 6,47 6,17" fill="url(#eco1)" stroke="#4ade80" stroke-width="1.5"/>
+        <rect x="20" y="14" width="24" height="30" rx="3" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+        <line x1="25" y1="22" x2="39" y2="22" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="25" y1="28" x2="39" y2="28" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="25" y1="34" x2="33" y2="34" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="46" cy="47" r="11" fill="#22c55e" stroke="#052e16" stroke-width="2"/>
+        <path d="M46,38 C39,40 37,52 46,55 C55,52 53,40 46,38Z" fill="#052e16" opacity="0.85"/>
+        <path d="M46,38 C41,41 40,51 46,55 C52,51 51,41 46,38Z" fill="#86efac" opacity="0.5"/>
+        <line x1="46" y1="55" x2="46" y2="47" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="46" y1="43" x2="50" y2="47" stroke="#4ade80" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+      </svg>
+      <div class="auth-logo-title">ZeroPaper<span class="auth-logo-tm">™</span></div>
+      <div class="auth-logo-sub">GESTIÓN PORTUARIA DIGITAL</div>
+    </div>
+    <div class="auth-title">Iniciar sesión</div>
+    <div class="auth-sub">OPERADOR · EMPRESA</div>
+    <div class="auth-err" id="loginErr"></div>
+    <input class="auth-inp" id="loginEmail" type="email" placeholder="correo@empresa.cl" autocomplete="email">
+    <input class="auth-inp" id="loginPass" type="password" placeholder="Contraseña" autocomplete="current-password">
+    <button class="auth-btn" onclick="doLogin()">Entrar →</button>
+    <div class="auth-link" onclick="showRegister()">¿Primera vez? <span>Crear cuenta</span></div>
+  </div>
+</div>
+
+<!-- ══ REGISTRO ══ -->
+<div class="auth-screen" id="registerScreen" style="display:none">
+  <div class="auth-box" style="overflow-y:auto;max-height:96vh">
+    <div class="auth-logo">
+      <div class="auth-logo-title">ZeroPaper<span class="auth-logo-tm">™</span></div>
+      <div class="auth-logo-sub">NUEVA CUENTA</div>
+    </div>
+    <div class="auth-title">Crear cuenta</div>
+    <div class="auth-sub">COMPLETA TUS DATOS</div>
+    <div class="auth-err" id="registerErr"></div>
+    <input class="auth-inp" id="regNombre" placeholder="Tu nombre (ej: Juan Pérez)" autocomplete="name">
+    <input class="auth-inp" id="regEmail" type="email" placeholder="correo@empresa.cl" autocomplete="email">
+    <input class="auth-inp" id="regPass" type="password" placeholder="Contraseña (mín. 8 caracteres)">
+    <div class="auth-divider"></div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--mu);letter-spacing:1px;margin-bottom:10px">¿TIENES CÓDIGO DE EMPRESA?</div>
+    <input class="auth-inp" id="regCodigo" placeholder="Código (ej: ZP-A1B2) — dejar vacío para crear empresa nueva" style="text-transform:uppercase">
+    <div id="regEmpresaBox" style="display:block">
+      <input class="auth-inp" id="regEmpresa" placeholder="Nombre de tu empresa (ej: Silogport S.A.)">
+    </div>
+    <button class="auth-btn" onclick="doRegister()">Crear cuenta →</button>
+    <div class="auth-link" onclick="showLogin()">¿Ya tienes cuenta? <span>Iniciar sesión</span></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app" style="display:none">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="zp-logo-wrap">
+    <svg id="zpLogoSvg" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px;flex-shrink:0">
+      <defs><linearGradient id="eco2" x1="4" y1="2" x2="36" y2="38" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#052e16"/><stop offset="100%" stop-color="#16a34a"/></linearGradient></defs>
+      <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="url(#eco2)" stroke="#4ade80" stroke-width="1"/>
+      <rect x="13" y="9" width="14" height="19" rx="2" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.85)" stroke-width="1.4"/>
+      <line x1="16" y1="15" x2="24" y2="15" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+      <line x1="16" y1="19" x2="24" y2="19" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+      <line x1="16" y1="23" x2="21" y2="23" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+      <circle cx="29" cy="30" r="7" fill="#22c55e" stroke="#052e16" stroke-width="1.5"/>
+      <path d="M29,24 C25,26 24,33 29,35 C34,33 33,26 29,24Z" fill="#052e16" opacity="0.85"/>
+      <path d="M29,24 C26,26 26,33 29,35 C32,33 32,26 29,24Z" fill="#86efac" opacity="0.5"/>
+      <line x1="29" y1="35" x2="29" y2="30" stroke="#4ade80" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    <img id="empresaLogoImg" class="zp-logo-img" alt="" hidden>
+    <div style="display:flex;flex-direction:column;min-width:0;gap:0">
+      <div class="zp-logo" id="empresaLogoTxt">ZeroPaper™</div>
+      <div class="zp-logo-wm" id="empresaLogoWm">ZEROPAPER™</div>
+    </div>
+  </div>
+  <select class="depto-sel" id="deptoSel" onchange="cambiarDepto(this.value)">
+    <option value="">Selecciona depto</option>
+  </select>
+  <div class="topbar-btns">
+    <div class="ico-btn" id="installBtn" style="display:none" title="Instalar app">📲</div>
+    <div class="ico-btn" onclick="goTo('temas')" title="Tema">🎨</div>
+    <div class="ico-btn" onclick="goTo('config')" title="Config">⚙</div>
+  </div>
+</div>
+
+<!-- BADGE OFFLINE -->
+<div id="offBadge">Sin conexión</div>
+
+<!-- CONTENIDO PRINCIPAL -->
+<div class="scroll" id="mainScroll">
+
+  <!-- ▸ HOME ◂ -->
+  <div class="view active" id="vHome">
+    <div id="homeUserBadge"></div>
+    <div class="sec-row" style="margin-bottom:14px">
+      <div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--mu);letter-spacing:2px">DEPARTAMENTO ACTIVO</div>
+        <div style="font-weight:800;font-size:18px;margin-top:2px" id="homeDeptName">Sin departamento</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--mono);font-size:8px;color:var(--mu)">HOY</div>
+        <div style="font-weight:700;font-size:20px;color:var(--g2)" id="homeCount">0</div>
+      </div>
+    </div>
+
+    <div class="act-grid" id="actGrid">
+      <div class="act-btn ab-g" onclick="goTo('ingreso')">
+        <span class="ab-icon">🟢</span>
+        <span class="ab-label">CONTROL PUERTAS</span>
+        <span class="ab-title" style="color:#90caf9">INGRESO</span>
+      </div>
+      <div class="act-btn ab-o" onclick="goTo('salida')">
+        <span class="ab-icon">🔴</span>
+        <span class="ab-label">CONTROL PUERTAS</span>
+        <span class="ab-title co">SALIDA</span>
+      </div>
+    </div>
+
+    <div id="rechazoAlert" style="display:none"></div>
+    <div id="anomaliaAlert" style="display:none"></div>
+    <div id="aiSuggestions" style="display:none"></div>
+    <div class="sec-row">
+      <span class="sec-l">ÚLTIMAS OPERACIONES</span>
+      <span class="sec-a" onclick="goTo('historial')">Ver todo →</span>
+    </div>
+    <div id="homeList">
+      <div class="empty"><div class="empty-i">📋</div><div class="empty-t">Sin operaciones hoy</div></div>
+    </div>
+  </div>
+
+  <!-- ▸ INGRESO ◂ -->
+  <div class="view" id="vIngreso">
+    <div class="sec-row" style="margin-bottom:14px">
+      <span id="inFormTitle" style="font-weight:700;font-size:16px">📥 Nuevo Ingreso</span>
+      <span class="sec-a" onclick="goTo('home')">✕ Cancelar</span>
+    </div>
+    <div class="fotos-zone" id="fotosZoneIn"></div>
+    <input type="file" id="camIn" accept="image/*" capture="environment" style="display:none" onchange="addFoto(event,'in')">
+    <div class="frow" id="inPlateRow">
+      <div>
+        <label class="flbl" id="inPlateLbl">Patente</label>
+        <input class="finp" id="inPlate" placeholder="AB-CD-12" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div>
+        <label class="flbl">Folio</label>
+        <input class="finp" id="inFolio" placeholder="Nº">
+      </div>
+    </div>
+    <label class="flbl">Tipo de Documento</label>
+    <select class="fsel" id="inDocType"></select>
+    <label class="flbl">Observaciones</label>
+    <input class="finp" id="inObs" placeholder="Opcional...">
+    <button class="btn-prime btn-green" id="inBtn" onclick="confirmarOp('in')">✓ Confirmar Ingreso</button>
+  </div>
+
+  <!-- ▸ SALIDA ◂ -->
+  <div class="view" id="vSalida">
+    <div class="sec-row" style="margin-bottom:14px">
+      <span style="font-weight:700;font-size:16px">📤 Nueva Salida</span>
+      <span class="sec-a" onclick="goTo('home')">✕ Cancelar</span>
+    </div>
+    <div class="fotos-zone" id="fotosZoneOut"></div>
+    <input type="file" id="camOut" accept="image/*" capture="environment" style="display:none" onchange="addFoto(event,'out')">
+    <div class="frow">
+      <div>
+        <label class="flbl">Patente</label>
+        <input class="finp" id="outPlate" placeholder="AB-CD-12" oninput="this.value=this.value.toUpperCase()">
+      </div>
+      <div>
+        <label class="flbl">Folio</label>
+        <input class="finp" id="outFolio" placeholder="Nº">
+      </div>
+    </div>
+    <label class="flbl">Tipo de Documento</label>
+    <select class="fsel" id="outDocType"></select>
+    <label class="flbl">Observaciones</label>
+    <input class="finp" id="outObs" placeholder="Opcional...">
+    <button class="btn-prime btn-orange" id="outBtn" onclick="confirmarOp('out')">✓ Confirmar Salida</button>
+  </div>
+
+  <!-- ▸ HISTORIAL ◂ -->
+  <div class="view" id="vHistorial">
+    <div class="sec-row"><span class="sec-l">HISTORIAL</span><span class="sec-a" onclick="exportarCSV()">📊 Exportar</span></div>
+    <div class="search-bar">
+      <span class="search-ico">🔍</span>
+      <input class="search-inp" id="searchInp" placeholder="Buscar por patente, empresa, folio, operador, documento..." oninput="buscarOps(this.value)">
+    </div>
+    <div class="pills" id="filterPills">
+      <span class="pill on" onclick="filtrarH('TODOS',this)">Todos</span>
+      <span class="pill" onclick="filtrarH('INGRESO',this)">↓ Ingreso</span>
+      <span class="pill" onclick="filtrarH('SALIDA',this)">↑ Salida</span>
+    </div>
+    <div id="histList"></div>
+  </div>
+
+  <!-- ▸ BIBLIOTECA (depto tipo documentos) ◂ -->
+  <div class="view" id="vBiblioteca">
+    <div class="sec-row" style="margin-bottom:14px">
+      <span class="sec-l">📚 BIBLIOTECA DE DOCUMENTOS</span>
+      <span class="sec-a" onclick="exportarCSV()">📊 Exportar</span>
+    </div>
+    <div class="search-bar">
+      <span class="search-ico">🔍</span>
+      <input class="search-inp" id="bibSearchInp" placeholder="Buscar por documento, folio, referencia..." oninput="renderBiblioteca()">
+    </div>
+    <div class="pills" id="bibFilterPills"></div>
+    <div id="bibStats" style="font-family:var(--mono);font-size:10px;color:var(--mu);margin:6px 2px 12px;letter-spacing:.5px"></div>
+    <div id="bibGrid" class="bib-grid"></div>
+  </div>
+
+  <!-- ▸ TURNO ◂ -->
+  <div class="view" id="vTurno">
+    <div class="sec-row" style="margin-bottom:14px">
+      <span class="sec-l">MI TURNO</span>
+      <span class="sec-a" id="turnoInicioLabel"></span>
+    </div>
+
+    <div class="turno-header">
+      <div id="turnoNombreDisplay"></div>
+      <div class="turno-empresa" id="turnoEmpresaDisplay"></div>
+      <div class="turno-time" id="turnoTimeDisplay"></div>
+    </div>
+
+    <!-- Stats rápidas -->
+    <div class="stats-grid" id="turnoStats">
+      <div class="stat-box"><div class="stat-n" id="tsI">0</div><div class="stat-l">INGRESOS HOY</div></div>
+      <div class="stat-box"><div class="stat-n" id="tsS">0</div><div class="stat-l">SALIDAS HOY</div></div>
+      <div class="stat-box"><div class="stat-n" id="tsP">0</div><div class="stat-l">EN PLANTA</div></div>
+      <div class="stat-box"><div class="stat-n" id="tsF">0</div><div class="stat-l">CON FOTO</div></div>
+    </div>
+
+    <!-- Vehículos en planta (sin salida) -->
+    <div class="sec-row">
+      <span class="sec-l">VEHÍCULOS EN PLANTA</span>
+    </div>
+    <div id="pendientesList">
+      <div class="empty"><div class="empty-i">✅</div><div class="empty-t">Sin vehículos pendientes</div></div>
+    </div>
+
+    <!-- Handover -->
+    <div class="divider"></div>
+    <div class="sec-row"><span class="sec-l">CIERRE DE TURNO</span></div>
+    <div class="handover-box">
+      <label class="flbl">Nota para el próximo operador</label>
+      <textarea class="finp" id="turnoNota" placeholder="Novedades, pendientes, instrucciones..." rows="3" style="resize:none;height:80px"></textarea>
+      <button class="btn-cerrar-turno" onclick="cerrarTurno()">🔄 CERRAR TURNO Y TRASPASAR</button>
+    </div>
+
+    <!-- Portal cliente -->
+    <div class="divider"></div>
+    <div class="sec-row"><span class="sec-l">PORTAL CLIENTE</span></div>
+    <div class="link-portal">
+      <div class="link-portal-lbl">LINK DE SEGUIMIENTO EN TIEMPO REAL</div>
+      <div class="link-portal-url" id="portalLink">—</div>
+      <button class="btn-copy" onclick="copiarLink()">📋 COPIAR LINK</button>
+    </div>
+  </div>
+
+  <!-- ▸ DEPTOS ◂ -->
+  <div class="view" id="vDeptos">
+    <div class="sec-row">
+      <span class="sec-l">DEPARTAMENTOS</span>
+      <span class="sec-a" onclick="showModalNewDepto()">+ Agregar depto</span>
+    </div>
+    <div id="deptosList"></div>
+    <div class="divider"></div>
+    <div class="sec-row">
+      <span class="sec-l">TIPOS DE DOCUMENTO</span>
+    </div>
+    <div style="font-family:var(--mono);font-size:12px;color:var(--mu);margin-bottom:12px;line-height:1.6;">
+      Tipos de documento disponibles en el departamento activo. Puedes agregar los que falten.
+    </div>
+    <button class="btn-prime btn-blue" style="margin-bottom:12px;font-size:15px;padding:16px;" onclick="showModalNewDoc()">
+      + Agregar tipo de documento
+    </button>
+    <div id="docsList"></div>
+  </div>
+
+  <!-- ▸ TEMAS ◂ -->
+  <div class="view" id="vTemas">
+    <div class="sec-row"><span class="sec-l">APARIENCIA</span></div>
+    <div class="theme-grid">
+      <div class="theme-btn on" onclick="setTema('oscuro',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#0d0d1a,#1a1a35)"></div>
+        OSCURO
+      </div>
+      <div class="theme-btn" onclick="setTema('claro',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#f0f4f8,#ffffff)"></div>
+        CLARO
+      </div>
+      <div class="theme-btn" onclick="setTema('azul',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#0a1628,#0d1f3c)"></div>
+        AZUL
+      </div>
+      <div class="theme-btn" onclick="setTema('contraste',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#000,#111)"></div>
+        CONTRASTE
+      </div>
+    </div>
+    <div class="sec-row" style="margin-top:14px"><span class="sec-l">CORPORATIVOS</span></div>
+    <div class="theme-grid">
+      <div class="theme-btn" onclick="setTema('marino',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#0a1628,#1e6fb5)"></div>
+        MARINO
+      </div>
+      <div class="theme-btn" onclick="setTema('corporativo',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#f0f4f8,#2b6cb0)"></div>
+        CORPORATIVO
+      </div>
+      <div class="theme-btn" onclick="setTema('ejecutivo',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#1c1c1e,#30d158)"></div>
+        EJECUTIVO
+      </div>
+      <div class="theme-btn" onclick="setTema('vinotinto',this)">
+        <div class="theme-preview" style="background:linear-gradient(135deg,#1a0a0f,#c0392b)"></div>
+        VINOTINTO
+      </div>
+    </div>
+    <div class="sec-row" style="margin-top:8px"><span class="sec-l">TAMAÑO DE TEXTO</span></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn-prime btn-gray" onclick="setFontSize(14)" style="font-size:12px">A Pequeño</button>
+      <button class="btn-prime btn-gray" onclick="setFontSize(16)" style="font-size:14px">A Normal</button>
+      <button class="btn-prime btn-gray" onclick="setFontSize(18)" style="font-size:16px">A Grande</button>
+    </div>
+  </div>
+
+  <!-- ▸ CONFIG ◂ -->
+  <div class="view" id="vConfig">
+    <div class="sec-row"><span class="sec-l">CONFIGURACIÓN</span></div>
+    <div class="card" id="configUserCard">
+      <div class="card-title">MI CUENTA</div>
+      <div id="configUserInfo" style="font-family:var(--mono);font-size:11px;color:var(--mu);margin-bottom:12px"></div>
+      <label class="flbl">Nombre del operador</label>
+      <input class="finp" id="cfgOperador" placeholder="Juan Pérez">
+      <button class="btn-prime btn-green" onclick="guardarNombre()">✓ Guardar nombre</button>
+    </div>
+    <div class="card" style="margin-top:10px" id="configEmpresaCard">
+      <div class="card-title">IDENTIDAD DE EMPRESA</div>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+        <img id="cfgLogoPreview" alt="Logo empresa"
+          style="width:64px;height:64px;border-radius:12px;object-fit:cover;background:var(--bg3);border:1px solid var(--brd)">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:13px;color:var(--fg);margin-bottom:2px" id="cfgEmpresaNombre">—</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--mu);letter-spacing:.5px">Logo · marca de agua: ZeroPaper™</div>
+        </div>
+      </div>
+      <input type="file" id="cfgLogoFile" accept="image/*" style="display:none" onchange="subirLogoEmpresa(this)">
+      <button class="btn-prime btn-blue" style="width:100%;margin-bottom:6px" onclick="document.getElementById('cfgLogoFile').click()">🖼 Subir logo de la empresa</button>
+      <button class="btn-prime btn-gray" style="width:100%" onclick="quitarLogoEmpresa()">✕ Quitar logo</button>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-top:8px;line-height:1.5;letter-spacing:.5px">
+        El logo aparecerá en la barra superior. ZeroPaper™ se mantiene como marca secundaria (no removible).
+      </div>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-title">DATOS</div>
+      <button class="btn-prime btn-gray" style="margin-bottom:8px" onclick="exportarCSV()">📊 Exportar CSV</button>
+      <button class="btn-prime btn-gray" style="margin-bottom:8px" onclick="resetDeptos()">🔄 Restaurar departamentos por defecto</button>
+      <button class="btn-prime btn-gray" style="margin-bottom:8px" onclick="if(confirm('¿Borrar todos los datos locales?')){limpiarDatos()}">🗑 Limpiar datos locales</button>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="card-title">ADMINISTRACIÓN</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:10px">Panel de gestión y estadísticas completas.</div>
+      <a href="/admin" target="_blank" style="text-decoration:none">
+        <button class="btn-prime btn-green" style="width:100%;margin-bottom:8px">🖥 Abrir Panel Admin</button>
+      </a>
+      <a href="/owner" target="_blank" style="text-decoration:none">
+        <button class="btn-prime btn-blue" style="width:100%;margin-bottom:8px">📊 Panel Owner</button>
+      </a>
+      <button class="btn-prime btn-gray" onclick="doLogout()">🔓 Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- ▸ IA ASISTENTE ◂ -->
+  <div class="view" id="vIa">
+    <div class="sec-row" style="margin-bottom:0">
+      <span class="sec-l">🤖 ASISTENTE IA</span>
+      <span class="sec-a" onclick="zpClearChat()">Limpiar</span>
+    </div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--mu);margin:4px 0 12px;letter-spacing:.5px">Busca operaciones, documentos o haz preguntas sobre el sistema.</div>
+    <!-- Chips sugeridos -->
+    <div id="zpChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+      <button class="pill" onclick="zpAsk('Operaciones de hoy')">📅 Hoy</button>
+      <button class="pill" onclick="zpAsk('¿Qué es un EIR?')">📄 ¿Qué es EIR?</button>
+      <button class="pill" onclick="zpAsk('¿Cómo busco por patente?')">🔍 Buscar patente</button>
+      <button class="pill" onclick="zpAsk('¿Qué es DAM?')">📋 ¿Qué es DAM?</button>
+      <button class="pill" onclick="zpAsk('Resumen del turno')">🔄 Mi turno</button>
+      <button class="pill" onclick="zpAsk('¿Cómo exporto datos?')">📊 Exportar</button>
+    </div>
+    <!-- Mensajes -->
+    <div id="zpMsgs" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;min-height:200px"></div>
+    <!-- Input -->
+    <div style="display:flex;gap:8px;position:sticky;bottom:0;background:var(--bg);padding:8px 0">
+      <input id="zpInput" class="finp" placeholder="Pregunta o escribe una patente/empresa/folio..." style="flex:1"
+        onkeydown="if(event.key==='Enter')zpSend()">
+      <button class="btn-prime btn-green" onclick="zpSend()" aria-label="Enviar mensaje al asistente IA" style="width:56px;padding:0;font-size:20px">➤</button>
+    </div>
+  </div>
+
+  <!-- ▸ ARCHIVADORES ◂ -->
+  <div class="view" id="vArchivos">
+    <div class="sec-row" style="margin-bottom:4px">
+      <span class="sec-l" id="archTitulo">🗂 ARCHIVADORES</span>
+      <span class="sec-a" id="archBtnNuevo" onclick="archNuevaCarpeta()" style="display:none">＋ Carpeta</span>
+    </div>
+    <div class="arch-breadcrumb" id="archBreadcrumb"></div>
+    <div class="search-bar" style="margin-bottom:12px">
+      <span class="search-ico">🔍</span>
+      <input class="search-inp" id="archSearch" placeholder="Buscar documentos..." oninput="archFiltrar(this.value)">
+    </div>
+    <div id="archContent"></div>
+  </div>
+
+</div><!-- fin scroll -->
+
+<!-- NAV -->
+<nav>
+  <div class="ftab on" id="t-home"      onclick="goTo('home')">      <span class="ftab-i">⌂</span>   <span class="ftab-l">INICIO</span></div>
+  <div class="ftab"    id="t-historial" onclick="goTo('historial')">  <span class="ftab-i">📋</span>  <span class="ftab-l">HISTORIAL</span></div>
+  <div class="ftab"    id="t-archivos"  onclick="goTo('archivos')">   <span class="ftab-i">🗂</span>   <span class="ftab-l">ARCHIVO</span></div>
+  <div class="ftab"    id="t-turno"     onclick="goTo('turno')">      <span class="ftab-i">🔄</span>  <span class="ftab-l">TURNO</span></div>
+  <div class="ftab"    id="t-ia"        onclick="goTo('ia')">         <span class="ftab-i">🤖</span>  <span class="ftab-l">IA</span></div>
+</nav>
+
+<!-- SCANNER MODAL (fuera del app div) -->
+<div class="scanner-modal" id="scannerModal" style="display:none;">
+  <div class="scanner-header">
+    <div style="color:#fff;font-weight:700;font-size:15px;">📷 Escáner Inteligente</div>
+    <button class="scanner-close" onclick="cerrarScanner()">✕</button>
+  </div>
+  <div class="scanner-video-wrap">
+    <video id="scannerVideo" autoplay playsinline muted></video>
+    <canvas id="scannerCanvas"></canvas>
+    <div class="scanner-guide" id="scannerGuide">
+      <div class="scanner-guide-corner tl"></div>
+      <div class="scanner-guide-corner tr"></div>
+      <div class="scanner-guide-corner bl"></div>
+      <div class="scanner-guide-corner br"></div>
+    </div>
+    <div class="scanner-hint" id="scannerHint">Encuadra el documento</div>
+  </div>
+  <div class="scanner-footer">
+    <div class="scanner-mode-btns">
+      <button class="scanner-mode-btn active" id="smode_color" onclick="setScanMode('color')">🎨 Color</button>
+      <button class="scanner-mode-btn" id="smode_bw" onclick="setScanMode('bw')">⬛ B/N</button>
+      <button class="scanner-mode-btn" id="smode_enhance" onclick="setScanMode('enhance')">✨ Mejorado</button>
+    </div>
+    <button class="scanner-capture-btn" id="scannerCaptureBtn" onclick="capturarDesdeScanner()">📸</button>
+    <div style="text-align:center;color:rgba(255,255,255,.4);font-size:11px;font-family:var(--mono);">
+      Toca el botón para capturar y analizar con IA
+    </div>
+  </div>
+</div>
+
+</div><!-- fin app -->
+
+<!-- TOAST -->
+<div id="toast"><div class="t-icon" id="tIco"></div><div><div class="t-title" id="tTit"></div><div class="t-sub" id="tSub"></div></div></div>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════
+   ZeroPaper™ v6.0 — Multi-Empresa + Auth
+   © 2025 ZeroPaper™
+═══════════════════════════════════════════ */
+
+// ── FIREBASE CONFIG ──
+const FB = {
+  projectId: 'zeropaper-prod',
+  apiKey:    'AIzaSyCli7F4hLi-XEmmekGZpO2KQ1SO612I85Y'
+};
+const FS_BASE = () => `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
+
+// ── CONSTANTES ──
+const DB_NAME  = 'zp5_db';
+const DB_VER   = 1;
+const K_DEPTOS = 'zp5_deptos';
+const K_DEPTO  = 'zp5_depto_activo';
+const K_TEMA   = 'zp5_tema';
+const K_SESSION= 'zp5_session';
+const K_TURNO  = 'zp5_turno_inicio';
+
+// ── DEPARTAMENTOS PREDEFINIDOS ──
+// tipo: 'acceso' = control de puertas (ingreso/salida vehículos)
+// tipo: 'documentos' = gestión documental (escanear, guardar, visualizar)
+const DEPTOS_DEFAULT = [
+  { id:'recepcion', nombre:'Control de Acceso', icon:'🚪', tipo:'acceso', desc:'Ingreso y salida · Control de puertas',
+    docs:['GUIA_DESPACHO','ORDEN_COMPRA','FACTURA','NOTA_ENTREGA','RECIBO_MERCADERIA','CONTROL_ACCESO','PASE_SALIDA'] },
+  { id:'guarda_almacen', nombre:'Guarda Almacén', icon:'🏭', tipo:'documentos', desc:'Cabotaje nacional',
+    docs:['CONOCIMIENTO_EMBARQUE','GUIA_CABOTAJE','MANIFIESTO','LISTA_EMPAQUE','ORDEN_CARGA','RECIBO_BODEGA','AUTORIZACIÓN_SALIDA','NOTA_COBRO'] },
+  { id:'control', nombre:'Control', icon:'📦', tipo:'documentos', desc:'Contenedores · Intercheck',
+    docs:['INTERCHECK','EIR','BOOKING','GATE_IN','GATE_OUT','DAMAGE_REPORT','SEAL_REPORT','CONTENEDOR_VACÍO','CONTENEDOR_LLENO','TARJA'] }
+];
+
+// ── ESTADO ──
+let db         = null;
+let session    = null; // { uid, idToken, refreshToken, expiresAt, email, nombre, empresaId, empresaNombre, rol }
+let deptos     = [];
+let deptoActivo= null;
+let curFiltro  = 'TODOS';
+let fotosDir   = { in: [], out: [] };
+let toastTimer = null;
+let turnoInicio= null;
+let _zpFotoArr = null; // cache global para visor de fotos
+
+// ══════════════════════════════════════
+//  AUTH PROPIO — SHA-256 + Firestore
+//  (No requiere Firebase Auth habilitado)
+// ══════════════════════════════════════
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function emailToUid(email) {
+  // uid deterministico basado en email (para lookup directo)
+  return email.toLowerCase().replace(/[^a-z0-9]/g,'_').slice(0,40);
+}
+
+function genToken() {
+  const arr = new Uint8Array(32);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// getValidToken — verifica expiración de sesión local
+function getValidToken() {
+  if (!session) return null;
+  if (Date.now() > session.expiresAt) return null; // sesión expirada, no forzar logout
+  return session.localToken || 'local';
+}
+
+// ══════════════════════════════════════
+//  SESIÓN
+// ══════════════════════════════════════
+
+function saveSession() {
+  sessionStorage.setItem(K_SESSION, JSON.stringify(session));
+  // TV dashboard (otra pestaña) necesita empresa desde localStorage
+  if (session?.empresaId) {
+    localStorage.setItem('zp5_session', JSON.stringify({ empresaId: session.empresaId, empresaNombre: session.empresaNombre }));
+  }
+}
+
+function loadSession() {
+  try {
+    const s = sessionStorage.getItem(K_SESSION);
+    if (s) { session = JSON.parse(s); return; }
+    // Puente: sesión creada por zeropaper_login.html (clave unificada)
+    const u = sessionStorage.getItem('zp_unified_session');
+    if (u) {
+      const p = JSON.parse(u);
+      if (p?.email && p?.role) {
+        session = {
+          uid:          p.uid || emailToUid(p.email),
+          email:        p.email,
+          localToken:   genToken(),
+          expiresAt:    Date.now() + 12 * 3600 * 1000,
+          nombre:       p.name || p.nombre || p.email.split('@')[0],
+          empresaId:    p.empresaId || '',
+          empresaNombre:p.company  || p.empresaNombre || '',
+          rol:          p.role || 'operador'
+        };
+        saveSession();
+      }
+    }
+  } catch(e) { session = null; }
+}
+
+function doLogout() {
+  session = null;
+  sessionStorage.removeItem(K_SESSION);
+  localStorage.removeItem(K_SESSION); // limpiar sesiones viejas de localStorage
+  document.getElementById('app').style.display = 'none';
+  showLogin();
+}
+
+// ══════════════════════════════════════
+//  FIRESTORE HELPERS
+// ══════════════════════════════════════
+
+function toFsDoc(obj) {
+  const fields = {};
+  for (const [k,v] of Object.entries(obj)) {
+    if (v === null || v === undefined) continue;
+    if (typeof v === 'number')  fields[k] = { integerValue: String(Math.round(v)) };
+    else if (typeof v === 'boolean') fields[k] = { booleanValue: v };
+    else fields[k] = { stringValue: String(v) };
+  }
+  return { fields };
+}
+
+function parseFs(doc) {
+  const out = { _id: doc.name?.split('/').pop() };
+  for (const [k,v] of Object.entries(doc.fields || {})) {
+    if (v.stringValue  !== undefined) out[k] = v.stringValue;
+    else if (v.integerValue !== undefined) out[k] = parseInt(v.integerValue);
+    else if (v.booleanValue !== undefined) out[k] = v.booleanValue;
+  }
+  return out;
+}
+
+async function fsGet(path) {
+  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+async function fsList(path) {
+  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}&pageSize=500`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+async function fsSet(path, data) {
+  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}`;
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(toFsDoc(data))
+  });
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+async function fsPost(path, data) {
+  const url = `${FS_BASE()}/${path}?key=${FB.apiKey}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(toFsDoc(data))
+  });
+  if (!res.ok) throw new Error(res.status);
+  return res.json();
+}
+
+// ══════════════════════════════════════
+//  PERFIL DE USUARIO
+// ══════════════════════════════════════
+
+async function cargarPerfil(uid) {
+  try {
+    const doc = await fsGet(`usuarios/${uid}`);
+    const p = parseFs(doc);
+    return p.email ? p : null;
+  } catch(e) { return null; }
+}
+
+async function crearEmpresa(empresaNombre) {
+  const empresaId = 'emp_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+  const codigo = empresaId.slice(4,10).toUpperCase();
+  const data = { nombre: empresaNombre, codigo, creadoEn: Date.now(), activa: true };
+  await fsSet(`empresas/${empresaId}/perfil/datos`, data);
+  await fsSet(`codigoEmpresas/${codigo}`, { empresaId, empresaNombre: empresaNombre });
+  return { empresaId, codigo };
+}
+
+async function buscarEmpresaPorCodigo(codigo) {
+  try {
+    const doc = await fsGet(`codigoEmpresas/${codigo.toUpperCase().trim()}`);
+    const data = parseFs(doc);
+    return data.empresaId ? data : null;
+  } catch(e) { return null; }
+}
+
+// ══════════════════════════════════════
+//  LOGIN / REGISTRO UI
+// ══════════════════════════════════════
+
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('registerScreen').style.display = 'none';
+}
+
+function showRegister() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('registerScreen').style.display = 'flex';
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass  = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.textContent = '';
+  if (!email || !pass) { errEl.textContent = 'Completa todos los campos'; return; }
+
+  const btn = document.querySelector('#loginScreen .auth-btn');
+  btn.textContent = '⏳ Ingresando...'; btn.disabled = true;
+
+  try {
+    const uid  = emailToUid(email);
+    const hash = await sha256(email + '::' + pass);
+
+    const doc = await fsGet(`usuarios/${uid}`);
+    const perfil = parseFs(doc);
+
+    if (!perfil.passHash || perfil.passHash !== hash) {
+      errEl.textContent = 'Correo o contraseña incorrectos';
+      btn.textContent = 'Entrar →'; btn.disabled = false;
+      return;
+    }
+
+    session = {
+      uid, email,
+      localToken:  genToken(),
+      expiresAt:   Date.now() + 12 * 3600 * 1000, // 12 horas
+      nombre:      perfil.nombre || email.split('@')[0],
+      empresaId:   perfil.empresaId,
+      empresaNombre: perfil.empresaNombre,
+      rol:         perfil.rol || 'operador'
+    };
+    saveSession();
+    // Actualizar último login en operadores
+    try {
+      await fsSet(`empresas/${perfil.empresaId}/operadores/${uid}`, {
+        nombre: perfil.nombre || email.split('@')[0],
+        email, rol: perfil.rol || 'operador',
+        creadoEn: perfil.creadoEn || Date.now()
+      });
+    } catch(e) {}
+    iniciarApp();
+    await renderHome();
+  } catch(e) {
+    errEl.textContent = 'Correo o contraseña incorrectos';
+  }
+  btn.textContent = 'Entrar →'; btn.disabled = false;
+}
+
+async function doRegister() {
+  const nombre    = document.getElementById('regNombre').value.trim();
+  const email     = document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass      = document.getElementById('regPass').value;
+  const codigo    = document.getElementById('regCodigo').value.trim().toUpperCase();
+  const empNombre = document.getElementById('regEmpresa').value.trim();
+  const errEl     = document.getElementById('registerErr');
+  errEl.textContent = '';
+
+  if (!nombre || !email || pass.length < 8) {
+    errEl.textContent = 'Completa nombre, correo y contraseña (mín. 8 caracteres)'; return;
+  }
+
+  const btn = document.querySelector('#registerScreen .auth-btn');
+  btn.textContent = '⏳ Creando cuenta...'; btn.disabled = true;
+
+  try {
+    const uid  = emailToUid(email);
+    const hash = await sha256(email + '::' + pass);
+
+    // Verificar si el correo ya existe
+    try {
+      const existing = await fsGet(`usuarios/${uid}`);
+      const ex = parseFs(existing);
+      if (ex.passHash) {
+        errEl.textContent = 'Este correo ya está registrado. Inicia sesión.';
+        btn.textContent = 'Crear cuenta →'; btn.disabled = false;
+        return;
+      }
+    } catch(e) { /* no existe, OK */ }
+
+    let empresaId, empresaNombre;
+
+    if (codigo) {
+      const emp = await buscarEmpresaPorCodigo(codigo);
+      if (!emp) {
+        errEl.textContent = 'Código de empresa no válido';
+        btn.textContent = 'Crear cuenta →'; btn.disabled = false;
+        return;
+      }
+      empresaId = emp.empresaId;
+      empresaNombre = emp.empresaNombre;
+    } else {
+      if (!empNombre) {
+        errEl.textContent = 'Ingresa el nombre de tu empresa o un código de empresa';
+        btn.textContent = 'Crear cuenta →'; btn.disabled = false;
+        return;
+      }
+      const emp = await crearEmpresa(empNombre);
+      empresaId = emp.empresaId;
+      empresaNombre = empNombre;
+    }
+
+    const rol = codigo ? 'operador' : 'admin';
+
+    await fsSet(`usuarios/${uid}`, {
+      nombre, email, passHash: hash, empresaId, empresaNombre,
+      rol, creadoEn: Date.now()
+    });
+
+    await fsSet(`empresas/${empresaId}/operadores/${uid}`, {
+      nombre, email, rol, creadoEn: Date.now()
+    });
+
+    session = {
+      uid, email,
+      localToken:   genToken(),
+      expiresAt:    Date.now() + 12 * 3600 * 1000,
+      nombre, empresaId, empresaNombre, rol
+    };
+    saveSession();
+    iniciarApp();
+    await renderHome();
+  } catch(e) {
+    errEl.textContent = 'Error al crear cuenta. Intenta nuevamente.';
+  }
+  btn.textContent = 'Crear cuenta →'; btn.disabled = false;
+}
+
+document.getElementById('regCodigo').addEventListener('input', function() {
+  document.getElementById('regEmpresaBox').style.display = this.value.trim() ? 'none' : 'block';
+});
+
+// ══════════════════════════════════════
+//  INDEXEDDB
+// ══════════════════════════════════════
+
+function initDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('ops')) {
+        const s = d.createObjectStore('ops', { keyPath:'id' });
+        s.createIndex('tipo','tipo',{unique:false});
+        s.createIndex('ts','ts',{unique:false});
+        s.createIndex('empresaId','empresaId',{unique:false});
+      }
+      if (!d.objectStoreNames.contains('fotos'))
+        d.createObjectStore('fotos', { keyPath:'id' });
+    };
+    req.onsuccess = e => { db = e.target.result; res(); };
+    req.onerror   = e => rej(e);
+  });
+}
+
+function dbPut(store, obj) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readwrite');
+    const req = tx.objectStore(store).put(obj);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbGet(store, key) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readonly');
+    const req = tx.objectStore(store).get(key);
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbGetAll(store) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => res(req.result);
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+function dbDelete(store, key) {
+  return new Promise((res,rej) => {
+    const tx = db.transaction(store,'readwrite');
+    const req = tx.objectStore(store).delete(key);
+    req.onsuccess = () => res();
+    req.onerror   = () => rej(req.error);
+  });
+}
+
+async function getOpsEmpresa() {
+  if (!session) return [];
+  const all = await dbGetAll('ops');
+  return all.filter(o => o.empresaId === session.empresaId).sort((a,b) => b.ts - a.ts);
+}
+
+// ══════════════════════════════════════
+//  NAVEGACIÓN
+// ══════════════════════════════════════
+
+const VIEWS = ['home','ingreso','salida','historial','biblioteca','turno','deptos','temas','config','ia','archivos'];
+const TABS  = ['home','historial','archivos','turno','ia'];
+
+function goTo(name) {
+  VIEWS.forEach(v => {
+    document.getElementById('v'+cap(v))?.classList.remove('active');
+    if (TABS.includes(v)) document.getElementById('t-'+v)?.classList.remove('on');
+  });
+  document.getElementById('v'+cap(name))?.classList.add('active');
+  if (TABS.includes(name)) document.getElementById('t-'+name)?.classList.add('on');
+  document.getElementById('mainScroll').scrollTop = 0;
+  if (name==='home')      renderHome();
+  if (name==='historial') renderHistorial();
+  if (name==='biblioteca') renderBiblioteca();
+  if (name==='turno')     renderTurno();
+  if (name==='deptos')    renderDeptos();
+  if (name==='ingreso')   prepForm('in');
+  if (name==='salida')    prepForm('out');
+  if (name==='config')    cargarConfig();
+  if (name==='temas')     cargarTema();
+  if (name==='ia')        renderIA();
+  if (name==='archivos')  renderArchivos();
+}
+
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ══════════════════════════════════════
+//  DEPARTAMENTOS
+// ══════════════════════════════════════
+
+function cargarDeptos() {
+  const saved = localStorage.getItem(K_DEPTOS);
+  deptos = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEPTOS_DEFAULT));
+  const deptoId = localStorage.getItem(K_DEPTO) || deptos[0]?.id;
+  deptoActivo = deptos.find(d => d.id === deptoId) || deptos[0];
+  actualizarSelectorDepto();
+}
+
+function actualizarSelectorDepto() {
+  const sel = document.getElementById('deptoSel');
+  sel.innerHTML = deptos.map(d =>
+    `<option value="${d.id}" ${d.id===deptoActivo?.id?'selected':''}>${d.icon} ${d.nombre}</option>`
+  ).join('');
+}
+
+function cambiarDepto(id) {
+  deptoActivo = deptos.find(d => d.id === id);
+  if (deptoActivo) {
+    localStorage.setItem(K_DEPTO, id);
+    renderHome();
+    showToast('🏗', 'Departamento', deptoActivo.nombre);
+  }
+}
+
+function getDocTypes() {
+  return deptoActivo?.docs || [];
+}
+
+function prepForm(dir) {
+  const docs = getDocTypes();
+  const selId = dir==='in' ? 'inDocType' : 'outDocType';
+  const sel = document.getElementById(selId);
+  sel.innerHTML = docs.map(d => `<option value="${d}">${d.replace(/_/g,' ')}</option>`).join('');
+  ['Plate','Folio','Obs'].forEach(f => {
+    const el = document.getElementById((dir==='in'?'in':'out')+f);
+    if (el) el.value = '';
+  });
+  fotosDir[dir] = [];
+  renderFotosZone(dir);
+  // Adaptar formulario según tipo de departamento (sólo formulario de ingreso)
+  if (dir === 'in') {
+    const esDoc = deptoActivo?.tipo === 'documentos';
+    const title = document.getElementById('inFormTitle');
+    const btn   = document.getElementById('inBtn');
+    const plateRow = document.getElementById('inPlateRow');
+    const plateLbl = document.getElementById('inPlateLbl');
+    const platInp  = document.getElementById('inPlate');
+    if (title) title.textContent = esDoc ? '📷 Escanear documento' : '📥 Nuevo Ingreso';
+    if (btn)   btn.textContent   = esDoc ? '✓ Guardar documento' : '✓ Confirmar Ingreso';
+    if (plateLbl) plateLbl.textContent = esDoc ? 'Referencia (opcional)' : 'Patente';
+    if (platInp)  platInp.placeholder  = esDoc ? 'Cliente / código' : 'AB-CD-12';
+    if (plateRow) plateRow.style.display = ''; // sigue visible: folio es útil para ambos
+  }
+}
+
+// ══════════════════════════════════════
+//  FOTOS MÚLTIPLES
+// ══════════════════════════════════════
+
+function renderFotosZone(dir) {
+  const zoneId = dir==='in' ? 'fotosZoneIn' : 'fotosZoneOut';
+  const zone = document.getElementById(zoneId);
+  if (!zone) return;
+  const fotos = fotosDir[dir];
+  const thumbsHtml = fotos.map((f, i) => `
+    <div class="foto-thumb" onclick="verFotoCaptura('${dir}',${i})" style="cursor:pointer">
+      <img src="${f.data}" alt="doc ${i+1}">
+      <button class="foto-remove" onclick="event.stopPropagation();removeFoto('${dir}',${i})">✕</button>
+      <span class="foto-num">${i+1}</span>
+    </div>`).join('');
+  const camId = dir==='in' ? 'camIn' : 'camOut';
+  zone.innerHTML = `
+    ${fotos.length > 0 ? `<div class="fotos-grid">${thumbsHtml}</div>` : ''}
+    <div class="foto-add-btn" onclick="document.getElementById('${camId}').click()">
+      📷 ${fotos.length === 0 ? 'Agregar foto del documento' : 'Agregar otra foto'}
+      ${fotos.length > 0 ? `<span class="foto-count">${fotos.length} foto${fotos.length>1?'s':''}</span>` : ''}
+    </div>
+    ${fotos.length > 0 ? `
+    <button class="btn-prime btn-green" style="margin-top:10px;padding:14px;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;" 
+      id="ocrBtn_${dir}" onclick="runOCR('${dir}')">
+      <span>🧠</span> <span>Leer documento con IA</span>
+    </button>
+    <div id="ocrResult_${dir}" style="display:none;margin-top:10px;"></div>
+    ` : ''}`;
+}
+
+// ══════════════════════════════════════
+//  VER FOTO CAPTURADA — VISOR FULL SCREEN
+// ══════════════════════════════════════
+
+function verFotoCaptura(dir, idx) {
+  const fotos = fotosDir[dir];
+  if (!fotos || !fotos[idx]) return;
+  const prev = document.getElementById('fotoViewerModal');
+  if (prev) prev.remove();
+  const total = fotos.length;
+  const f = fotos[idx];
+  const m = document.createElement('div');
+  m.id = 'fotoViewerModal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;';
+  m.innerHTML = `
+    <div style="width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="color:#22c55e;font-family:'Space Mono',monospace;font-size:13px;">📷 Foto ${idx+1} / ${total}</span>
+        <button onclick="document.getElementById('fotoViewerModal').remove()" style="background:none;border:1px solid #444;color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+      <img src="${f.data}" alt="Documento" style="width:100%;max-height:65vh;object-fit:contain;border-radius:12px;border:1px solid #333;">
+      ${total > 1 ? `
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button onclick="verFotoCaptura('${dir}',${Math.max(0,idx-1)})" ${idx===0?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===0?'#222':'#1a6b3a'};color:#fff;font-size:13px;cursor:${idx===0?'default':'pointer'};">← Anterior</button>
+        <button onclick="verFotoCaptura('${dir}',${Math.min(total-1,idx+1)})" ${idx===total-1?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===total-1?'#222':'#22c55e'};color:#fff;font-size:13px;cursor:${idx===total-1?'default':'pointer'};">Siguiente →</button>
+      </div>` : ''}
+    </div>`;
+  m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  document.body.appendChild(m);
+}
+
+// ══════════════════════════════════════
+//  VER FOTO DE HISTORIAL — VISOR FULL SCREEN
+// ══════════════════════════════════════
+
+function verFotoHistorial(fotosArr, idx) {
+  _zpFotoArr = fotosArr; // guardar en cache global
+  const prev = document.getElementById('fotoHistorialModal');
+  if (prev) prev.remove();
+  const total = fotosArr.length;
+  const src = fotosArr[idx];
+  const m = document.createElement('div');
+  m.id = 'fotoHistorialModal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;';
+  m.innerHTML = `
+    <div style="width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="color:var(--g2);font-family:var(--mono);font-size:12px;letter-spacing:1px;">📄 DOC ${idx+1} / ${total}</span>
+        <button onclick="document.getElementById('fotoHistorialModal').remove()" style="background:none;border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <img src="${src}" alt="Documento" style="width:100%;max-height:70vh;object-fit:contain;border-radius:12px;border:1px solid var(--brd);">
+      ${total > 1 ? `
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('fotoHistorialModal').remove();verFotoHistorial(_zpFotoArr,${Math.max(0,idx-1)})" ${idx===0?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===0?'rgba(255,255,255,.05)':'var(--g)'};color:#fff;font-size:13px;cursor:${idx===0?'default':'pointer'};opacity:${idx===0?.4:1}">← Anterior</button>
+        <button onclick="document.getElementById('fotoHistorialModal').remove();verFotoHistorial(_zpFotoArr,${Math.min(total-1,idx+1)})" ${idx===total-1?'disabled':''} style="flex:1;padding:12px;border-radius:10px;border:none;background:${idx===total-1?'rgba(255,255,255,.05)':'var(--g2)'};color:#fff;font-size:13px;cursor:${idx===total-1?'default':'pointer'};opacity:${idx===total-1?.4:1}">Siguiente →</button>
+      </div>` : ''}
+      <a href="${src}" download="documento_${idx+1}.jpg" style="text-align:center;padding:10px;border-radius:10px;border:1px solid var(--brd);color:var(--mu);font-size:12px;font-family:var(--mono);text-decoration:none;letter-spacing:1px;">⬇ DESCARGAR IMAGEN</a>
+    </div>`;
+  m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  document.body.appendChild(m);
+}
+
+// ══════════════════════════════════════
+//  OCR — LECTURA INTELIGENTE
+// ══════════════════════════════════════
+
+async function runOCR(dir) {
+  const fotos = fotosDir[dir];
+  if (!fotos.length) return;
+
+  const btn = document.getElementById(`ocrBtn_${dir}`);
+  if (btn) {
+    btn.innerHTML = '<span style="animation:pulse 1s infinite">🧠</span> <span>Analizando documento...</span>';
+    btn.disabled = true;
+  }
+
+  try {
+    const res = await fetch('/api/ocr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: fotos[0].data })
+    });
+    if (!res.ok) {
+      showToast('⚠', 'OCR no disponible', 'Rellena los campos manualmente');
+      if (btn) { btn.innerHTML = '<span>🧠</span> <span>Reintentar lectura</span>'; btn.disabled = false; }
+      return;
+    }
+    const data = await res.json();
+
+    if (data.error) {
+      showToast('⚠', 'OCR Error', data.error);
+      if (btn) { btn.innerHTML = '<span>🧠</span> <span>Reintentar lectura</span>'; btn.disabled = false; }
+      return;
+    }
+
+    // Auto-fill fields with detected data
+    const pre = dir === 'in' ? 'in' : 'out';
+    let filled = [];
+
+    if (data.patente) {
+      const plateEl = document.getElementById(pre + 'Plate');
+      if (plateEl) { plateEl.value = data.patente; plateEl.style.borderColor = 'var(--g2)'; }
+      filled.push('Patente');
+    }
+    if (data.folio) {
+      const folioEl = document.getElementById(pre + 'Folio');
+      if (folioEl) { folioEl.value = data.folio; folioEl.style.borderColor = 'var(--g2)'; }
+      filled.push('Folio');
+    }
+    if (data.tipoDocumento) {
+      const docEl = document.getElementById(pre + 'DocType');
+      if (docEl) {
+        const opts = Array.from(docEl.options);
+        const match = opts.find(o => o.value === data.tipoDocumento || o.value.includes(data.tipoDocumento));
+        if (match) { docEl.value = match.value; docEl.style.borderColor = 'var(--g2)'; filled.push('Tipo doc'); }
+      }
+    }
+
+    // Show result card
+    const resultEl = document.getElementById(`ocrResult_${dir}`);
+    if (resultEl) {
+      const confianza = data.confianza || {};
+      const confBadge = (val) => {
+        const v = val || 0;
+        const color = v >= 0.8 ? '#4ade80' : v >= 0.5 ? '#fbbf24' : '#f87171';
+        const label = v >= 0.8 ? 'Alta' : v >= 0.5 ? 'Media' : 'Baja';
+        return `<span style="color:${color};font-size:10px;font-weight:700">${label} ${Math.round(v*100)}%</span>`;
+      };
+      resultEl.innerHTML = `
+        <div style="background:rgba(82,183,136,.08);border:1px solid rgba(82,183,136,.25);border-radius:14px;padding:14px;">
+          <div style="font-weight:700;font-size:13px;color:var(--g2);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+            ✨ IA detectó ${filled.length} campo${filled.length!==1?'s':''}
+            ${data.escritoAMano ? '<span style="font-size:10px;background:rgba(245,197,66,.15);color:#f5c542;padding:2px 8px;border-radius:6px;">✍ Escrito a mano</span>' : ''}
+          </div>
+          ${data.patente ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(82,183,136,.1)"><span>Patente: <strong>${data.patente}</strong></span>${confBadge(confianza.patente)}</div>` : ''}
+          ${data.folio ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(82,183,136,.1)"><span>Folio: <strong>${data.folio}</strong></span>${confBadge(confianza.folio)}</div>` : ''}
+          ${data.tipoDocumento ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;"><span>Documento: <strong>${data.tipoDocumento.replace(/_/g,' ')}</strong></span>${confBadge(confianza.tipoDocumento)}</div>` : ''}
+          ${data.resumen ? `<div style="font-size:11px;color:var(--mu);margin-top:8px;padding-top:8px;border-top:1px solid rgba(82,183,136,.1)">${data.resumen}</div>` : ''}
+        </div>`;
+      resultEl.style.display = 'block';
+    }
+
+    // Store OCR data for learning
+    fotosDir[dir].ocrData = data;
+
+    showToast('🧠', 'Documento leído', filled.length ? `Detectado: ${filled.join(', ')}` : 'No se detectaron campos');
+    if (btn) { btn.innerHTML = '<span>✅</span> <span>Documento analizado</span>'; btn.disabled = false; }
+
+    // Send learning data
+    registerLearning('doc_pattern', { docType: data.tipoDocumento, depto: deptoActivo?.id });
+
+  } catch(e) {
+    showToast('⚠', 'Sin conexión', 'OCR requiere internet');
+    if (btn) { btn.innerHTML = '<span>🧠</span> <span>Reintentar lectura</span>'; btn.disabled = false; }
+  }
+}
+
+// ══════════════════════════════════════
+//  LEARNING — AUTOAPRENDIZAJE
+// ══════════════════════════════════════
+
+async function registerLearning(type, data) {
+  if (!session?.empresaId) return;
+  try {
+    const key = `zp5_learn_${session.empresaId}`;
+    const existing = JSON.parse(localStorage.getItem(key) || '{"plates":{},"docs":{},"hours":{}}');
+    if (type === 'plate_frequency' && data.plate) {
+      existing.plates[data.plate] = (existing.plates[data.plate] || 0) + 1;
+    }
+    if (type === 'doc_pattern' && data.docType) {
+      const h = new Date().getHours();
+      const k = `${data.docType}_h${h}`;
+      existing.docs[k] = (existing.docs[k] || 0) + 1;
+    }
+    localStorage.setItem(key, JSON.stringify(existing));
+  } catch(e) {}
+}
+
+async function getSmartSuggestions() {
+  if (!session?.empresaId) return null;
+  try {
+    // Calcular desde datos locales — sin necesidad de backend
+    const ops = await dbGetAll('ops');
+    const myOps = ops.filter(o => o.empresaId === session.empresaId);
+    const patterns = {};
+    const freqPlates = {};
+    myOps.forEach(op => {
+      if (op.ts && op.docType) {
+        const h = new Date(op.ts).getHours();
+        const k = `${op.docType}_h${h}`;
+        patterns[k] = (patterns[k] || 0) + 1;
+      }
+      if (op.plate) freqPlates[op.plate] = (freqPlates[op.plate] || 0) + 1;
+    });
+    // Complementar con datos aprendidos localmente
+    const stored = JSON.parse(localStorage.getItem(`zp5_learn_${session.empresaId}`) || '{}');
+    Object.entries(stored.docs || {}).forEach(([k,v]) => patterns[k] = (patterns[k]||0)+v);
+    Object.entries(stored.plates || {}).forEach(([k,v]) => freqPlates[k] = (freqPlates[k]||0)+v);
+    return { patterns, frequentPlates: freqPlates };
+  } catch(e) { return null; }
+}
+
+function addFoto(ev, dir) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e2 => {
+    abrirScannerModal(e2.target.result, dir);
+  };
+  reader.readAsDataURL(file);
+  ev.target.value = '';
+}
+
+// ── SCANNER MODAL ── procesamiento de imagen con canvas
+let _scanDir = null, _scanImg = null, _scanRotate = 0, _scanContrast = 1.4, _scanBrightness = 1.1;
+
+function abrirScannerModal(src, dir) {
+  _scanDir = dir; _scanRotate = 0; _scanContrast = 1.4; _scanBrightness = 1.1;
+  const prev = document.getElementById('scannerModal');
+  if (prev) prev.remove();
+
+  const m = document.createElement('div');
+  m.id = 'scannerModal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9998;display:flex;flex-direction:column;align-items:center;padding:16px;overflow-y:auto;';
+  m.innerHTML = `
+    <div style="width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="color:var(--g2);font-family:var(--mono);font-size:13px;letter-spacing:1px">📷 ESCANEAR DOCUMENTO</span>
+        <button onclick="document.getElementById('scannerModal').remove()" style="background:none;border:1px solid #444;color:#fff;border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;">✕</button>
+      </div>
+      <canvas id="scanCanvas" style="width:100%;border-radius:12px;border:2px solid var(--g1);background:#000;display:block;"></canvas>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button onclick="scanRotate()" style="padding:12px;border-radius:10px;border:1px solid #444;background:#1a1a1a;color:#fff;font-size:13px;cursor:pointer;">↺ Rotar 90°</button>
+        <button onclick="scanEnhance()" style="padding:12px;border-radius:10px;border:1px solid #444;background:#1a1a1a;color:#fff;font-size:13px;cursor:pointer;">✨ Auto-mejorar</button>
+        <button onclick="scanReset()" style="padding:12px;border-radius:10px;border:1px solid #333;background:#111;color:#888;font-size:12px;cursor:pointer;">↩ Restablecer</button>
+        <button onclick="scanConfirm()" style="padding:12px;border-radius:10px;border:none;background:var(--g1);color:#fff;font-size:13px;font-weight:700;cursor:pointer;">✓ Usar imagen</button>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--mu);text-align:center;letter-spacing:.5px">
+        Rotar hasta que el documento quede vertical · Mejorar contraste para mejor legibilidad
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+
+  _scanImg = new Image();
+  _scanImg.onload = () => scanDraw();
+  _scanImg.src = src;
+}
+
+function scanDraw() {
+  const canvas = document.getElementById('scanCanvas');
+  if (!canvas || !_scanImg) return;
+  const ctx = canvas.getContext('2d');
+  const r = _scanRotate;
+  const w = _scanImg.naturalWidth, h = _scanImg.naturalHeight;
+  const swapped = r === 90 || r === 270;
+  canvas.width  = swapped ? h : w;
+  canvas.height = swapped ? w : h;
+
+  ctx.save();
+  ctx.translate(canvas.width/2, canvas.height/2);
+  ctx.rotate((r * Math.PI) / 180);
+  ctx.drawImage(_scanImg, -w/2, -h/2);
+  ctx.restore();
+
+  // Contraste + brillo via pixel manipulation
+  const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d = id.data;
+  const c = _scanContrast, b = _scanBrightness;
+  for (let i = 0; i < d.length; i += 4) {
+    d[i]   = Math.min(255, Math.max(0, ((d[i]   / 255 - 0.5) * c + 0.5) * 255 * b));
+    d[i+1] = Math.min(255, Math.max(0, ((d[i+1] / 255 - 0.5) * c + 0.5) * 255 * b));
+    d[i+2] = Math.min(255, Math.max(0, ((d[i+2] / 255 - 0.5) * c + 0.5) * 255 * b));
+  }
+  ctx.putImageData(id, 0, 0);
+}
+
+function scanRotate() { _scanRotate = (_scanRotate + 90) % 360; scanDraw(); }
+function scanEnhance() { _scanContrast = _scanContrast < 2 ? 2.2 : 1.4; _scanBrightness = _scanBrightness < 1.2 ? 1.15 : 1.1; scanDraw(); }
+function scanReset()  { _scanRotate = 0; _scanContrast = 1.4; _scanBrightness = 1.1; scanDraw(); }
+
+function scanConfirm() {
+  const canvas = document.getElementById('scanCanvas');
+  if (!canvas || !_scanDir) return;
+  const data = canvas.toDataURL('image/jpeg', 0.88);
+  fotosDir[_scanDir].push({ data });
+  renderFotosZone(_scanDir);
+  document.getElementById('scannerModal').remove();
+  showToast('📷','Foto agregada','Imagen procesada y guardada');
+}
+
+function removeFoto(dir, idx) {
+  fotosDir[dir].splice(idx, 1);
+  renderFotosZone(dir);
+}
+
+// ══════════════════════════════════════
+//  CONFIRMAR OPERACIÓN
+// ══════════════════════════════════════
+
+async function confirmarOp(dir) {
+  if (!session) { doLogout(); return; }
+  const isIn  = dir === 'in';
+  const pre   = isIn ? 'in' : 'out';
+  const plate = document.getElementById(pre+'Plate').value.trim().toUpperCase();
+  const folio = document.getElementById(pre+'Folio').value.trim();
+  const docT  = document.getElementById(pre+'DocType').value;
+  const obs   = document.getElementById(pre+'Obs').value.trim();
+
+  const esDocOnly = deptoActivo?.tipo === 'documentos';
+  if (!esDocOnly && !plate) { showToast('⚠','Falta patente','Ingresa la patente del vehículo'); return; }
+  if (esDocOnly && !folio && !plate) { showToast('⚠','Falta referencia','Ingresa folio o referencia del documento'); return; }
+
+  const btn = document.getElementById(isIn?'inBtn':'outBtn');
+  btn.textContent = '⏳ Guardando...';
+  btn.disabled = true;
+
+  // ── Validar folio duplicado ──
+  if (folio) {
+    const opsPrevias = await getOpsEmpresa();
+    const dup = opsPrevias.find(o => o.folio && o.folio === folio);
+    if (dup) {
+      const ok = confirm(`⚠ Folio "${folio}" ya fue registrado\n${dup.plate} · ${(dup.docType||'').replace(/_/g,' ')} · ${dup.fecha}\n¿Continuar de todos modos?`);
+      if (!ok) {
+        btn.textContent = isIn ? (esDocOnly ? '✓ Guardar documento' : '✓ Confirmar Ingreso') : '✓ Confirmar Salida';
+        btn.disabled = false;
+        return;
+      }
+    }
+  }
+
+  const now = new Date();
+  const op = {
+    id:          'op_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
+    tipo:        isIn ? 'INGRESO' : 'SALIDA',
+    plate, folio, docType: docT, obs,
+    depto:       deptoActivo?.id || '',
+    deptoNombre: deptoActivo?.nombre || '',
+    fecha:       now.toLocaleDateString('es-CL'),
+    hora:        now.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),
+    ts:          now.getTime(),
+    uid:         session.uid,
+    empresaId:   session.empresaId,
+    empresaNombre: session.empresaNombre,
+    operador:    session.nombre,
+    fotoId:      null,
+    fotoIds:     [],
+    syncStatus:  'pending',
+    estado:      'PENDIENTE',
+    logs:        [{ accion:'CREADO', usuario: session.nombre, ts: now.getTime(), comentario:'' }]
+  };
+
+  const fotos = fotosDir[dir] || [];
+  if (fotos.length > 0) {
+    op.fotoIds = [];
+    for (let i = 0; i < fotos.length; i++) {
+      const fId = 'foto_' + op.id + '_' + i;
+      op.fotoIds.push(fId);
+      await dbPut('fotos', { id: fId, data: fotos[i].data, ts: op.ts });
+    }
+    op.fotoId = op.fotoIds[0]; // compatibilidad hacia atrás
+  }
+
+  await dbPut('ops', op);
+  sincronizarFirebase(op); // async, no esperar
+
+  btn.textContent = isIn ? (esDocOnly ? '✓ Guardar documento' : '✓ Confirmar Ingreso') : '✓ Confirmar Salida';
+  btn.disabled = false;
+  fotosDir[dir] = [];
+
+  showToast(
+    esDocOnly ? '📄' : (isIn?'📥':'📤'),
+    esDocOnly ? 'Documento guardado' : (isIn?'Ingreso registrado':'Salida registrada'),
+    `${plate || folio || '—'} · ${docT.replace(/_/g,' ')}`
+  );
+
+  // Register learning patterns
+  registerLearning('plate_frequency', { plate });
+  registerLearning('doc_pattern', { docType: docT, depto: deptoActivo?.id });
+
+  // QR de seguimiento solo en INGRESO con patente (no aplica en flujo documental puro)
+  if (isIn && plate && !esDocOnly && session?.empresaId) {
+    const qrUrl = `${location.origin}/seguimiento?e=${session.empresaId}&p=${encodeURIComponent(plate)}`;
+    setTimeout(() => showQRModal(plate, qrUrl), 700);
+  } else {
+    setTimeout(() => goTo(esDocOnly ? 'biblioteca' : 'home'), 600);
+  }
+}
+
+// ══════════════════════════════════════
+//  RENDER HOME
+// ══════════════════════════════════════
+
+async function renderHome() {
+  if (!session) return;
+  const tipoLabel = deptoActivo?.tipo === 'acceso'
+    ? '🚪 CONTROL DE ACCESO'
+    : deptoActivo?.tipo === 'documentos'
+      ? '📄 GESTIÓN DOCUMENTAL'
+      : '';
+  const nameEl = document.getElementById('homeDeptName');
+  nameEl.textContent = deptoActivo?.nombre || 'Sin departamento';
+  document.getElementById('deptoTipoBadge')?.remove();
+  if (tipoLabel) {
+    nameEl.insertAdjacentHTML('afterend',
+      `<div id="deptoTipoBadge" style="font-family:var(--mono);font-size:10px;color:var(--g2);letter-spacing:1.5px;font-weight:700;margin-top:2px">${tipoLabel}</div>`);
+  }
+  // Acciones según tipo de depto
+  const grid = document.getElementById('actGrid');
+  if (grid) {
+    if (deptoActivo?.tipo === 'documentos') {
+      grid.innerHTML = `
+        <div class="act-btn ab-g" onclick="goTo('ingreso')">
+          <span class="ab-icon">📷</span>
+          <span class="ab-label">NUEVO</span>
+          <span class="ab-title" style="color:#7ec8ff">ESCANEAR</span>
+        </div>
+        <div class="act-btn ab-o" onclick="goTo('biblioteca')">
+          <span class="ab-icon">📁</span>
+          <span class="ab-label">VER Y DESCARGAR</span>
+          <span class="ab-title co">DOCUMENTOS</span>
+        </div>`;
+    } else {
+      grid.innerHTML = `
+        <div class="act-btn ab-g" onclick="goTo('ingreso')">
+          <span class="ab-icon">🟢</span>
+          <span class="ab-label">CONTROL PUERTAS</span>
+          <span class="ab-title" style="color:#90caf9">INGRESO</span>
+        </div>
+        <div class="act-btn ab-o" onclick="goTo('salida')">
+          <span class="ab-icon">🔴</span>
+          <span class="ab-label">CONTROL PUERTAS</span>
+          <span class="ab-title co">SALIDA</span>
+        </div>`;
+    }
+  }
+  // User badge
+  const initials = (session.nombre||'?').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('homeUserBadge').innerHTML = `
+    <div class="user-badge">
+      <div class="user-avatar">${initials}</div>
+      <div><div class="user-name">${session.nombre||session.email}</div>
+      <div class="user-empresa">${session.empresaNombre||''} · ${session.rol||'operador'}</div></div>
+    </div>`;
+  const ops = await getOpsEmpresa();
+  const today = new Date().toLocaleDateString('es-CL');
+  const hoy = ops.filter(o => o.fecha===today);
+  document.getElementById('homeCount').textContent = hoy.length;
+
+  // ── Alerta de operaciones rechazadas ──
+  const rechazadas = ops.filter(o => o.estado==='RECHAZADO' && o.uid===session.uid).slice(0,3);
+  const alertEl = document.getElementById('rechazoAlert');
+  if (rechazadas.length && alertEl) {
+    alertEl.innerHTML = `
+      <div class="rechazo-alert">
+        <div class="rechazo-alert-title">⚠️ ${rechazadas.length} operación${rechazadas.length>1?'es':''} rechazada${rechazadas.length>1?'s':''}</div>
+        ${rechazadas.map(o => {
+          const motivo = o.logs?.slice().reverse().find(l=>l.accion==='RECHAZADO')?.comentario || 'Sin motivo';
+          return `<div class="rechazo-item">
+            <span><strong>${o.plate}</strong> · ${(o.docType||'').replace(/_/g,' ')}</span>
+            <span style="font-size:11px;color:#f87171">${motivo}</span>
+          </div>`;
+        }).join('')}
+      </div>`;
+    alertEl.style.display = 'block';
+  } else if (alertEl) alertEl.style.display = 'none';
+
+  // ── Detección de anomalías ──
+  const anomaliaEl = document.getElementById('anomaliaAlert');
+  if (anomaliaEl) {
+    const anomalias = [];
+    // Vehículos con más de 1 ingreso pendiente sin salida
+    const recientes48h = ops.filter(o => (Date.now() - (o.ts||0)) < 172800000 && o.plate);
+    const placasMap = {};
+    recientes48h.sort((a,b) => a.ts - b.ts).forEach(op => {
+      if (!placasMap[op.plate]) placasMap[op.plate] = 0;
+      if (op.tipo === 'INGRESO') placasMap[op.plate]++;
+      else if (op.tipo === 'SALIDA') placasMap[op.plate] = Math.max(0, placasMap[op.plate] - 1);
+    });
+    const atrapados = Object.entries(placasMap).filter(([,n]) => n > 1).map(([p]) => p);
+    if (atrapados.length) anomalias.push(`🔴 ${atrapados.length} patente${atrapados.length>1?'s':''} con múltiples ingresos sin salida: ${atrapados.slice(0,3).join(', ')}`);
+
+    // Últimas 10 ops sin foto
+    const sinFoto = ops.slice(0,10).filter(o => !o.fotoId && !(o.fotoIds?.length));
+    if (sinFoto.length >= 5) anomalias.push(`📷 ${sinFoto.length} de las últimas 10 operaciones sin foto de documento`);
+
+    if (anomalias.length) {
+      anomaliaEl.innerHTML = `<div class="rechazo-alert" style="border-color:rgba(251,191,36,.3);background:rgba(251,191,36,.07)">
+        <div class="rechazo-alert-title" style="color:#fbbf24">⚡ Anomalías detectadas</div>
+        ${anomalias.map(a => `<div class="rechazo-item" style="color:#fbbf24">${a}</div>`).join('')}
+      </div>`;
+      anomaliaEl.style.display = 'block';
+    } else anomaliaEl.style.display = 'none';
+  }
+
+  // ── Sugerencias IA ──
+  const sugEl = document.getElementById('aiSuggestions');
+  if (sugEl && navigator.onLine) {
+    loadAISuggestions(sugEl, ops);
+  }
+
+  const recents = ops.slice(0,5);
+  const el = document.getElementById('homeList');
+  el.innerHTML = recents.length ? recents.map(opRow).join('') :
+    '<div class="empty"><div class="empty-i">📋</div><div class="empty-t">Sin operaciones aún</div></div>';
+}
+
+// ══════════════════════════════════════
+//  OP ROW
+// ══════════════════════════════════════
+
+function estadoBadge(est) {
+  const map = {
+    PENDIENTE:  ['est-pendiente','⏳ PEND'],
+    EN_REVISION:['est-revision', '👁 REVISIÓN'],
+    APROBADO:   ['est-aprobado', '✓ APROBADO'],
+    RECHAZADO:  ['est-rechazado','✗ RECHAZADO'],
+  };
+  const [cls, label] = map[est] || map['PENDIENTE'];
+  return `<span class="estado-badge ${cls}">${label}</span>`;
+}
+
+function opRow(op) {
+  const isIn = op.tipo === 'INGRESO';
+  const docLabel = (op.docType||'').replace(/_/g,' ');
+  const est = op.estado || 'PENDIENTE';
+  const borderColor = est==='RECHAZADO' ? 'border-color:rgba(239,68,68,.35)' :
+                      est==='APROBADO'  ? 'border-color:rgba(34,197,94,.25)'  : '';
+  return `<div class="h-item" onclick="verDetalle('${op.id}')" style="${borderColor}">
+    <div class="h-dot ${isIn?'hd-g':'hd-o'}"></div>
+    <div class="h-body">
+      <div class="h-top" style="flex-wrap:wrap;gap:4px">
+        <span class="h-tipo ${isIn?'cg':'co'}">${op.tipo}</span>
+        <span class="h-pat">${op.plate||'—'}</span>
+        <span class="h-depto">${op.deptoNombre||op.depto||''}</span>
+        ${estadoBadge(est)}
+      </div>
+      <div class="h-meta">${op.fecha} ${op.hora} · ${docLabel}</div>
+    </div>
+    <span class="h-badge">${(op.fotoIds?.length||0)>1?`📷${op.fotoIds.length}`:op.fotoId?'📷':'📋'}</span>
+  </div>`;
+}
+
+// ══════════════════════════════════════
+//  BIBLIOTECA (depto tipo documentos)
+// ══════════════════════════════════════
+
+let bibFiltroDoc = 'TODOS';
+let _bibThumbCache = {}; // fId -> dataUrl
+
+async function bibThumb(fId) {
+  if (_bibThumbCache[fId]) return _bibThumbCache[fId];
+  try {
+    const f = await dbGet('fotos', fId);
+    if (f?.data) { _bibThumbCache[fId] = f.data; return f.data; }
+  } catch {}
+  return null;
+}
+
+async function renderBiblioteca() {
+  const grid = document.getElementById('bibGrid');
+  const stats = document.getElementById('bibStats');
+  const pillsEl = document.getElementById('bibFilterPills');
+  if (!grid) return;
+
+  const ops = (await getOpsEmpresa()).filter(o => !deptoActivo || o.depto === deptoActivo.id);
+  const q = (document.getElementById('bibSearchInp')?.value || '').trim().toLowerCase();
+
+  // Tipos de documento únicos para los pills
+  const tipos = Array.from(new Set(ops.map(o => o.docType).filter(Boolean))).sort();
+  pillsEl.innerHTML = `<span class="pill ${bibFiltroDoc==='TODOS'?'on':''}" onclick="bibSetFiltro('TODOS')">Todos · ${ops.length}</span>` +
+    tipos.map(t => {
+      const c = ops.filter(o => o.docType===t).length;
+      return `<span class="pill ${bibFiltroDoc===t?'on':''}" onclick="bibSetFiltro('${t.replace(/'/g,'&#39;')}')">${t.replace(/_/g,' ')} · ${c}</span>`;
+    }).join('');
+
+  let filtrados = bibFiltroDoc==='TODOS' ? ops : ops.filter(o => o.docType===bibFiltroDoc);
+  if (q) {
+    filtrados = filtrados.filter(o =>
+      (o.docType||'').toLowerCase().includes(q) ||
+      (o.folio||'').toLowerCase().includes(q) ||
+      (o.plate||'').toLowerCase().includes(q) ||
+      (o.obs||'').toLowerCase().includes(q) ||
+      (o.operador||'').toLowerCase().includes(q)
+    );
+  }
+
+  stats.textContent = `${filtrados.length} documento${filtrados.length!==1?'s':''}` +
+    (deptoActivo ? ` · ${deptoActivo.nombre}` : '');
+
+  if (!filtrados.length) {
+    grid.innerHTML = `<div class="bib-empty"><div class="bib-empty-i">📭</div><div class="bib-empty-t">SIN DOCUMENTOS</div></div>`;
+    return;
+  }
+
+  // Render inicial sin fotos
+  grid.innerHTML = filtrados.map(o => {
+    const fIds = o.fotoIds?.length ? o.fotoIds : (o.fotoId ? [o.fotoId] : []);
+    const fId = fIds[0] || '';
+    const fechaCorta = (o.fecha || '').split('-').reverse().join('/') || '—';
+    const docTxt = (o.docType||'DOCUMENTO').replace(/_/g,' ');
+    const folio  = o.folio ? `Nº ${o.folio}` : (o.plate || '—');
+    const count  = fIds.length > 1 ? `<span class="bib-thumb-count">📷 ${fIds.length}</span>` : '';
+    return `
+      <div class="bib-card" onclick="verDetalle('${o.id}')">
+        <div class="bib-thumb" data-fid="${fId}">${fId ? '' : '📄'}${count}</div>
+        <div class="bib-meta">
+          <div class="bib-meta-type">${docTxt}</div>
+          <div class="bib-meta-folio">${folio}</div>
+          <div class="bib-meta-date">${fechaCorta}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Cargar thumbnails async
+  for (const el of grid.querySelectorAll('.bib-thumb[data-fid]')) {
+    const fId = el.dataset.fid;
+    if (!fId) continue;
+    bibThumb(fId).then(data => {
+      if (data && el.isConnected) el.innerHTML = `<img src="${data}" alt="">${el.querySelector('.bib-thumb-count')?.outerHTML || ''}`;
+    });
+  }
+}
+
+function bibSetFiltro(t) { bibFiltroDoc = t; renderBiblioteca(); }
+
+async function descargarFotos(opId, docType, ref) {
+  const ops = await dbGetAll('ops');
+  const op  = ops.find(o => o.id === opId);
+  if (!op) return;
+  const fotoIds = op.fotoIds?.length ? op.fotoIds : (op.fotoId ? [op.fotoId] : []);
+  if (!fotoIds.length) { showToast('⚠','Sin fotos','Esta operación no tiene fotos adjuntas'); return; }
+  const base = `ZeroPaper_${docType}_${ref || op.fecha || 'doc'}`.replace(/[^a-z0-9_-]/gi,'_');
+  for (let i = 0; i < fotoIds.length; i++) {
+    try {
+      const f = await dbGet('fotos', fotoIds[i]);
+      if (!f?.data) continue;
+      const a = document.createElement('a');
+      a.href     = f.data;
+      a.download = `${base}${fotoIds.length > 1 ? `_${i+1}` : ''}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      if (fotoIds.length > 1) await new Promise(r => setTimeout(r, 300));
+    } catch {}
+  }
+  showToast('⬇','Descargando...', `${fotoIds.length} foto${fotoIds.length>1?'s':''}`);
+}
+
+// ══════════════════════════════════════
+//  HISTORIAL
+// ══════════════════════════════════════
+
+async function renderHistorial(ops_override) {
+  const ops = ops_override || await getOpsEmpresa();
+  const filtrados = curFiltro==='TODOS' ? ops :
+    ops.filter(o => o.tipo===curFiltro || o.depto===curFiltro || o.deptoNombre===curFiltro);
+  document.getElementById('histList').innerHTML = filtrados.length ? filtrados.map(opRow).join('') :
+    '<div class="empty"><div class="empty-i">🔍</div><div class="empty-t">Sin registros</div></div>';
+  const pillsEl = document.getElementById('filterPills');
+  const deptoPills = deptos.map(d =>
+    `<span class="pill ${curFiltro===d.id?'on':''}" onclick="filtrarH('${d.id}',this)">${d.icon} ${d.nombre}</span>`
+  ).join('');
+  pillsEl.innerHTML = `
+    <span class="pill ${curFiltro==='TODOS'?'on':''}" onclick="filtrarH('TODOS',this)">Todos</span>
+    <span class="pill ${curFiltro==='INGRESO'?'on':''}" onclick="filtrarH('INGRESO',this)">↓ Ingreso</span>
+    <span class="pill ${curFiltro==='SALIDA'?'on':''}" onclick="filtrarH('SALIDA',this)">↑ Salida</span>
+    ${deptoPills}`;
+}
+
+function filtrarH(cat) { curFiltro = cat; renderHistorial(); }
+
+async function buscarOps(q) {
+  if (!q.trim()) { renderHistorial(); return; }
+  const ops = await getOpsEmpresa();
+  const t = q.toLowerCase().trim();
+  renderHistorial(ops.filter(o => {
+    const fields = [
+      o.plate, o.folio, o.fecha, o.hora,
+      o.docType, o.deptoNombre, o.depto,
+      o.operador, o.empresa, o.rut,
+      o.obs, o.tipo, o.estado,
+      o.destinatario, o.conductor, o.camion,
+      o.contenedor, o.guia, o.sello
+    ];
+    return fields.some(f => (f||'').toLowerCase().includes(t));
+  }));
+}
+
+// ══════════════════════════════════════
+//  DETALLE OPERACIÓN
+// ══════════════════════════════════════
+
+async function verDetalle(id) {
+  const ops = await dbGetAll('ops');
+  const op = ops.find(o=>o.id===id);
+  if (!op) return;
+  const isIn = op.tipo==='INGRESO';
+  let fotoHtml = '<div style="background:var(--bg3);border-radius:12px;padding:24px;text-align:center;margin-bottom:14px;color:var(--mu);font-family:var(--mono);font-size:12px">📷 Sin fotos adjuntas</div>';
+  // Soporte multi-foto: fotoIds[] tiene prioridad, sino usa fotoId legacy
+  const fotoIds = op.fotoIds?.length ? op.fotoIds : (op.fotoId ? [op.fotoId] : []);
+  if (fotoIds.length > 0) {
+    const fotosData = [];
+    for (const fId of fotoIds) {
+      try {
+        const f = await dbGet('fotos', fId);
+        if (f?.data) fotosData.push(f.data);
+      } catch(e){}
+    }
+    if (fotosData.length > 0) {
+      _zpFotoArr = fotosData; // cache global para evitar JSON.stringify en onclick
+      if (fotosData.length === 1) {
+        fotoHtml = `<img src="${fotosData[0]}" class="modal-foto" alt="Documento" style="cursor:pointer" onclick="verFotoHistorial(_zpFotoArr,0)" title="Toca para ver en pantalla completa">`;
+      } else {
+        const thumbs = fotosData.map((d, i) => `
+          <div style="position:relative;cursor:pointer" onclick="verFotoHistorial(_zpFotoArr,${i})">
+            <img src="${d}" style="width:100%;border-radius:8px;border:1px solid var(--brd);display:block" alt="Foto ${i+1}">
+            <span style="position:absolute;top:4px;left:6px;background:rgba(0,0,0,.65);color:#fff;font-family:var(--mono);font-size:9px;border-radius:4px;padding:1px 6px">Foto ${i+1}</span>
+            <span style="position:absolute;bottom:4px;right:6px;background:rgba(0,0,0,.65);color:#52b788;font-family:var(--mono);font-size:9px;border-radius:4px;padding:1px 6px">👁 VER</span>
+          </div>`).join('');
+        fotoHtml = `
+          <div style="margin-bottom:14px">
+            <div style="font-family:var(--mono);font-size:11px;color:var(--mu);letter-spacing:1px;margin-bottom:8px">📷 ${fotosData.length} FOTOS ADJUNTAS</div>
+            <div style="display:grid;grid-template-columns:${fotosData.length===2?'1fr 1fr':fotosData.length>=3?'1fr 1fr 1fr':'1fr'};gap:6px">
+              ${thumbs}
+            </div>
+          </div>`;
+      }
+    }
+  }
+  const existing = document.getElementById('opModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-ov'; modal.id = 'opModal';
+  const colorVar = isIn ? 'var(--g2)' : 'var(--o2)';
+  modal.innerHTML = `<div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title">Detalle Operación</div>
+      <button class="modal-x" onclick="document.getElementById('opModal').remove()">✕</button>
+    </div>
+    ${fotoHtml}
+    <div class="modal-row"><span class="modal-lbl">ESTADO</span>${estadoBadge(op.estado||'PENDIENTE')}</div>
+    <div class="modal-row"><span class="modal-lbl">TIPO</span><span class="badge" style="background:${isIn?'rgba(74,124,89,.2)':'rgba(255,109,0,.2)'};color:${colorVar}">${op.tipo}</span></div>
+    <div class="modal-row"><span class="modal-lbl">DEPTO</span><span class="modal-val">${op.deptoNombre||op.depto||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">PATENTE</span><span class="modal-val">${op.plate||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">DOCUMENTO</span><span class="modal-val">${(op.docType||'—').replace(/_/g,' ')}</span></div>
+    <div class="modal-row"><span class="modal-lbl">FOLIO</span><span class="modal-val">${op.folio||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">FECHA</span><span class="modal-val">${op.fecha} ${op.hora}</span></div>
+    <div class="modal-row"><span class="modal-lbl">OPERADOR</span><span class="modal-val">${op.operador||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">OBS</span><span class="modal-val">${op.obs||'—'}</span></div>
+    <div class="modal-row"><span class="modal-lbl">SYNC</span><span class="modal-val">${op.syncStatus==='synced'?'✅ Sincronizado':'⏳ Pendiente'}</span></div>
+    ${(op.logs||[]).length > 0 ? `
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--brd)">
+      <div class="modal-lbl" style="margin-bottom:8px">TRAZABILIDAD</div>
+      <div class="log-list">
+        ${(op.logs||[]).map(l => {
+          const dotCls = l.accion==='CREADO'?'log-ld-c':l.accion==='APROBADO'?'log-ld-a':l.accion==='RECHAZADO'?'log-ld-r':'log-ld-v';
+          const d = new Date(l.ts);
+          const ts = d.toLocaleDateString('es-CL')+' '+d.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});
+          return `<div class="log-item">
+            <div class="log-dot ${dotCls}"></div>
+            <div>
+              <span style="font-weight:700;font-size:12px">${l.accion}</span>
+              <span style="color:var(--mu);font-size:12px"> · ${l.usuario||'—'}</span>
+              ${l.comentario?`<span style="color:#f87171;font-size:11px"> · "${l.comentario}"</span>`:''}
+              <div class="log-ts">${ts}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : ''}
+    ${fotoIds.length > 0 ? `
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn-prime btn-blue" style="flex:1" onclick="descargarFotos('${op.id}','${(op.docType||'doc').replace(/'/g,'')}','${(op.plate||op.folio||'').replace(/'/g,'')}')">⬇ Descargar foto${fotoIds.length>1?'s':''}</button>
+      <button class="btn-prime btn-gray" style="flex:1" onclick="document.getElementById('opModal').remove()">Cerrar</button>
+    </div>` : `
+    <button class="btn-prime btn-gray" style="margin-top:14px" onclick="document.getElementById('opModal').remove()">Cerrar</button>`}
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+// ══════════════════════════════════════
+//  TURNO
+// ══════════════════════════════════════
+
+async function renderTurno() {
+  if (!session) return;
+
+  // Header turno
+  const initials = (session.nombre||'?').split(' ').map(n=>n[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('turnoNombreDisplay').innerHTML = `<div style="display:flex;align-items:center;gap:10px"><div class="user-avatar">${initials}</div><div class="turno-op-name">${session.nombre||session.email}</div></div>`;
+  document.getElementById('turnoEmpresaDisplay').textContent = session.empresaNombre || '';
+
+  turnoInicio = localStorage.getItem(K_TURNO);
+  if (!turnoInicio) {
+    turnoInicio = new Date().toISOString();
+    localStorage.setItem(K_TURNO, turnoInicio);
+  }
+  const inicioDate = new Date(turnoInicio);
+  const ahora = new Date();
+  const diffMs = ahora - inicioDate;
+  const diffH = Math.floor(diffMs / 3600000);
+  const diffM = Math.floor((diffMs % 3600000) / 60000);
+  document.getElementById('turnoTimeDisplay').textContent =
+    `Turno iniciado: ${inicioDate.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})} · Duración: ${diffH}h ${diffM}m`;
+  document.getElementById('turnoInicioLabel').textContent = inicioDate.toLocaleDateString('es-CL');
+
+  const ops = await getOpsEmpresa();
+  const today = new Date().toLocaleDateString('es-CL');
+  const hoy   = ops.filter(o => o.fecha === today);
+  const ingresos = hoy.filter(o => o.tipo === 'INGRESO');
+  const salidas  = hoy.filter(o => o.tipo === 'SALIDA');
+  const conFoto  = hoy.filter(o => o.fotoId || o.fotoIds?.length);
+
+  // Vehículos en planta = ingresos sin salida correspondiente (última 48h)
+  const limite48h = Date.now() - 48 * 3600 * 1000;
+  const recentOps = ops.filter(o => o.ts > limite48h && o.plate && o.plate !== '—');
+  const inPlanta  = calcularEnPlanta(recentOps);
+
+  document.getElementById('tsI').textContent = ingresos.length;
+  document.getElementById('tsS').textContent = salidas.length;
+  document.getElementById('tsP').textContent = inPlanta.length;
+  document.getElementById('tsF').textContent = conFoto.length;
+
+  // Lista pendientes
+  const pendEl = document.getElementById('pendientesList');
+  if (inPlanta.length === 0) {
+    pendEl.innerHTML = '<div class="empty"><div class="empty-i">✅</div><div class="empty-t">No hay vehículos en planta</div></div>';
+  } else {
+    pendEl.innerHTML = inPlanta.map(op => {
+      const tiempoEnPlanta = calcularTiempoTranscurrido(op.ts);
+      return `<div class="pendiente-item">
+        <span class="pendiente-icon">🚛</span>
+        <div class="pendiente-body">
+          <div class="pendiente-plate">${op.plate}</div>
+          <div class="pendiente-meta">${(op.docType||'').replace(/_/g,' ')} · ${op.deptoNombre||''}</div>
+        </div>
+        <div class="pendiente-time">${tiempoEnPlanta}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Portal link
+  const baseUrl = window.location.origin;
+  const portalUrl = `${baseUrl}/seguimiento?e=${session.empresaId}`;
+  document.getElementById('portalLink').textContent = portalUrl;
+}
+
+function calcularEnPlanta(ops) {
+  const placas = {};
+  ops.sort((a,b) => a.ts - b.ts).forEach(op => {
+    if (!placas[op.plate]) placas[op.plate] = { ingresos: [], salidas: [] };
+    if (op.tipo === 'INGRESO') placas[op.plate].ingresos.push(op);
+    else placas[op.plate].salidas.push(op);
+  });
+  const enPlanta = [];
+  for (const [placa, data] of Object.entries(placas)) {
+    let pendientes = data.ingresos.length - data.salidas.length;
+    if (pendientes > 0) {
+      // El último ingreso sin salida
+      const ings = data.ingresos.sort((a,b)=>b.ts-a.ts);
+      enPlanta.push(ings[0]);
+    }
+  }
+  return enPlanta.sort((a,b) => a.ts - b.ts);
+}
+
+function calcularTiempoTranscurrido(ts) {
+  const diff = Date.now() - ts;
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+async function cerrarTurno() {
+  if (!session) return;
+  const nota = document.getElementById('turnoNota').value.trim();
+  const ops  = await getOpsEmpresa();
+  const today = new Date().toLocaleDateString('es-CL');
+  const hoyOps = ops.filter(o => o.fecha === today);
+  const limite48h = Date.now() - 48 * 3600 * 1000;
+  const recentOps = ops.filter(o => o.ts > limite48h && o.plate && o.plate !== '—');
+  const enPlanta  = calcularEnPlanta(recentOps);
+
+  const turno = {
+    empresaId:     session.empresaId,
+    operadorUid:   session.uid,
+    operadorNombre:session.nombre,
+    inicioTs:      new Date(turnoInicio).getTime(),
+    finTs:         Date.now(),
+    totalOps:      hoyOps.length,
+    enPlantaCount: enPlanta.length,
+    enPlantaPlacas:enPlanta.map(o=>o.plate).join(','),
+    nota,
+    fecha:         today
+  };
+
+  try {
+    await fsPost(`empresas/${session.empresaId}/turnos`, turno);
+    localStorage.removeItem(K_TURNO);
+    turnoInicio = null;
+    showToast('✅','Turno cerrado','Traspaso registrado en la nube');
+    setTimeout(() => renderTurno(), 500);
+  } catch(e) {
+    showToast('⚠','Sin conexión','Turno guardado localmente');
+    localStorage.removeItem(K_TURNO);
+    turnoInicio = null;
+    setTimeout(() => renderTurno(), 500);
+  }
+}
+
+function copiarLink() {
+  const url = document.getElementById('portalLink').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showToast('📋','Link copiado','Envíalo a tu cliente'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('📋','Link copiado','Envíalo a tu cliente');
+  }
+}
+
+// ══════════════════════════════════════
+//  DEPARTAMENTOS MANAGER
+// ══════════════════════════════════════
+
+function renderDeptos() {
+  const el = document.getElementById('deptosList');
+  el.innerHTML = deptos.map(d => `
+    <div class="depto-card">
+      <div class="depto-icon-big">${d.icon}</div>
+      <div class="depto-info">
+        <div class="depto-name">${d.nombre}</div>
+        <div class="depto-docs">${d.tipo==='documentos'?'📄 Documental':'🚪 Acceso'} · ${d.docs.length} tipos · ${d.desc||''}</div>
+      </div>
+      ${d.id===deptoActivo?.id ? '<span class="depto-badge-act">ACTIVO</span>' :
+        `<button onclick="cambiarDepto('${d.id}')" style="background:none;border:1px solid var(--brd);border-radius:6px;padding:3px 8px;color:var(--mu);cursor:pointer;font-family:var(--mono);font-size:9px">Activar</button>`}
+    </div>`).join('');
+  const docsEl = document.getElementById('docsList');
+  if (deptoActivo) {
+    docsEl.innerHTML = `<div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:8px">${deptoActivo.icon} ${deptoActivo.nombre}</div>` +
+      deptoActivo.docs.map(d => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--brd)">
+          <span class="tag">${d.replace(/_/g,' ')}</span>
+          <button onclick="eliminarDoc('${d}')" style="background:none;border:none;color:var(--mu);cursor:pointer">✕</button>
+        </div>`).join('');
+  }
+}
+
+function showModalNewDepto() {
+  const existing = document.getElementById('newDeptoModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-ov'; modal.id = 'newDeptoModal';
+  modal.innerHTML = `<div class="modal-box">
+    <div class="modal-hdr"><div class="modal-title">Nuevo Departamento</div>
+    <button class="modal-x" onclick="document.getElementById('newDeptoModal').remove()">✕</button></div>
+    <label class="flbl">Tipo de interfaz</label>
+    <select class="fsel" id="newDeptoTipo">
+      <option value="acceso">🚪 Control de Acceso (puertas · ingreso/salida)</option>
+      <option value="documentos">📄 Gestión Documental (escanear · biblioteca)</option>
+    </select>
+    <label class="flbl">Nombre</label>
+    <input class="finp" id="newDeptoNombre" placeholder="Ej: Operaciones">
+    <label class="flbl">Ícono (emoji)</label>
+    <input class="finp" id="newDeptoIcon" placeholder="🏗" maxlength="4">
+    <label class="flbl">Tipos de documento (comas)</label>
+    <input class="finp" id="newDeptoDocs" placeholder="GUIA,FACTURA,ORDEN">
+    <button class="btn-prime btn-green" onclick="crearDepto()">✓ Crear</button>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+function crearDepto() {
+  const nombre  = document.getElementById('newDeptoNombre').value.trim();
+  const icon    = document.getElementById('newDeptoIcon').value.trim() || '🏗';
+  const docsRaw = document.getElementById('newDeptoDocs').value.trim();
+  const tipo    = document.getElementById('newDeptoTipo')?.value || 'acceso';
+  if (!nombre) { showToast('⚠','Falta nombre',''); return; }
+  const docs = docsRaw ? docsRaw.split(',').map(d=>d.trim().toUpperCase().replace(/ /g,'_')) : [];
+  const id = nombre.toLowerCase().replace(/ /g,'_') + '_' + Date.now();
+  deptos.push({ id, nombre, icon, tipo, desc:'', color:'g', docs });
+  localStorage.setItem(K_DEPTOS, JSON.stringify(deptos));
+  actualizarSelectorDepto();
+  renderDeptos();
+  document.getElementById('newDeptoModal').remove();
+  showToast('🏗','Departamento creado', nombre);
+}
+
+function showModalNewDoc() {
+  if (!deptoActivo) { showToast('⚠','Sin depto','Selecciona un departamento'); return; }
+  const existing = document.getElementById('newDocModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-ov'; modal.id = 'newDocModal';
+  modal.innerHTML = `<div class="modal-box">
+    <div class="modal-hdr"><div class="modal-title">Nuevo Documento</div>
+    <button class="modal-x" onclick="document.getElementById('newDocModal').remove()">✕</button></div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:10px">Para: ${deptoActivo.icon} ${deptoActivo.nombre}</div>
+    <label class="flbl">Nombre del documento</label>
+    <input class="finp" id="newDocNombre" placeholder="Ej: CARTA PORTE" oninput="this.value=this.value.toUpperCase()">
+    <button class="btn-prime btn-green" onclick="crearDoc()">✓ Agregar</button>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+}
+
+function crearDoc() {
+  const nombre = document.getElementById('newDocNombre').value.trim().toUpperCase().replace(/ /g,'_');
+  if (!nombre) return;
+  if (!deptoActivo.docs.includes(nombre)) {
+    deptoActivo.docs.push(nombre);
+    localStorage.setItem(K_DEPTOS, JSON.stringify(deptos));
+    renderDeptos();
+    showToast('📄','Documento agregado', nombre.replace(/_/g,' '));
+  }
+  document.getElementById('newDocModal').remove();
+}
+
+function eliminarDoc(doc) {
+  if (!deptoActivo) return;
+  deptoActivo.docs = deptoActivo.docs.filter(d=>d!==doc);
+  localStorage.setItem(K_DEPTOS, JSON.stringify(deptos));
+  renderDeptos();
+}
+
+// ══════════════════════════════════════
+//  TEMAS
+// ══════════════════════════════════════
+
+function setTema(tema, btn) {
+  const root = document.documentElement;
+  root.removeAttribute('data-theme');
+  if (tema !== 'oscuro') root.setAttribute('data-theme', tema);
+  localStorage.setItem(K_TEMA, tema);
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('on'));
+  // btn puede ser el hijo — subir al .theme-btn si hace falta
+  const themeBtn = btn.closest ? btn.closest('.theme-btn') || btn : btn;
+  themeBtn.classList.add('on');
+  showToast('🎨', 'Tema ' + tema, '');
+}
+
+function setFontSize(size) {
+  const scale = size === 14 ? 0.88 : size === 18 ? 1.13 : 1.0;
+  document.getElementById('app').style.zoom = scale;
+  localStorage.setItem('zp5_font', size);
+  showToast('🔤', size===14?'Texto pequeño':size===18?'Texto grande':'Texto normal','');
+}
+
+function cargarTema() {
+  const tema = localStorage.getItem(K_TEMA) || 'oscuro';
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    const onclick = b.getAttribute('onclick') || '';
+    const match   = onclick.match(/setTema\('([^']+)'/);
+    b.classList.toggle('on', match ? match[1] === tema : false);
+  });
+}
+
+// ══════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════
+
+function cargarConfig() {
+  if (!session) return;
+  const infoEl = document.getElementById('configUserInfo');
+  infoEl.innerHTML = `Email: ${session.email}<br>Empresa: ${session.empresaNombre}<br>Rol: ${session.rol}`;
+  const inpEl = document.getElementById('cfgOperador');
+  if (inpEl) inpEl.value = session.nombre || '';
+  const nombreEl = document.getElementById('cfgEmpresaNombre');
+  if (nombreEl) nombreEl.textContent = session.empresaNombre || '—';
+  pintarLogoEmpresa();
+}
+
+// ══════════════════════════════════════
+//  LOGO DE EMPRESA (con marca de agua ZeroPaper)
+// ══════════════════════════════════════
+
+const K_LOGO = 'zp5_empresa_logo';
+
+function pintarLogoEmpresa() {
+  const dataUrl = localStorage.getItem(K_LOGO + '_' + (session?.empresaId || ''));
+  const imgTop  = document.getElementById('empresaLogoImg');
+  const txtTop  = document.getElementById('empresaLogoTxt');
+  const wmTop   = document.getElementById('empresaLogoWm');
+  const preview = document.getElementById('cfgLogoPreview');
+  const svgMark = document.getElementById('zpLogoSvg');
+  if (dataUrl) {
+    if (imgTop) { imgTop.src = dataUrl; imgTop.hidden = false; }
+    if (svgMark) svgMark.style.display = 'none';
+    // Empresa toma el nombre principal, ZeroPaper™ permanece como marca secundaria inamovible
+    if (txtTop) { txtTop.textContent = (session?.empresaNombre || 'Empresa'); txtTop.style.fontSize = '15px'; }
+    if (wmTop)  { wmTop.textContent = 'ZEROPAPER™'; wmTop.style.color = 'var(--g2)'; wmTop.style.opacity = '1'; }
+    if (preview) preview.src = dataUrl;
+  } else {
+    if (imgTop) { imgTop.hidden = true; imgTop.removeAttribute('src'); }
+    if (svgMark) svgMark.style.display = 'block';
+    if (txtTop) { txtTop.textContent = 'ZeroPaper™'; txtTop.style.fontSize = '18px'; }
+    if (wmTop)  { wmTop.textContent = 'GESTIÓN PORTUARIA'; wmTop.style.color = 'var(--mu)'; wmTop.style.opacity = '.8'; }
+    if (preview) preview.removeAttribute('src');
+  }
+}
+
+function subirLogoEmpresa(input) {
+  const file = input.files && input.files[0];
+  if (!file || !session?.empresaId) return;
+  if (file.size > 600 * 1024) { showToast('⚠','Logo demasiado grande','Máx 600 KB'); return; }
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const dataUrl = String(e.target.result);
+    localStorage.setItem(K_LOGO + '_' + session.empresaId, dataUrl);
+    pintarLogoEmpresa();
+    showToast('✅','Logo guardado','Se aplicará en la barra superior');
+    try { await fsSet(`empresas/${session.empresaId}/perfil/datos`, { logoUrl: dataUrl }); } catch {}
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function quitarLogoEmpresa() {
+  if (!session?.empresaId) return;
+  localStorage.removeItem(K_LOGO + '_' + session.empresaId);
+  pintarLogoEmpresa();
+  showToast('✓','Logo eliminado','');
+}
+
+async function guardarNombre() {
+  const nombre = document.getElementById('cfgOperador').value.trim();
+  if (!nombre) return;
+  session.nombre = nombre;
+  saveSession();
+  try {
+    await fsSet(`usuarios/${session.uid}`, { nombre });
+    showToast('✅','Nombre guardado','');
+  } catch(e) {
+    showToast('✅','Guardado localmente','');
+  }
+}
+
+// ══════════════════════════════════════
+//  FIREBASE SYNC
+// ══════════════════════════════════════
+
+async function sincronizarFirebase(op) {
+  if (!session?.empresaId) return;
+  try {
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 8000);
+    const headers = { 'Content-Type':'application/json' };
+    const url = `${FS_BASE()}/empresas/${session.empresaId}/ops?key=${FB.apiKey}`;
+
+    // Flatten arrays (Firestore REST no soporta arrays con toFsDoc básico)
+    const flat = {};
+    for (const [k,v] of Object.entries(op)) {
+      if (Array.isArray(v)) continue;
+      flat[k] = v;
+    }
+    flat.logsJson    = JSON.stringify(op.logs    || []);
+    flat.fotoIdsJson = JSON.stringify(op.fotoIds || []);
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(toFsDoc(flat)),
+      signal: ctrl.signal
+    });
+    if (res.ok) {
+      const data = await res.json();
+      op._id = data.name?.split('/').pop(); // Guardar ID de Firestore para polling
+      op.syncStatus = 'synced';
+      await dbPut('ops', op);
+    }
+  } catch(e) { /* offline - op saved locally */ }
+}
+
+// Sync cola de pendientes al volver online
+async function syncPendientes() {
+  if (!session || !navigator.onLine) return;
+  try {
+    const ops = await dbGetAll('ops');
+    const pendientes = ops.filter(o => o.syncStatus === 'pending' && o.empresaId === session.empresaId);
+    for (const op of pendientes) {
+      await sincronizarFirebase(op);
+    }
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════
+//  EXPORTAR CSV
+// ══════════════════════════════════════
+
+async function exportarCSV() {
+  const ops = await getOpsEmpresa();
+  if (!ops.length) { showToast('⚠','Sin datos',''); return; }
+  const header = 'ID,Tipo,Patente,Departamento,Documento,Folio,Fecha,Hora,Operador,Empresa,Observaciones,Sync\n';
+  const rows = ops.map(o =>
+    [o.id,o.tipo,o.plate||'',o.deptoNombre||'',o.docType||'',o.folio||'',o.fecha||'',o.hora||'',o.operador||'',o.empresaNombre||'',o.obs||'',o.syncStatus||''].join(',')
+  ).join('\n');
+  const blob = new Blob([header+rows], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ZeroPaper_${session.empresaNombre||'export'}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('📊','Exportado',`${ops.length} registros`);
+}
+
+function resetDeptos() {
+  if (!confirm('¿Restaurar departamentos a los valores por defecto?\nSe eliminarán los cambios manuales.')) return;
+  localStorage.removeItem(K_DEPTOS);
+  deptos = JSON.parse(JSON.stringify(DEPTOS_DEFAULT));
+  deptoActivo = deptos[0];
+  localStorage.setItem(K_DEPTO, deptoActivo.id);
+  actualizarSelectorDepto();
+  renderDeptos();
+  showToast('✅','Departamentos restaurados','Control de Acceso · Guarda Almacén · Control');
+}
+
+async function limpiarDatos() {
+  const ops = await dbGetAll('ops');
+  const fotosAEliminar = new Set();
+  for (const op of ops) {
+    if (op.empresaId === session?.empresaId) {
+      (op.fotoIds || []).forEach(id => fotosAEliminar.add(id));
+      if (op.fotoId) fotosAEliminar.add(op.fotoId);
+      await dbDelete('ops', op.id);
+    }
+  }
+  for (const fId of fotosAEliminar) {
+    try { await dbDelete('fotos', fId); } catch {}
+  }
+  renderHome();
+  showToast('🗑','Datos eliminados','');
+}
+
+// ══════════════════════════════════════
+//  POLLING — actualizaciones de estado
+// ══════════════════════════════════════
+
+let pollingTimer = null;
+
+async function pollEstados() {
+  if (!session?.empresaId || !navigator.onLine) return;
+  try {
+    const res = await fsList(`empresas/${session.empresaId}/ops`);
+    const remoteOps = (res.documents || []).map(parseFs);
+    // Filtrar ops propias con estado terminal
+    const actualizadas = remoteOps.filter(o =>
+      o.uid === session.uid &&
+      (o.estado === 'APROBADO' || o.estado === 'RECHAZADO')
+    );
+    if (!actualizadas.length) return;
+
+    const localOps = await dbGetAll('ops');
+    let cambios = false;
+
+    for (const remote of actualizadas) {
+      // Buscar local por id o _id
+      const local = localOps.find(o =>
+        o.id === remote.id || (remote._id && o._id === remote._id)
+      );
+      if (!local || local.estado === remote.estado) continue;
+
+      local.estado = remote.estado;
+      if (remote.logsJson) {
+        try { local.logs = JSON.parse(remote.logsJson); } catch(e) {}
+      }
+      if (remote.fotoIdsJson) {
+        try { local.fotoIds = JSON.parse(remote.fotoIdsJson); } catch(e) {}
+      }
+      if (remote.motivoRechazo) local.motivoRechazo = remote.motivoRechazo;
+      await dbPut('ops', local);
+      cambios = true;
+
+      if (remote.estado === 'RECHAZADO') {
+        const motivo = local.logs?.slice().reverse().find(l => l.accion === 'RECHAZADO')?.comentario
+          || remote.motivoRechazo || '';
+        showToast('⚠', `${local.plate}: Rechazada`, motivo.slice(0, 45));
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      } else if (remote.estado === 'APROBADO') {
+        showToast('✅', `${local.plate}: Aprobada`, 'Operación aprobada');
+        if (navigator.vibrate) navigator.vibrate([100]);
+      }
+    }
+    if (cambios) renderHome();
+  } catch(e) { /* offline o error de red */ }
+}
+
+function startPolling() {
+  if (pollingTimer) return;
+  pollEstados(); // poll inmediato al iniciar
+  pollingTimer = setInterval(() => {
+    if (document.visibilityState !== 'hidden') pollEstados();
+  }, 90000); // cada 90 segundos
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') pollEstados();
+  }, { passive: true });
+}
+
+// ══════════════════════════════════════
+//  SYNC DEPTOS DESDE FIRESTORE
+// ══════════════════════════════════════
+
+async function sincronizarDeptos() {
+  if (!session?.empresaId || !navigator.onLine) return;
+  try {
+    const doc = await fsGet(`empresas/${session.empresaId}/config/deptos`);
+    const data = parseFs(doc);
+    if (data.deptosJson) {
+      const remotos = JSON.parse(data.deptosJson);
+      if (Array.isArray(remotos) && remotos.length > 0) {
+        localStorage.setItem(K_DEPTOS, JSON.stringify(remotos));
+        deptos = remotos;
+        const activeId = localStorage.getItem(K_DEPTO);
+        deptoActivo = deptos.find(d => d.id === activeId) || deptos[0];
+        actualizarSelectorDepto();
+      }
+    }
+  } catch(e) { /* usar deptos locales */ }
+}
+
+// ══════════════════════════════════════
+//  QR DE SEGUIMIENTO
+// ══════════════════════════════════════
+
+function showQRModal(plate, url) {
+  const existing = document.getElementById('qrModal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.className = 'modal-ov'; modal.id = 'qrModal';
+  modal.innerHTML = `<div class="modal-box" style="text-align:center;max-width:300px;padding:20px">
+    <div class="modal-hdr">
+      <div class="modal-title">📷 QR Seguimiento</div>
+      <button class="modal-x" onclick="document.getElementById('qrModal').remove()">✕</button>
+    </div>
+    <div style="font-family:var(--mono);font-size:26px;font-weight:800;letter-spacing:4px;margin:10px 0;color:var(--fg)">${plate}</div>
+    <div id="qrCanvas" style="display:flex;justify-content:center;align-items:center;min-height:200px;margin:12px 0"></div>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--mu);margin-bottom:14px;letter-spacing:1px">SEGUIMIENTO EN TIEMPO REAL</div>
+    <button class="btn-prime btn-gray" style="margin:0" onclick="document.getElementById('qrModal').remove()">Cerrar</button>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+
+  // Generar QR
+  const canvas = document.getElementById('qrCanvas');
+  if (typeof QRCode !== 'undefined') {
+    try {
+      new QRCode(canvas, {
+        text: url, width: 200, height: 200,
+        colorDark: '#e8e8f0', colorLight: '#13132a',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch(e) { canvas.innerHTML = fallbackQR(url); }
+  } else {
+    canvas.innerHTML = fallbackQR(url);
+  }
+}
+
+function fallbackQR(url) {
+  const enc = encodeURIComponent(url);
+  return `<img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&bgcolor=13132a&color=e8e8f0&data=${enc}" style="border-radius:8px;width:200px;height:200px" alt="QR">`;
+}
+
+// ══════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════
+
+function showToast(icon, titulo, sub) {
+  document.getElementById('tIco').textContent = icon;
+  document.getElementById('tTit').textContent = titulo;
+  document.getElementById('tSub').textContent = sub||'';
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ══════════════════════════════════════
+//  ONLINE / OFFLINE
+// ══════════════════════════════════════
+
+function checkOnline() {
+  document.getElementById('offBadge').classList.toggle('show', !navigator.onLine);
+  if (navigator.onLine) syncPendientes();
+}
+
+// ══════════════════════════════════════
+//  PWA INSTALL
+// ══════════════════════════════════════
+
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display = 'flex';
+});
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('installBtn').style.display = 'none';
+});
+
+// ══════════════════════════════════════
+//  SUGERENCIAS IA
+// ══════════════════════════════════════
+
+async function loadAISuggestions(el, ops) {
+  try {
+    const knowledge = await getSmartSuggestions();
+    if (!knowledge) { el.style.display = 'none'; return; }
+
+    const tips = [];
+    const patterns = knowledge.patterns || {};
+    const freqPlates = knowledge.frequentPlates || {};
+
+    // Detect peak hours
+    const hour = new Date().getHours();
+    let peakDocs = [];
+    for (const [key, count] of Object.entries(patterns)) {
+      if (key.includes(`_h${hour}`) && count > 3) {
+        peakDocs.push(key.split('_h')[0].replace(/_/g, ' '));
+      }
+    }
+    if (peakDocs.length) {
+      tips.push(`📊 A esta hora sueles registrar: <strong>${peakDocs.slice(0,3).join(', ')}</strong>`);
+    }
+
+    // Top frequent plates
+    const topPlates = Object.entries(freqPlates).sort((a,b) => b[1] - a[1]).slice(0, 3);
+    if (topPlates.length >= 2) {
+      tips.push(`🚛 Vehículos frecuentes: <strong>${topPlates.map(([p]) => p).join(', ')}</strong>`);
+    }
+
+    // Ops velocity insight
+    const today = new Date().toLocaleDateString('es-CL');
+    const todayOps = ops.filter(o => o.fecha === today);
+    if (todayOps.length > 10) {
+      tips.push(`⚡ Ritmo alto hoy: <strong>${todayOps.length} operaciones</strong> registradas`);
+    }
+
+    if (!tips.length) { el.style.display = 'none'; return; }
+
+    el.innerHTML = `
+      <div style="background:rgba(79,143,247,.06);border:1px solid rgba(79,143,247,.2);border-radius:14px;padding:14px;margin-bottom:12px;">
+        <div style="font-weight:700;font-size:12px;color:var(--b);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+          💡 Sugerencias IA
+          <span style="font-size:9px;font-weight:600;background:rgba(79,143,247,.15);padding:2px 8px;border-radius:6px;">Aprendido</span>
+        </div>
+        ${tips.map(t => `<div style="font-size:12px;color:var(--fg2);padding:3px 0;">${t}</div>`).join('')}
+      </div>`;
+    el.style.display = 'block';
+  } catch(e) { el.style.display = 'none'; }
+}
+
+// ══════════════════════════════════════
+//  ASISTENTE IA — ZeroAI APP
+// ══════════════════════════════════════
+
+
+let _zpChatHistory = [];
+
+function renderIA() {
+  const msgs = document.getElementById('zpMsgs');
+  if (!msgs) return;
+  if (_zpChatHistory.length === 0) {
+    zpAddMsg('bot', '¡Hola! Soy el asistente IA de ZeroPaper 🤖\n\nPuedo buscar operaciones en tu historial, explicar términos portuarios o ayudarte con la app.\n\n¿Qué necesitas?');
+  } else {
+    msgs.innerHTML = '';
+    _zpChatHistory.forEach(m => zpRenderMsg(m.role, m.text));
+  }
+}
+
+function zpAddMsg(role, text) {
+  _zpChatHistory.push({ role, text });
+  zpRenderMsg(role, text);
+}
+
+function zpEscapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function zpRenderMsg(role, text) {
+  const msgs = document.getElementById('zpMsgs');
+  if (!msgs) return;
+  const d = document.createElement('div');
+  const isBot = role === 'bot';
+  d.style.cssText = `align-self:${isBot?'flex-start':'flex-end'};max-width:90%;background:${isBot?'var(--bg3)':'var(--g1)'};color:var(--fg);border-radius:${isBot?'4px 14px 14px 14px':'14px 14px 4px 14px'};padding:10px 14px;font-size:13px;line-height:1.6;white-space:pre-wrap;border:1px solid ${isBot?'var(--brd)':'transparent'}`;
+  d.innerHTML = zpEscapeHtml(text).replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/_(.*?)_/g,'<em>$1</em>');
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function zpSend() {
+  const inp = document.getElementById('zpInput');
+  const q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+  zpAsk(q);
+}
+
+async function zpAsk(q) {
+  zpAddMsg('user', q);
+  const ql = q.toLowerCase();
+
+  // ── 1. Búsqueda local por patente
+  const plateMatch = q.match(/\b([A-ZÁÉÍÓÚ]{2,4}[-·\s]?\d{2,4})\b/i);
+  if (plateMatch) { await zpSearchOps(plateMatch[1].toUpperCase()); return; }
+
+  // ── 2. Resumen local del día
+  if (ql.includes('hoy') || ql.includes('resumen') || (ql.includes('turno') && ql.includes('cuánto'))) {
+    await zpResumenHoy(); return;
+  }
+
+  // ── 3. Claude via /api/chat con streaming
+  await zpCallIA(q);
+}
+
+async function zpCallIA(q) {
+  const msgs = document.getElementById('zpMsgs');
+  if (!msgs) return;
+
+  // Historial para la API (últimos 8, sin el mensaje actual)
+  const history = _zpChatHistory.slice(-9, -1)
+    .filter(m => m.role === 'user' || m.role === 'bot')
+    .map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
+
+  // Contexto local resumido
+  let ctx = '';
+  try {
+    const ops = await dbGetAll('ops');
+    const hoy = new Date().toLocaleDateString('es-CL');
+    const todayCount = ops.filter(o => o.fecha === hoy).length;
+    ctx = ` [Contexto: ${ops.length} ops totales, ${todayCount} hoy]`;
+  } catch {}
+
+  const messages = [...history, { role: 'user', content: q + ctx }];
+
+  // Burbuja de streaming
+  const bubble = document.createElement('div');
+  bubble.style.cssText = `align-self:flex-start;max-width:90%;background:var(--bg3);color:var(--fg);border-radius:4px 14px 14px 14px;padding:10px 14px;font-size:13px;line-height:1.6;white-space:pre-wrap;border:1px solid var(--brd)`;
+  bubble.innerHTML = '<span style="opacity:.5">⏳ pensando...</span>';
+  msgs.appendChild(bubble);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  function render(text) {
+    const tmp = document.createElement('div');
+    tmp.textContent = text;
+    bubble.innerHTML = tmp.innerHTML
+      .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+      .replace(/_(.*?)_/g,'<em>$1</em>');
+  }
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages })
+    });
+
+    if (!res.ok) {
+      // Fallback: base de conocimiento local cuando no hay API key configurada
+      const respLocal = await zpKBLocal(q);
+      render(respLocal);
+      _zpChatHistory.push({ role: 'bot', text: respLocal });
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '', fullText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') break;
+        try {
+          const ev = JSON.parse(data);
+          if (ev.text)   { fullText += ev.text; render(fullText + '▋'); msgs.scrollTop = msgs.scrollHeight; }
+          if (ev.status) { bubble.innerHTML = `<span style="opacity:.6">${ev.status}</span>`; }
+          if (ev.error)  { render(ev.error); }
+        } catch {}
+      }
+    }
+    render(fullText || '...');
+    _zpChatHistory.push({ role: 'bot', text: fullText });
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch {
+    render('Sin conexión. Intenta cuando tengas internet.');
+    _zpChatHistory.push({ role: 'bot', text: bubble.textContent });
+  }
+}
+
+async function zpSearchOps(term) {
+  zpAddMsg('bot', `🔍 Buscando "${term}" en el historial...`);
+  try {
+    const ops = await dbGetAll('ops');
+    const t = term.toLowerCase().replace(/[-·\s]/g,'');
+    const found = ops.filter(o => {
+      const fields = [o.plate,o.empresa,o.empresaNombre,o.folio,o.docType,o.operador,o.destinatario,o.conductor,o.contenedor,o.guia,o.sello,o.obs,o.depto,o.deptoNombre,o.fecha].filter(Boolean);
+      return fields.some(f => f.toString().toLowerCase().replace(/[-·\s]/g,'').includes(t));
+    }).sort((a,b) => (b.ts||0)-(a.ts||0)).slice(0,8);
+
+    if (!found.length) {
+      zpAddMsg('bot', `No encontré operaciones con "${term}".\n\nVerifica que el texto esté correcto o ve al **HISTORIAL** para buscar manualmente.`);
+      return;
+    }
+
+    const lines = found.map(o =>
+      `• **${o.tipo}** · ${o.plate||'?'} · ${(o.docType||'').replace(/_/g,' ')} · ${o.fecha||''} ${o.hora||''}\n  Empresa: ${o.empresaNombre||o.empresa||'—'} · Op: ${o.operador||'—'}${o.folio?' · Folio: '+o.folio:''}`
+    ).join('\n\n');
+
+    zpAddMsg('bot', `✅ ${found.length} operación(es) encontrada(s) para "${term}":\n\n${lines}\n\nVe al **HISTORIAL** para ver detalles y fotos.`);
+  } catch(e) {
+    zpAddMsg('bot', 'Error al acceder al historial. Intenta desde la pestaña HISTORIAL.');
+  }
+}
+
+async function zpResumenHoy() {
+  try {
+    const ops = await dbGetAll('ops');
+    const hoy = new Date().toLocaleDateString('es-CL');
+    const todayOps = ops.filter(o => o.fecha === hoy);
+    if (!todayOps.length) {
+      zpAddMsg('bot', `📅 **Hoy (${hoy})** no hay operaciones registradas aún.`);
+      return;
+    }
+    const ingresos = todayOps.filter(o=>o.tipo==='INGRESO').length;
+    const salidas  = todayOps.filter(o=>o.tipo==='SALIDA').length;
+    const conFoto  = todayOps.filter(o=>o.fotoIds?.length||o.fotoId).length;
+    const docs = {};
+    todayOps.forEach(o => { if(o.docType) docs[o.docType]=(docs[o.docType]||0)+1; });
+    const topDoc = Object.entries(docs).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([d,n])=>`${d.replace(/_/g,' ')} (${n})`).join(', ');
+    zpAddMsg('bot', `📅 **Resumen de hoy — ${hoy}**\n\n📥 Ingresos: **${ingresos}**\n📤 Salidas: **${salidas}**\n📷 Con foto: ${conFoto}\n📊 Total: **${todayOps.length}**\n\n📋 Documentos más registrados: ${topDoc||'—'}`);
+  } catch(e) {
+    zpAddMsg('bot', 'No pude cargar el resumen. Intenta de nuevo.');
+  }
+}
+
+function zpClearChat() {
+  _zpChatHistory = [];
+  const msgs = document.getElementById('zpMsgs');
+  if (msgs) msgs.innerHTML = '';
+  zpAddMsg('bot', '¡Hola de nuevo! ¿En qué puedo ayudarte?');
+}
+
+
+// ══════════════════════════════════════
+//  INICIO DE APP
+// ══════════════════════════════════════
+
+function iniciarApp() {
+  document.getElementById('loginScreen').style.display    = 'none';
+  document.getElementById('registerScreen').style.display = 'none';
+  document.getElementById('app').style.display            = 'flex';
+  pintarLogoEmpresa();
+}
+
+// ── BASE DE CONOCIMIENTO LOCAL (funciona sin API key) ──
+async function zpKBLocal(q) {
+  const ql = q.toLowerCase();
+  const kb = [
+    { k:['eir','equipment interchange'],
+      r:'**EIR (Equipment Interchange Receipt)** — Documento que registra el intercambio de contenedores vacíos. Incluye: número de contenedor, estado físico, sellos, transportista y responsables. Se registra en ZeroPaper bajo el departamento de Control.' },
+    { k:['dam','declaracion aduanas'],
+      r:'**DAM (Declaración de Aduanas de Mercancía)** — Documento oficial de aduana para importación/exportación. En ZeroPaper se registra como tipo de documento en Control de Puertas junto con el número de folio y patente del camión.' },
+    { k:['dus','declaracion unica'],
+      r:'**DUS (Declaración Única de Salida)** — Documento de aduana para exportaciones. Registra la salida de mercancía del país. Se adjunta foto del documento al momento del registro en ZeroPaper.' },
+    { k:['booking','reserva'],
+      r:'**Booking** — Reserva de espacio en buque o bodega. Contiene número de booking, naviera, fecha de zarpe y descripción de carga. Se registra en el departamento de Control en ZeroPaper.' },
+    { k:['conocimiento','bill of lading','bl'],
+      r:'**Conocimiento de Embarque (Bill of Lading)** — Documento que acredita la recepción de la carga a bordo del buque. Funciona como contrato de transporte y título de propiedad de la mercancía.' },
+    { k:['intercheck','gate in','gate out'],
+      r:'**Gate In/Out e Intercheck** — Registros de entrada y salida de contenedores en terminal. El Intercheck verifica el estado del contenedor. Ambos se registran fotográficamente en ZeroPaper.' },
+    { k:['instalar','install','pwa','agregar inicio'],
+      r:'**Instalar ZeroPaper™:**\n• **Android:** Chrome → menú ⋮ → "Instalar app" o "Agregar a pantalla de inicio"\n• **iPhone/iPad:** Safari → botón compartir ↑ → "Agregar a pantalla de inicio"\n• **PC/Mac:** Chrome → icono 📲 en la barra de dirección\n\nUna vez instalada, el acceso queda en tu pantalla de inicio.' },
+    { k:['no sincroniza','sin conexion','offline','no guarda'],
+      r:'**Problema de sincronización:**\n1. Verifica que tengas internet activo\n2. Fuerza recarga: Cmd+Shift+R (Mac) o Ctrl+Shift+R (Windows)\n3. En Configuración → Datos → Sincronizar\n4. Si persiste: cierra sesión, vuelve a entrar\n\nZeroPaper guarda localmente aunque estés sin internet y sincroniza al recuperar conexión.' },
+    { k:['ocr','leer documento','no lee','foto'],
+      r:'**Para mejor lectura OCR:**\n• Buena iluminación (sin sombras ni reflejos)\n• Foto enfocada y sin movimiento\n• Documento plano, sin arrugas\n• Encuadra solo el documento en la foto\n\nEl OCR funciona mejor con documentos impresos. Para documentos manuscritos, ingresa los datos manualmente.' },
+    { k:['patente','buscar','folio','encontrar'],
+      r:'Para buscar una operación escríbeme directamente la **patente** (ej: AB-CD-12) o el **número de folio** y la busco en la base de datos local.' },
+    { k:['turno','cerrar turno','traspaso'],
+      r:'**Cierre de turno:**\nVe a la pestaña **TURNO** → escribe notas para el próximo operador → botón "Cerrar turno y traspasar". El siguiente operador verá las novedades al iniciar su turno.' },
+    { k:['agregar departamento','nuevo depto','crear departamento'],
+      r:'**Agregar departamento:**\nVe a la pestaña **DEPTOS** → "+ Agregar depto". Elige nombre, ícono y tipo (Control de Puertas o Gestión Documental). También puedes agregar tipos de documento específicos para ese departamento.' },
+    { k:['logo','empresa','imagen','marca'],
+      r:'**Logo de empresa:**\nVe a **Config (⚙)** → IDENTIDAD DE EMPRESA → "Subir logo". El logo aparece en la barra superior. ZeroPaper™ se mantiene como marca secundaria inamovible. Formatos: JPG, PNG. Máx 600KB.' },
+    { k:['exportar','excel','csv','reporte','informe'],
+      r:'**Exportar datos:**\n• Desde la app: Config → Datos → "Exportar CSV"\n• Desde el panel Admin (/admin): Exportar por rango de fechas\n• El archivo incluye: fecha, hora, tipo, patente, documento, operador, estado\n\nAbrir en Excel: Datos → Desde texto/CSV → UTF-8.' },
+    { k:['contraseña','password','clave','no puedo entrar'],
+      r:'**Problemas de acceso:**\n1. Verifica el correo exacto (sin espacios)\n2. La contraseña tiene mínimo 8 caracteres\n3. Prueba Ctrl+Shift+R para limpiar caché\n4. Si olvidaste la clave, contacta al administrador de tu empresa' },
+    { k:['admin','administrador','panel'],
+      r:'**Panel Admin (/admin):**\n• Ver todas las operaciones de la empresa\n• Aprobar o rechazar operaciones pendientes\n• Exportar reportes CSV\n• Gestionar usuarios y departamentos\n• Ver estadísticas en tiempo real\n\nAccede desde Config → "Abrir Panel Admin" o directamente en /admin' },
+  ];
+
+  for (const item of kb) {
+    if (item.k.some(kw => ql.includes(kw))) return item.r;
+  }
+
+  // Respuesta genérica con información del sistema
+  return `Soy el asistente local de ZeroPaper™. Puedo ayudarte con:\n\n• **Documentos:** EIR, DAM, DUS, Booking, Conocimiento de Embarque\n• **Operaciones:** buscar por patente o folio, resumen del día\n• **Sistema:** instalación, sincronización, exportar datos, departamentos\n• **Turnos:** cierre, traspaso, novedades\n\nEscribe tu consulta y te respondo. Para buscar una operación específica, escribe la **patente** o **folio** directamente.`;
+}
+
+async function init() {
+  // Tema + font
+  const tema = localStorage.getItem(K_TEMA);
+  if (tema && tema!=='oscuro') document.documentElement.setAttribute('data-theme', tema);
+  const font = localStorage.getItem('zp5_font');
+  if (font) {
+    const scale = +font === 14 ? 0.88 : +font === 18 ? 1.13 : 1.0;
+    const appEl = document.getElementById('app');
+    if (appEl) appEl.style.zoom = scale;
+  }
+
+  // DB
+  await initDB();
+
+  // Cargar deptos
+  cargarDeptos();
+
+  // Sesión
+  loadSession();
+
+  if (session) {
+    // Verificar que el token no esté muy expirado
+    if (Date.now() > session.expiresAt + 7 * 24 * 3600 * 1000) {
+      doLogout(); return;
+    }
+    iniciarApp();
+    await renderHome();
+    turnoInicio = localStorage.getItem(K_TURNO);
+    if (!turnoInicio) {
+      turnoInicio = new Date().toISOString();
+      localStorage.setItem(K_TURNO, turnoInicio);
+    }
+    // Sincronizar deptos y arrancar polling de estados
+    sincronizarDeptos();
+    startPolling();
+  } else {
+    showLogin();
+  }
+
+  // Events
+  checkOnline();
+  window.addEventListener('online',  checkOnline);
+  window.addEventListener('offline', checkOnline);
+
+  // Enter en login
+  document.getElementById('loginPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  document.getElementById('loginEmail').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('loginPass').focus();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// ═══════════════════════════════════════════
+//  ZEROPAPER™ — PROTECCIÓN DE SISTEMA
+//  © 2026 ZeroPaper™. Todos los derechos reservados.
+//  Uso no autorizado está prohibido por ley.
+// ═══════════════════════════════════════════
+(function() {
+  'use strict';
+
+  // ── 1. Anti-DevTools / Anti-inspección ──
+  document.addEventListener('keydown', function(e) {
+    const c = e.ctrlKey || e.metaKey, s = e.shiftKey, k = (e.key||'').toUpperCase();
+    if (e.key === 'F12')                         { e.preventDefault(); e.stopPropagation(); return false; }
+    if (c && s && ['I','J','C','K'].includes(k)) { e.preventDefault(); e.stopPropagation(); return false; }
+    if (c && k === 'U')                          { e.preventDefault(); e.stopPropagation(); return false; }
+    if (c && k === 'S')                          { e.preventDefault(); e.stopPropagation(); return false; }
+    if (c && k === 'P' && !s)                    { e.preventDefault(); e.stopPropagation(); return false; }
+  }, true);
+
+  // ── 2. Anti-clic derecho ──
+  document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; }, true);
+
+  // ── 3. Anti-selección de texto en elementos de la app ──
+  document.addEventListener('selectstart', function(e) {
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') e.preventDefault();
+  });
+
+  // ── 4. Console anti-debug ──
+  const _warn = '%c⛔ ZeroPaper™ — Sistema Protegido\n%c© 2026 ZeroPaper™. Todos los derechos reservados.\nAcceso no autorizado puede ser sancionado por la ley.';
+  setInterval(function() { console.clear(); console.log(_warn,'color:#ef4444;font-size:15px;font-weight:bold','color:#94a3b8;font-size:11px'); }, 3000);
+
+  // ── 5. Fingerprint de licencia ──
+  Object.defineProperty(window, '__ZP', { value: Object.freeze({ v:'2.0', owner:'ZeroPaper™', year:2026 }), writable:false, configurable:false });
+
+  // ── 6. PWA-Only Gate: solo funciona instalada ──
+  const isPWA = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true
+    || document.referrer.includes('android-app://');
+
+  if (!isPWA) {
+    let _deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); _deferredPrompt = e; });
+
+    const gate = document.createElement('div');
+    gate.id = 'zp-pwa-gate';
+    gate.style.cssText = `position:fixed;inset:0;background:#061a0a;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;font-family:'Inter',sans-serif;`;
+    gate.innerHTML = `
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:88px;height:88px;margin-bottom:20px">
+        <defs><linearGradient id="eco3" x1="6" y1="2" x2="58" y2="62" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#052e16"/><stop offset="55%" stop-color="#15803d"/><stop offset="100%" stop-color="#16a34a"/></linearGradient></defs>
+        <polygon points="32,3 58,17 58,47 32,61 6,47 6,17" fill="url(#eco3)" stroke="#4ade80" stroke-width="1.5"/>
+        <rect x="20" y="14" width="24" height="30" rx="3" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.9)" stroke-width="1.8"/>
+        <line x1="25" y1="22" x2="39" y2="22" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="25" y1="28" x2="39" y2="28" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="25" y1="34" x2="33" y2="34" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="46" cy="47" r="11" fill="#22c55e" stroke="#052e16" stroke-width="2"/>
+        <path d="M46,38 C39,40 37,52 46,55 C55,52 53,40 46,38Z" fill="#052e16" opacity="0.85"/>
+        <path d="M46,38 C41,41 40,51 46,55 C52,51 51,41 46,38Z" fill="#86efac" opacity="0.5"/>
+        <line x1="46" y1="55" x2="46" y2="47" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <div style="color:#f0fff4;font-size:26px;font-weight:900;letter-spacing:-1px;margin-bottom:8px">ZeroPaper™</div>
+      <div style="color:#6ee7b7;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:3px;margin-bottom:28px">GESTIÓN PORTUARIA · ECO DIGITAL</div>
+      <div style="color:#d1fae5;font-size:16px;font-weight:600;margin-bottom:10px">Este sistema solo funciona<br>como aplicación instalada</div>
+      <div style="color:#6ee7b7;font-size:13px;margin-bottom:28px;line-height:1.6">Instala ZeroPaper™ en tu dispositivo<br>para acceder al sistema.</div>
+      <button id="zpInstallBtn" style="background:linear-gradient(135deg,#15803d,#22c55e);color:#fff;border:none;border-radius:14px;padding:18px 32px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.5px;box-shadow:0 4px 20px rgba(34,197,94,.35);" onclick="zpInstalar()">
+        📲 Instalar ZeroPaper™
+      </button>
+      <div style="margin-top:16px;color:#6ee7b7;font-size:12px">iOS Safari: <strong style="color:#d1fae5">Compartir →</strong> Agregar a inicio<br>Android Chrome: menú <strong style="color:#d1fae5">⋮ → Instalar app</strong></div>
+    `;
+    document.body.appendChild(gate);
+
+    window.zpInstalar = function() {
+      if (_deferredPrompt) { _deferredPrompt.prompt(); }
+      else { showToast && showToast('📲','Instalar manualmente','Usa el menú del navegador → Instalar app / Agregar a inicio'); }
+    };
+  }
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     ZeroPaper™ — WHITE-LABEL + SCANNER OCR + ARCHIVADORES
+     Módulo de personalización multi-empresa e industria
+═══════════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+/* ════════════════════════════════════════════════════════════
+   MÓDULO 1: WHITE-LABEL — Carga y aplica branding de empresa
+════════════════════════════════════════════════════════════ */
+
+let _empresaConfig = null;
+let _scanner = { stream: null, mode: 'color', dir: 'in', detecting: false, detectLoop: null };
+
+// Carga config de empresa desde Firestore y aplica branding
+async function loadEmpresaConfig() {
+  if (!session?.empresaId) return;
+  try {
+    const url = `${FS_BASE()}/empresas/${session.empresaId}/config/branding`;
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const raw = await res.json();
+    if (!raw?.fields) return;
+    const f = raw.fields;
+    _empresaConfig = {
+      nombre:   f.nombre?.stringValue || session.empresaNombre || '',
+      industria:f.industria?.stringValue || '',
+      color1:   f.color1?.stringValue || '#22c55e',
+      color2:   f.color2?.stringValue || '#4ade80',
+      colorBg:  f.colorBg?.stringValue || '#061a0a',
+      logo:     f.logo?.stringValue || '',
+      codigo:   f.codigo?.stringValue || ''
+    };
+    applyBranding(_empresaConfig);
+  } catch(e) { /* usar defaults */ }
+}
+
+// Aplica colores y logo de la empresa en tiempo real
+function applyBranding(cfg) {
+  if (!cfg) return;
+  const root = document.documentElement;
+  root.style.setProperty('--g',    cfg.color1);
+  root.style.setProperty('--g1',   cfg.color1);
+  root.style.setProperty('--g2',   cfg.color1);
+  root.style.setProperty('--g3',   cfg.color2);
+  root.style.setProperty('--brand1', cfg.color1);
+  root.style.setProperty('--brand2', cfg.color2);
+  root.style.setProperty('--shadow-glow', `0 0 28px ${cfg.color1}44`);
+  root.style.setProperty('--glass', `${cfg.color1}12`);
+
+  // Logo en topbar
+  if (cfg.logo) {
+    const logoEls = document.querySelectorAll('.topbar-logo, #topbarLogo');
+    logoEls.forEach(el => {
+      if (el.tagName === 'IMG') el.src = cfg.logo;
+      else { el.innerHTML = `<img src="${cfg.logo}" style="height:32px;width:32px;object-fit:contain;border-radius:6px;">`; }
+    });
+  }
+
+  // Título de la empresa en topbar
+  if (cfg.nombre) {
+    const nameEls = document.querySelectorAll('.topbar-empresa-name, #topbarEmpresaNombre');
+    nameEls.forEach(el => { el.textContent = cfg.nombre; });
+  }
+
+  // Meta theme-color dinámica
+  const tc = document.querySelector('meta[name="theme-color"]');
+  if (tc) tc.setAttribute('content', cfg.colorBg || '#061a0a');
+
+  // Actualizar CSS custom props de safari status bar
+  root.style.setProperty('--bg', cfg.colorBg || '#061a0a');
+
+  showToast('🎨', cfg.nombre || 'Tu empresa', 'Identidad aplicada');
+}
+
+// Carga departamentos de empresa desde Firestore (override DEPTOS_DEFAULT)
+async function loadEmpresaDeptos() {
+  if (!session?.empresaId) return;
+  try {
+    const url = `${FS_BASE()}/empresas/${session.empresaId}/config/deptos`;
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const raw = await res.json();
+    if (!raw?.fields?.deptos?.arrayValue?.values) return;
+    const loaded = raw.fields.deptos.arrayValue.values.map(v => {
+      const f = v.mapValue.fields;
+      return {
+        id:     f.id?.stringValue || '',
+        nombre: f.name?.stringValue || '',
+        icon:   f.icon?.stringValue || '📋',
+        tipo:   f.tipo?.stringValue || 'documentos',
+        docs:   (f.docs?.arrayValue?.values || []).map(d => d.stringValue)
+      };
+    }).filter(d => d.id);
+    if (loaded.length > 0) {
+      deptos = loaded;
+      deptoActivo = loaded[0];
+      localStorage.setItem(K_DEPTOS, JSON.stringify(loaded));
+      actualizarSelectorDepto();
+    }
+  } catch(e) { /* usar default deptos */ }
+}
+
+/* ════════════════════════════════════════════════════════════
+   MÓDULO 2: SCANNER INTELIGENTE
+   Auto-crop · Image Enhancement · OCR local + API
+════════════════════════════════════════════════════════════ */
+
+// Abre el scanner modal con la cámara
+async function abrirScanner(dir) {
+  _scanner.dir = dir || 'in';
+  const modal = document.getElementById('scannerModal');
+  const video = document.getElementById('scannerVideo');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  try {
+    _scanner.stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width:{ideal:1920}, height:{ideal:1080} }
+    });
+    video.srcObject = _scanner.stream;
+    await video.play();
+    startDocumentDetection();
+  } catch(e) {
+    cerrarScanner();
+    // Fallback al input file
+    document.getElementById(dir === 'in' ? 'camIn' : 'camOut').click();
+  }
+}
+
+function cerrarScanner() {
+  const modal = document.getElementById('scannerModal');
+  modal.style.display = 'none';
+  document.body.style.overflow = '';
+  if (_scanner.detectLoop) { cancelAnimationFrame(_scanner.detectLoop); _scanner.detectLoop = null; }
+  if (_scanner.stream) { _scanner.stream.getTracks().forEach(t => t.stop()); _scanner.stream = null; }
+}
+
+function setScanMode(mode) {
+  _scanner.mode = mode;
+  document.querySelectorAll('.scanner-mode-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('smode_' + mode)?.classList.add('active');
+}
+
+// Loop de detección de bordes del documento
+function startDocumentDetection() {
+  const video = document.getElementById('scannerVideo');
+  const canvas = document.getElementById('scannerCanvas');
+  const guide = document.getElementById('scannerGuide');
+  const hint = document.getElementById('scannerHint');
+
+  function detect() {
+    if (!_scanner.stream) return;
+    if (video.readyState < 2) { _scanner.detectLoop = requestAnimationFrame(detect); return; }
+
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const detected = detectarDocumento(ctx, canvas.width, canvas.height);
+    if (detected) {
+      guide.classList.add('scanner-detected');
+      hint.textContent = '✓ Documento detectado — toca para capturar';
+      hint.style.color = '#4ade80';
+    } else {
+      guide.classList.remove('scanner-detected');
+      hint.textContent = 'Encuadra el documento en el recuadro';
+      hint.style.color = '#fff';
+    }
+
+    _scanner.detectLoop = requestAnimationFrame(detect);
+  }
+  detect();
+}
+
+// Detección de rectángulo de documento por análisis de bordes
+function detectarDocumento(ctx, w, h) {
+  const sample = ctx.getImageData(0, 0, w, h);
+  const d = sample.data;
+  let edgeCount = 0;
+  const step = 4; // sample every 4px for performance
+
+  for (let y = step; y < h - step; y += step) {
+    for (let x = step; x < w - step; x += step) {
+      const i = (y * w + x) * 4;
+      const gray = (d[i] + d[i+1] + d[i+2]) / 3;
+      const gray_right = (d[i+4] + d[i+5] + d[i+6]) / 3;
+      const gray_down  = (d[i + w*4] + d[i + w*4+1] + d[i + w*4+2]) / 3;
+      const gx = Math.abs(gray - gray_right);
+      const gy = Math.abs(gray - gray_down);
+      if (Math.sqrt(gx*gx + gy*gy) > 30) edgeCount++;
+    }
+  }
+
+  const totalSampled = (w / step) * (h / step);
+  const edgeRatio = edgeCount / totalSampled;
+  return edgeRatio > 0.05 && edgeRatio < 0.6; // 5-60% bordes = documento presente
+}
+
+// Captura imagen y procesa
+async function capturarDesdeScanner() {
+  const video = document.getElementById('scannerVideo');
+  const btn = document.getElementById('scannerCaptureBtn');
+  btn.textContent = '⏳';
+  btn.disabled = true;
+
+  // Crear canvas de alta resolución
+  const captureCanvas = document.createElement('canvas');
+  captureCanvas.width = video.videoWidth || 1280;
+  captureCanvas.height = video.videoHeight || 720;
+  const ctx = captureCanvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, captureCanvas.width, captureCanvas.height);
+
+  // Procesar imagen según el modo
+  const processedCanvas = procesarImagen(captureCanvas, _scanner.mode);
+
+  // Convertir a blob
+  processedCanvas.toBlob(async (blob) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const fotoData = { data: e.target.result, ts: Date.now(), enhanced: true };
+      fotosDir[_scanner.dir].push(fotoData);
+      renderFotosZone(_scanner.dir);
+      cerrarScanner();
+      showToast('📷', 'Foto capturada', 'Analizando con IA...');
+      // Auto-run OCR
+      await runOCRLocal(_scanner.dir);
+    };
+    reader.readAsDataURL(blob);
+  }, 'image/jpeg', 0.92);
+
+  btn.textContent = '📸';
+  btn.disabled = false;
+}
+
+// Procesamiento de imagen (CamScanner-style)
+function procesarImagen(sourceCanvas, mode) {
+  const canvas = document.createElement('canvas');
+  canvas.width = sourceCanvas.width;
+  canvas.height = sourceCanvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(sourceCanvas, 0, 0);
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d = imageData.data;
+  const len = d.length;
+
+  if (mode === 'bw') {
+    // Blanco y negro con threshold adaptativo
+    for (let i = 0; i < len; i += 4) {
+      const gray = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
+      const val = gray > 128 ? 255 : 0;
+      d[i] = d[i+1] = d[i+2] = val;
+    }
+  } else if (mode === 'enhance') {
+    // Mejora contraste tipo CamScanner
+    // 1. Grayscale detection for brightness normalization
+    let totalBrightness = 0;
+    for (let i = 0; i < len; i += 4) {
+      totalBrightness += 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
+    }
+    const avgBrightness = totalBrightness / (len / 4);
+    const brightnessFactor = 128 / Math.max(avgBrightness, 1);
+
+    // 2. Aplicar corrección de brillo + contraste fuerte
+    const contrast = 1.5;
+    const brightness = brightnessFactor * 0.8;
+    for (let i = 0; i < len; i += 4) {
+      d[i]   = Math.min(255, Math.max(0, contrast * d[i]   * brightness - (contrast - 1) * 128));
+      d[i+1] = Math.min(255, Math.max(0, contrast * d[i+1] * brightness - (contrast - 1) * 128));
+      d[i+2] = Math.min(255, Math.max(0, contrast * d[i+2] * brightness - (contrast - 1) * 128));
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    // 3. Sharpen pass
+    const sharpened = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const sd = sharpened.data;
+    const w = canvas.width;
+    // Simple 3x3 sharpen kernel: [0,-1,0,-1,5,-1,0,-1,0]
+    for (let y = 1; y < canvas.height - 1; y++) {
+      for (let x = 1; x < canvas.width - 1; x++) {
+        const idx = (y * w + x) * 4;
+        for (let c = 0; c < 3; c++) {
+          const v = 5 * d[idx+c]
+            - d[((y-1)*w+x)*4+c]
+            - d[((y+1)*w+x)*4+c]
+            - d[(y*w+(x-1))*4+c]
+            - d[(y*w+(x+1))*4+c];
+          sd[idx+c] = Math.min(255, Math.max(0, v));
+        }
+        sd[idx+3] = 255;
+      }
+    }
+    ctx.putImageData(sharpened, 0, 0);
+    return canvas;
+  } else {
+    // Color — solo ajuste suave de contraste
+    const factor = 1.15;
+    const intercept = 128 * (1 - factor);
+    for (let i = 0; i < len; i += 4) {
+      d[i]   = Math.min(255, Math.max(0, factor * d[i]   + intercept));
+      d[i+1] = Math.min(255, Math.max(0, factor * d[i+1] + intercept));
+      d[i+2] = Math.min(255, Math.max(0, factor * d[i+2] + intercept));
+    }
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
+// OCR LOCAL con Tesseract.js (fallback cuando /api/ocr no disponible)
+async function runOCRLocal(dir) {
+  const fotos = fotosDir[dir];
+  if (!fotos || fotos.length === 0) return;
+
+  const btn = document.getElementById('ocrBtn_' + dir);
+  const resultEl = document.getElementById('ocrResult_' + dir);
+
+  if (btn) { btn.innerHTML = '<span>⏳</span> <span>Analizando con IA...</span>'; btn.disabled = true; }
+
+  // Mostrar barra de progreso
+  if (resultEl) {
+    resultEl.innerHTML = `
+      <div class="ocr-progress visible">
+        <div style="font-size:12px;font-weight:700;color:var(--g2);margin-bottom:6px;">🧠 Procesando documento...</div>
+        <div class="ocr-bar-wrap"><div class="ocr-bar" id="ocrBarFill" style="width:10%"></div></div>
+        <div class="ocr-status" id="ocrStatus">Cargando motor OCR...</div>
+      </div>`;
+    resultEl.style.display = 'block';
+  }
+
+  const updateProgress = (pct, msg) => {
+    const bar = document.getElementById('ocrBarFill');
+    const status = document.getElementById('ocrStatus');
+    if (bar) bar.style.width = pct + '%';
+    if (status) status.textContent = msg;
+  };
+
+  // Primero intenta API
+  try {
+    updateProgress(20, 'Enviando a servidor...');
+    const res = await fetch('/api/ocr', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: fotos[0].data })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (!data.error) {
+        updateProgress(100, '✓ Completado');
+        mostrarResultadoOCR(dir, data, 'api');
+        return;
+      }
+    }
+  } catch(e) { /* API no disponible, usar Tesseract local */ }
+
+  // OCR LOCAL con Tesseract.js
+  try {
+    updateProgress(30, 'Iniciando motor OCR local...');
+    if (typeof Tesseract === 'undefined') throw new Error('Tesseract no disponible');
+
+    const { data: { text } } = await Tesseract.recognize(
+      fotos[0].data,
+      'spa+eng', // Español + Inglés
+      {
+        logger: m => {
+          if (m.status === 'recognizing text') updateProgress(30 + Math.round(m.progress * 60), `Reconociendo texto ${Math.round(m.progress*100)}%...`);
+          else if (m.status === 'loading tesseract core') updateProgress(35, 'Cargando motor...');
+          else if (m.status === 'initializing api') updateProgress(40, 'Inicializando...');
+        }
+      }
+    );
+
+    updateProgress(95, 'Analizando campos...');
+    const parsed = parsearTextoOCR(text, dir);
+    updateProgress(100, '✓ Análisis completado');
+    mostrarResultadoOCR(dir, parsed, 'local');
+
+  } catch(e) {
+    if (resultEl) {
+      resultEl.innerHTML = `<div style="font-size:12px;color:var(--mu);padding:10px;">⚠ OCR no disponible. Completa los campos manualmente.</div>`;
+    }
+    if (btn) { btn.innerHTML = '<span>🧠</span> <span>Reintentar</span>'; btn.disabled = false; }
+  }
+}
+
+// Parsear texto crudo de OCR y extraer campos estructurados
+function parsearTextoOCR(text, dir) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 1);
+  const fullText = text.toUpperCase();
+
+  // Detectar tipo de documento
+  let tipoDocumento = '';
+  const docPatterns = [
+    { key: 'FACTURA', re: /FACTURA\s*(ELECTR[ÓO]NICA)?|N°?\s*FACTURA/i },
+    { key: 'GUIA_DESPACHO', re: /GU[ÍI]A\s*DE?\s*DESPACHO|GUIA\s*DESPACHO/i },
+    { key: 'ORDEN_COMPRA', re: /ORDEN\s*DE?\s*COMPRA|O\.C\./i },
+    { key: 'NOTA_CREDITO', re: /NOTA\s*DE?\s*CR[EÉ]DITO|N\.C\./i },
+    { key: 'NOTA_DEBITO', re: /NOTA\s*DE?\s*D[EÉ]BITO|N\.D\./i },
+    { key: 'BOLETA', re: /BOLETA\s*(ELECTR[ÓO]NICA)?|N°?\s*BOLETA/i },
+    { key: 'CONTRATO', re: /CONTRATO\s*DE?\s*(TRABAJO|PRESTACI[ÓO]N|COMPRA)/i },
+    { key: 'RECIBO', re: /RECIBO|COMPROBANTE\s*DE?\s*PAGO/i },
+    { key: 'MANIFIESTO', re: /MANIFIESTO/i },
+    { key: 'EIR', re: /\bEIR\b|EQUIPMENT\s*INTERCHANGE/i },
+    { key: 'CERTIFICADO', re: /CERTIFICADO/i },
+    { key: 'LIQUIDACION', re: /LIQUIDACI[ÓO]N/i },
+    { key: 'FINIQUITO', re: /FINIQUITO/i },
+    { key: 'PRESUPUESTO', re: /PRESUPUESTO/i },
+    { key: 'COTIZACION', re: /COTIZACI[ÓO]N/i }
+  ];
+  for (const p of docPatterns) {
+    if (p.re.test(text)) { tipoDocumento = p.key; break; }
+  }
+
+  // Extraer número de folio / correlativo
+  let folio = '';
+  const folioPatterns = [
+    /(?:N[°ºo]|FOLIO|N[UÚ]MERO)\s*:?\s*(\d{4,8})/i,
+    /\bFOLIO:?\s*(\d{4,8})\b/i,
+    /\b(\d{6,8})\b/ // número largo como último recurso
+  ];
+  for (const fp of folioPatterns) {
+    const m = text.match(fp);
+    if (m) { folio = m[1]; break; }
+  }
+
+  // Extraer RUT/NIF (formato chileno: XX.XXX.XXX-X)
+  let rut = '';
+  const rutMatch = text.match(/\d{1,2}\.\d{3}\.\d{3}[-]\d{1}[kK]?|\d{7,8}[-]\d{1}[kK]?/);
+  if (rutMatch) rut = rutMatch[0];
+
+  // Extraer razón social / empresa
+  let empresa = '';
+  const empPatterns = [
+    /(?:EMPRESA|RAZÓN\s*SOCIAL|CLIENTE|PROVEEDOR)\s*:?\s*([A-ZÁÉÍÓÚÑ][A-Za-záéíóúñ\s&.,]+(?:S\.A\.|SpA|LTDA\.|E\.I\.R\.L\.)?)/i
+  ];
+  for (const ep of empPatterns) {
+    const m = text.match(ep);
+    if (m) { empresa = m[1].trim(); break; }
+  }
+
+  // Extraer monto / total
+  let monto = '';
+  const montoMatch = text.match(/(?:TOTAL|NETO|BRUTO)\s*:?\s*\$?\s*([\d.,]+)/i);
+  if (montoMatch) monto = montoMatch[1];
+
+  // Extraer fecha
+  let fecha = '';
+  const fechaMatch = text.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})|(\d{1,2}\s+(?:de\s+)?(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+(?:de\s+)?\d{4})/i);
+  if (fechaMatch) fecha = fechaMatch[0];
+
+  // Detectar si fue escrito a mano (heurística: pocas palabras reconocidas correctamente)
+  const wordCount = lines.join(' ').split(/\s+/).length;
+  const escritoAMano = wordCount < 20 && text.length < 200;
+
+  // Auto-fill de campos si hay depto activo
+  const pre = dir === 'in' ? 'in' : 'out';
+  let filled = [];
+
+  if (folio) {
+    const folioEl = document.getElementById(pre + 'Folio');
+    if (folioEl && !folioEl.value) { folioEl.value = folio; folioEl.style.borderColor = 'var(--g2)'; filled.push('Folio'); }
+  }
+  if (tipoDocumento) {
+    const docEl = document.getElementById(pre + 'DocType');
+    if (docEl) {
+      const opts = Array.from(docEl.options);
+      const match = opts.find(o => o.value === tipoDocumento || o.value.includes(tipoDocumento));
+      if (match) { docEl.value = match.value; docEl.style.borderColor = 'var(--g2)'; filled.push('Tipo doc'); }
+    }
+  }
+  if (empresa) {
+    const empEl = document.getElementById(pre + 'Empresa') || document.getElementById(pre + 'Plate');
+    if (empEl && !empEl.value) { empEl.value = empresa; empEl.style.borderColor = 'var(--g2)'; filled.push('Empresa'); }
+  }
+
+  return {
+    tipoDocumento, folio, rut, empresa, monto, fecha, escritoAMano,
+    textoCompleto: text.slice(0, 500),
+    filled,
+    confianza: {
+      tipoDocumento: tipoDocumento ? 0.85 : 0,
+      folio: folio ? 0.80 : 0,
+      empresa: empresa ? 0.70 : 0
+    }
+  };
+}
+
+// Muestra resultado del OCR en el formulario
+function mostrarResultadoOCR(dir, data, source) {
+  const resultEl = document.getElementById('ocrResult_' + dir);
+  const btn = document.getElementById('ocrBtn_' + dir);
+
+  if (!resultEl) return;
+
+  const confBadge = (val) => {
+    const v = val || 0;
+    const color = v >= 0.8 ? '#4ade80' : v >= 0.5 ? '#fbbf24' : '#f87171';
+    const label = v >= 0.8 ? 'Alta' : v >= 0.5 ? 'Media' : 'Baja';
+    return `<span style="color:${color};font-size:10px;font-weight:700">${label} ${Math.round(v*100)}%</span>`;
+  };
+
+  const filled = data.filled || [];
+  const c = data.confianza || {};
+  const sourceLabel = source === 'local' ? '🔌 OCR local' : '☁️ IA cloud';
+
+  resultEl.innerHTML = `
+    <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:14px;padding:14px;">
+      <div style="font-weight:700;font-size:13px;color:var(--g2);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:6px;">
+        <span>✨ IA detectó ${filled.length} campo${filled.length!==1?'s':''}</span>
+        <span style="font-size:10px;background:rgba(34,197,94,.15);color:var(--g2);padding:2px 8px;border-radius:6px;">${sourceLabel}</span>
+      </div>
+      ${data.escritoAMano ? '<span style="font-size:10px;background:rgba(245,197,66,.15);color:#f5c542;padding:2px 8px;border-radius:6px;display:inline-block;margin-bottom:6px;">✍ Posiblemente escrito a mano</span>' : ''}
+      ${data.tipoDocumento ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(34,197,94,.1)"><span>Documento: <strong>${data.tipoDocumento.replace(/_/g,' ')}</strong></span>${confBadge(c.tipoDocumento)}</div>` : ''}
+      ${data.folio ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(34,197,94,.1)"><span>Folio: <strong>${data.folio}</strong></span>${confBadge(c.folio)}</div>` : ''}
+      ${data.empresa ? `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(34,197,94,.1)"><span>Empresa: <strong>${data.empresa.slice(0,30)}</strong></span>${confBadge(c.empresa)}</div>` : ''}
+      ${data.monto ? `<div style="padding:4px 0;font-size:12px;border-bottom:1px solid rgba(34,197,94,.1)">Monto: <strong>$${data.monto}</strong></div>` : ''}
+      ${data.fecha ? `<div style="padding:4px 0;font-size:12px;border-bottom:1px solid rgba(34,197,94,.1)">Fecha: <strong>${data.fecha}</strong></div>` : ''}
+      ${data.rut ? `<div style="padding:4px 0;font-size:12px;">RUT: <strong>${data.rut}</strong></div>` : ''}
+      ${filled.length === 0 ? '<div style="font-size:11px;color:var(--mu);margin-top:6px;">No se detectaron campos. Rellena manualmente.</div>' : ''}
+    </div>`;
+  resultEl.style.display = 'block';
+
+  if (btn) { btn.innerHTML = '<span>✅</span> <span>Documento analizado</span>'; btn.disabled = false; }
+  showToast('🧠', 'Documento leído', filled.length ? `Detectado: ${filled.join(', ')}` : 'Sin campos detectados');
+}
+
+/* ════════════════════════════════════════════════════════════
+   MÓDULO 3: ARCHIVADORES DIGITALES
+   Carpetas por departamento + búsqueda + visor
+════════════════════════════════════════════════════════════ */
+
+let _archCurrentFolder = null; // null = vista raíz de deptos
+
+async function renderArchivos() {
+  const content = document.getElementById('archContent');
+  const titulo = document.getElementById('archTitulo');
+  const breadcrumb = document.getElementById('archBreadcrumb');
+  const btnNuevo = document.getElementById('archBtnNuevo');
+
+  if (!session) { content.innerHTML = '<div class="empty"><div class="empty-i">🔒</div><div class="empty-t">Inicia sesión para ver archivos</div></div>'; return; }
+
+  if (!_archCurrentFolder) {
+    // Vista raíz: carpetas = departamentos
+    titulo.textContent = '🗂 ARCHIVADORES';
+    btnNuevo.style.display = 'none';
+    breadcrumb.innerHTML = '<span style="color:var(--mu);font-family:var(--mono);">📁 Todos los archivadores</span>';
+
+    // Cargar estadísticas por depto
+    content.innerHTML = '<div style="color:var(--mu);font-size:12px;font-family:var(--mono);margin-bottom:8px;">Cargando...</div>';
+
+    let allOps = [];
+    try { allOps = await getOpsEmpresa(); } catch(e) {}
+
+    const allDeptos = [...deptos];
+    const deptoStats = {};
+    allOps.forEach(op => {
+      const d = op.depto || op.deptoId || 'general';
+      if (!deptoStats[d]) deptoStats[d] = { count: 0, hasPhoto: 0 };
+      deptoStats[d].count++;
+      if (op.fotos?.length > 0) deptoStats[d].hasPhoto++;
+    });
+
+    const gridHtml = allDeptos.map(d => {
+      const stats = deptoStats[d.id] || { count: 0, hasPhoto: 0 };
+      const fillPct = Math.min(100, stats.count * 3);
+      return `
+        <div class="arch-folder" onclick="abrirArchivoFolder('${d.id}')">
+          <div class="arch-folder-icon">${d.icon}</div>
+          <div class="arch-folder-name">${d.nombre}</div>
+          <div class="arch-folder-count">${stats.count} doc${stats.count !== 1 ? 's' : ''} · ${stats.hasPhoto} con foto</div>
+          <div class="arch-folder-bar"><div class="arch-folder-bar-fill" style="width:${fillPct}%"></div></div>
+        </div>`;
+    }).join('');
+
+    // Añadir carpeta "Todo" y "Sin clasificar"
+    const totalOps = allOps.length;
+    content.innerHTML = `
+      <div class="arch-grid">
+        <div class="arch-folder" onclick="abrirArchivoFolder('__TODOS__')" style="border-color:var(--g);background:rgba(34,197,94,.05);">
+          <div class="arch-folder-icon">📚</div>
+          <div class="arch-folder-name">Todos los documentos</div>
+          <div class="arch-folder-count">${totalOps} en total</div>
+          <div class="arch-folder-bar"><div class="arch-folder-bar-fill" style="width:${Math.min(100,totalOps)}%"></div></div>
+        </div>
+        ${gridHtml}
+      </div>`;
+
+  } else {
+    // Vista de carpeta: listar documentos del depto
+    const depto = deptos.find(d => d.id === _archCurrentFolder) || { nombre: 'Todos', icon: '📚', id: '__TODOS__' };
+    titulo.textContent = `${depto.icon} ${depto.nombre}`;
+    btnNuevo.style.display = '';
+    breadcrumb.innerHTML = `
+      <span class="arch-breadcrumb-item" onclick="volverArchivoRoot()">📁 Archivadores</span>
+      <span class="arch-breadcrumb-sep">›</span>
+      <span style="color:var(--fg2)">${depto.icon} ${depto.nombre}</span>`;
+
+    content.innerHTML = '<div style="color:var(--mu);font-size:12px;font-family:var(--mono);">Cargando...</div>';
+
+    let ops = [];
+    try {
+      const all = await getOpsEmpresa();
+      ops = _archCurrentFolder === '__TODOS__' ? all : all.filter(o => (o.depto || o.deptoId) === _archCurrentFolder);
+      ops.sort((a, b) => b.ts - a.ts);
+    } catch(e) {}
+
+    if (ops.length === 0) {
+      content.innerHTML = `<div class="empty"><div class="empty-i">${depto.icon}</div><div class="empty-t">Sin documentos en este archivador</div></div>`;
+      return;
+    }
+
+    content.innerHTML = ops.map(op => {
+      const primerFoto = op.fotos?.[0] || null;
+      const fecha = new Date(op.ts).toLocaleDateString('es-CL', { day:'2-digit', month:'short', year:'numeric' });
+      const docType = (op.tipodoc || op.tipo || op.docType || '').replace(/_/g,' ');
+      return `
+        <div class="arch-doc-item" onclick="archVerDetalle('${op.id}')">
+          ${primerFoto
+            ? `<img class="arch-doc-thumb" src="${primerFoto}" alt="doc" loading="lazy">`
+            : `<div class="arch-doc-thumb-placeholder">${depto.icon}</div>`}
+          <div class="arch-doc-info">
+            <div class="arch-doc-name">${op.placa || op.patente || op.folio || op.id}</div>
+            <div class="arch-doc-meta">${fecha} · ${op.operador || 'Sin operador'}</div>
+            ${docType ? `<div class="arch-doc-type">${docType}</div>` : ''}
+          </div>
+          <span style="color:var(--mu);font-size:18px;">›</span>
+        </div>`;
+    }).join('');
+  }
+}
+
+function abrirArchivoFolder(id) {
+  _archCurrentFolder = id;
+  renderArchivos();
+}
+
+function volverArchivoRoot() {
+  _archCurrentFolder = null;
+  renderArchivos();
+}
+
+async function archVerDetalle(opId) {
+  let op = null;
+  try {
+    const all = await getOpsEmpresa();
+    op = all.find(o => o.id === opId);
+  } catch(e) {}
+  if (!op) return;
+  // Reusar modal de historial existente
+  verDetalleOp && verDetalleOp(op);
+}
+
+function archNuevaCarpeta() {
+  goTo('ingreso');
+}
+
+function archFiltrar(q) {
+  if (!q.trim()) { renderArchivos(); return; }
+  const term = q.toLowerCase();
+  const items = document.querySelectorAll('.arch-doc-item');
+  items.forEach(item => {
+    const text = item.textContent.toLowerCase();
+    item.style.display = text.includes(term) ? '' : 'none';
+  });
+}
+
+/* ════════════════════════════════════════════════════════════
+   MÓDULO 4: CONFIGURAR EMPRESA (botón en Config)
+════════════════════════════════════════════════════════════ */
+
+function irAConfigEmpresa() {
+  window.location.href = '/config';
+}
+
+/* ════════════════════════════════════════════════════════════
+   INTEGRACIÓN: Llamar loadEmpresaConfig al iniciar la app
+════════════════════════════════════════════════════════════ */
+
+// Patch iniciarApp para agregar carga de config
+const _origIniciarApp = typeof iniciarApp === 'function' ? iniciarApp : null;
+if (_origIniciarApp) {
+  window.iniciarApp = function() {
+    _origIniciarApp();
+    // Cargar config de empresa en paralelo
+    loadEmpresaConfig().then(() => loadEmpresaDeptos()).catch(() => {});
+  };
+}
+
+// Patch foto buttons para usar scanner inteligente cuando está disponible
+document.addEventListener('DOMContentLoaded', () => {
+  // Si hay un botón de foto, interceptar para ofrecer scanner
+  ['camIn', 'camOut'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('click', (e) => {
+      // Solo usa scanner en dispositivos con cámara
+      if (navigator.mediaDevices?.getUserMedia) {
+        const dir = id === 'camIn' ? 'in' : 'out';
+        e.preventDefault();
+        abrirScanner(dir);
+      }
+      // Si no hay getUserMedia, usa el input file normal
+    });
+  });
+
+  // Agregar botón de Config Empresa en la vista Config
+  const configView = document.getElementById('vConfig');
+  if (configView) {
+    const btn = document.createElement('button');
+    btn.className = 'btn-prime btn-green';
+    btn.style.cssText = 'width:100%;margin-bottom:8px;margin-top:12px;';
+    btn.innerHTML = '🎨 Personalizar mi empresa';
+    btn.onclick = irAConfigEmpresa;
+    const firstSection = configView.querySelector('.card');
+    if (firstSection) firstSection.insertAdjacentElement('afterbegin', btn);
+  }
+});
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  });
+}
+</script>
+
+<!-- ZeroPaper™ Soporte IA Widget -->
+<div id="zp-support-btn" onclick="window.open('https://wa.me/56995854721','_blank')" title="Soporte WhatsApp"
+  style="position:fixed;bottom:24px;right:24px;z-index:190;width:52px;height:52px;border-radius:50%;
+  background:#1B4332;color:white;font-size:22px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 4px 20px rgba(27,67,50,0.35);transition:transform .2s,box-shadow .2s"
+  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(27,67,50,0.5)'"
+  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(27,67,50,0.35)'">💬</div>
+<div style="position:fixed;bottom:82px;right:18px;z-index:189;background:#1B4332;color:white;
+  font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;white-space:nowrap;
+  pointer-events:none;opacity:0;transition:opacity .3s" id="zp-support-tooltip">Soporte WhatsApp</div>
+<script>
+(function(){
+  const btn = document.getElementById('zp-support-btn');
+  const tip = document.getElementById('zp-support-tooltip');
+  setTimeout(()=>{ tip.style.opacity='1'; setTimeout(()=>tip.style.opacity='0', 3000); }, 2000);
+  btn.addEventListener('mouseover',()=>tip.style.opacity='1');
+  btn.addEventListener('mouseout',()=>tip.style.opacity='0');
+})();
+</script>
+</body>
+</html>
