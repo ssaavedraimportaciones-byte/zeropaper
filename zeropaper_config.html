@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZeroPaper™ — Configurar Empresa</title>
+<meta name="theme-color" content="#061a0a">
+<link rel="manifest" href="/manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#061a0a; --bg2:#0a2010; --bg3:#0f2d16;
+  --fg:#f0fff4; --fg2:#d1fae5; --mu:#6ee7b7; --brd:rgba(74,222,128,.13);
+  --g:#15803d; --g2:#22c55e; --g3:#4ade80;
+  --r:#ef4444; --o:#f59e0b; --b:#3b82f6;
+  --glass:rgba(34,197,94,.07); --glass-brd:rgba(74,222,128,.15);
+  --shadow:0 4px 24px rgba(0,0,0,.55);
+  --mono:'Space Mono',monospace;
+  --disp:'Inter',system-ui,sans-serif;
+  --radius:16px; --ease:cubic-bezier(.4,0,.2,1);
+  /* Dynamic brand overrides (applied via JS) */
+  --brand1:#22c55e; --brand2:#4ade80; --brand-bg:#061a0a;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--fg);font-family:var(--disp);min-height:100vh;}
+a{color:var(--g2);text-decoration:none;}
+
+/* ── HEADER ── */
+.cfg-header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(6,26,10,.95);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--brd);padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.cfg-logo{display:flex;align-items:center;gap:10px;}
+.cfg-logo-text{font-weight:800;font-size:20px;color:var(--g2);}
+.cfg-back{color:var(--mu);font-size:13px;cursor:pointer;font-family:var(--mono);}
+
+/* ── PROGRESS ── */
+.progress-wrap{background:var(--bg2);padding:20px;border-bottom:1px solid var(--brd);}
+.progress-steps{display:flex;gap:0;align-items:center;}
+.p-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;}
+.p-step::after{content:'';position:absolute;top:16px;left:calc(50% + 20px);right:calc(-50% + 20px);height:2px;background:var(--brd);}
+.p-step:last-child::after{display:none;}
+.p-dot{width:32px;height:32px;border-radius:50%;background:var(--bg3);border:2px solid var(--brd);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;transition:all .3s var(--ease);z-index:1;}
+.p-step.done .p-dot{background:var(--g2);border-color:var(--g2);color:#fff;}
+.p-step.active .p-dot{background:var(--g);border-color:var(--g2);color:#fff;box-shadow:0 0 12px rgba(34,197,94,.4);}
+.p-lbl{font-size:10px;color:var(--mu);font-family:var(--mono);letter-spacing:.5px;text-align:center;}
+.p-step.active .p-lbl{color:var(--g2);}
+
+/* ── CONTENT ── */
+.cfg-content{max-width:700px;margin:0 auto;padding:24px 20px 120px;}
+
+/* ── STEPS ── */
+.step{display:none;}
+.step.active{display:block;animation:fadeIn .3s var(--ease);}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.step-title{font-weight:800;font-size:24px;margin-bottom:6px;}
+.step-sub{color:var(--mu);font-size:14px;margin-bottom:28px;}
+
+/* ── FORM ELEMENTS ── */
+.field{margin-bottom:18px;}
+.flbl{display:block;font-size:12px;font-family:var(--mono);color:var(--mu);letter-spacing:.5px;margin-bottom:6px;text-transform:uppercase;}
+.finp{
+  width:100%;background:var(--bg2);border:1px solid var(--brd);border-radius:12px;
+  padding:14px 16px;color:var(--fg);font-size:15px;font-family:var(--disp);
+  transition:border-color .2s var(--ease);outline:none;
+}
+.finp:focus{border-color:var(--g2);box-shadow:0 0 0 3px rgba(34,197,94,.1);}
+.finp::placeholder{color:var(--mu);opacity:.6;}
+
+/* ── INDUSTRY GRID ── */
+.industry-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:20px;}
+.industry-card{
+  background:var(--bg2);border:2px solid var(--brd);border-radius:14px;
+  padding:16px 12px;cursor:pointer;text-align:center;
+  transition:all .2s var(--ease);
+}
+.industry-card:hover{border-color:var(--g);transform:translateY(-2px);}
+.industry-card.selected{border-color:var(--g2);background:rgba(34,197,94,.08);box-shadow:0 0 16px rgba(34,197,94,.2);}
+.industry-icon{font-size:32px;margin-bottom:8px;}
+.industry-name{font-size:12px;font-weight:700;color:var(--fg2);}
+.industry-desc{font-size:10px;color:var(--mu);margin-top:4px;line-height:1.4;}
+
+/* ── COLOR PICKER ── */
+.color-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+.color-pick{display:flex;flex-direction:column;gap:8px;align-items:center;}
+.color-pick-lbl{font-size:11px;font-family:var(--mono);color:var(--mu);letter-spacing:.5px;}
+.color-swatch{
+  width:56px;height:56px;border-radius:50%;border:3px solid var(--brd);
+  cursor:pointer;overflow:hidden;position:relative;transition:transform .2s;
+}
+.color-swatch:hover{transform:scale(1.1);}
+.color-swatch input[type=color]{
+  position:absolute;inset:-10px;width:calc(100% + 20px);height:calc(100% + 20px);
+  border:none;background:none;cursor:pointer;opacity:0;
+}
+.color-swatch-preview{width:100%;height:100%;pointer-events:none;}
+
+/* ── LOGO UPLOAD ── */
+.logo-upload-area{
+  border:2px dashed var(--brd);border-radius:16px;padding:32px;
+  text-align:center;cursor:pointer;transition:all .2s var(--ease);
+  background:var(--bg2);margin-bottom:20px;
+}
+.logo-upload-area:hover{border-color:var(--g2);background:rgba(34,197,94,.05);}
+.logo-upload-area.has-logo{border-style:solid;border-color:var(--g2);}
+.logo-preview{width:100px;height:100px;object-fit:contain;border-radius:12px;margin-bottom:8px;}
+.logo-placeholder{font-size:48px;margin-bottom:8px;}
+.logo-upload-text{font-size:14px;color:var(--mu);}
+.logo-upload-btn{
+  display:inline-block;margin-top:12px;padding:10px 20px;
+  background:rgba(34,197,94,.1);border:1px solid var(--g);border-radius:10px;
+  color:var(--g2);font-size:13px;font-weight:600;cursor:pointer;
+}
+
+/* ── PREVIEW CARD ── */
+.preview-wrap{
+  background:var(--bg3);border:1px solid var(--brd);border-radius:16px;
+  padding:16px;margin-bottom:20px;
+}
+.preview-title{font-size:11px;font-family:var(--mono);color:var(--mu);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;}
+.preview-phone{
+  background:#000;border-radius:20px;padding:16px 12px;margin:0 auto;
+  max-width:260px;box-shadow:0 8px 32px rgba(0,0,0,.6);
+  border:2px solid #333;
+}
+.preview-phone-inner{
+  background:var(--brand-bg);border-radius:12px;overflow:hidden;
+  min-height:120px;padding:10px;
+}
+.preview-topbar{
+  display:flex;align-items:center;gap:8px;padding:8px;
+  border-radius:8px;margin-bottom:8px;
+}
+.preview-logo-img{width:28px;height:28px;object-fit:contain;border-radius:6px;}
+.preview-logo-placeholder{
+  width:28px;height:28px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+}
+.preview-company-name{font-size:12px;font-weight:700;}
+.preview-btn{
+  padding:8px 12px;border-radius:8px;font-size:11px;font-weight:700;
+  display:inline-block;color:#fff;margin-top:8px;
+}
+
+/* ── DEPARTAMENTOS ── */
+.depto-list{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+.depto-item{
+  background:var(--bg2);border:1px solid var(--brd);border-radius:14px;
+  padding:14px;display:flex;align-items:center;gap:12px;
+  transition:all .2s var(--ease);
+}
+.depto-item:hover{border-color:var(--g);}
+.depto-item.disabled{opacity:.4;}
+.depto-icon{font-size:24px;width:40px;text-align:center;}
+.depto-info{flex:1;}
+.depto-name{font-weight:700;font-size:14px;}
+.depto-sub{font-size:11px;color:var(--mu);margin-top:2px;}
+.depto-toggle{
+  width:44px;height:24px;border-radius:12px;background:var(--brd);
+  position:relative;cursor:pointer;transition:background .2s;border:none;
+  flex-shrink:0;
+}
+.depto-toggle.on{background:var(--g2);}
+.depto-toggle::after{
+  content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;
+  border-radius:50%;background:#fff;transition:left .2s;
+}
+.depto-toggle.on::after{left:22px;}
+.depto-add{
+  display:flex;align-items:center;gap:10px;padding:12px;
+  border:1px dashed var(--brd);border-radius:12px;cursor:pointer;
+  color:var(--mu);font-size:13px;transition:all .2s var(--ease);
+}
+.depto-add:hover{border-color:var(--g);color:var(--g2);}
+
+/* ── CUSTOM DEPTO FORM ── */
+.custom-depto-form{
+  background:var(--bg2);border:1px solid var(--brd);border-radius:14px;
+  padding:16px;margin-top:10px;display:none;
+}
+.custom-depto-form.open{display:block;animation:fadeIn .2s var(--ease);}
+.emoji-grid{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;}
+.emoji-btn{
+  width:40px;height:40px;font-size:20px;border:2px solid var(--brd);
+  border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);transition:all .2s;
+}
+.emoji-btn.selected{border-color:var(--g2);background:rgba(34,197,94,.15);}
+
+/* ── DOC TAGS ── */
+.doc-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.doc-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);
+  border-radius:8px;padding:5px 10px;font-size:11px;color:var(--g2);font-family:var(--mono);
+}
+.doc-tag-remove{cursor:pointer;opacity:.7;font-size:14px;line-height:1;}
+.doc-tag-remove:hover{opacity:1;color:var(--r);}
+.doc-add-inp{
+  background:transparent;border:1px dashed var(--brd);border-radius:8px;
+  padding:5px 10px;font-size:11px;color:var(--fg);width:140px;outline:none;
+  font-family:var(--mono);
+}
+.doc-add-inp:focus{border-color:var(--g);outline:none;}
+
+/* ── SUMMARY ── */
+.summary-card{
+  background:var(--bg2);border:1px solid var(--brd);border-radius:16px;
+  padding:20px;margin-bottom:16px;
+}
+.summary-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--brd);}
+.summary-row:last-child{border-bottom:none;}
+.summary-key{font-size:12px;color:var(--mu);font-family:var(--mono);}
+.summary-val{font-size:14px;font-weight:600;}
+
+/* ── BUTTONS ── */
+.btn-row{display:flex;gap:12px;position:fixed;bottom:0;left:0;right:0;padding:16px 20px;background:rgba(6,26,10,.97);backdrop-filter:blur(20px);border-top:1px solid var(--brd);z-index:200;max-width:700px;margin:0 auto;}
+.btn-back{flex:1;padding:16px;border:1px solid var(--brd);border-radius:14px;background:transparent;color:var(--fg);font-size:15px;font-weight:600;cursor:pointer;}
+.btn-next{flex:2;padding:16px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--g),var(--g2));color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(34,197,94,.3);}
+.btn-next:disabled{opacity:.5;cursor:default;}
+.btn-save{flex:2;padding:16px;border:none;border-radius:14px;background:linear-gradient(135deg,var(--g),var(--g2));color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(34,197,94,.3);}
+
+/* ── SHARE CODE ── */
+.code-box{
+  background:var(--bg3);border:1px solid var(--brd);border-radius:12px;padding:16px;
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--mono);
+}
+.code-val{font-size:22px;font-weight:700;color:var(--g2);letter-spacing:4px;}
+.code-copy{
+  padding:8px 14px;background:rgba(34,197,94,.1);border:1px solid var(--g);
+  border-radius:8px;color:var(--g2);font-size:12px;font-weight:600;cursor:pointer;
+}
+.code-copy:hover{background:rgba(34,197,94,.2);}
+
+/* ── TOAST ── */
+#cfgToast{
+  position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#1a3020;border:1px solid var(--g);border-radius:12px;
+  padding:12px 20px;font-size:13px;color:var(--g2);opacity:0;transition:all .3s;
+  pointer-events:none;z-index:9999;white-space:nowrap;
+}
+#cfgToast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── PILLS / TAGS SELECT ── */
+.tag-select{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.tag-opt{
+  padding:6px 12px;border:1px solid var(--brd);border-radius:20px;
+  font-size:12px;color:var(--mu);cursor:pointer;transition:all .2s;
+}
+.tag-opt.on{background:rgba(34,197,94,.15);border-color:var(--g2);color:var(--g2);}
+.tag-opt:hover{border-color:var(--g);}
+
+/* ── INDUSTRY DESCRIPTION BOX ── */
+.industry-info{
+  background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:12px;
+  padding:14px;margin-bottom:20px;display:none;animation:fadeIn .3s;
+}
+.industry-info.visible{display:block;}
+.industry-info-name{font-weight:700;font-size:15px;color:var(--g2);margin-bottom:4px;}
+.industry-info-desc{font-size:12px;color:var(--mu);}
+
+/* ── SEPARADOR ── */
+.divider{height:1px;background:var(--brd);margin:20px 0;}
+
+input[type=file]{display:none;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="cfg-header">
+  <div class="cfg-logo">
+    <svg width="32" height="32" viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+      <rect width="192" height="192" rx="28" fill="#061a0a"/>
+      <polygon points="96,14 166,54 166,134 96,174 26,134 26,54" fill="#052e16" stroke="#4ade80" stroke-width="5"/>
+      <rect x="68" y="46" width="60" height="76" rx="7" fill="rgba(255,255,255,.09)" stroke="rgba(255,255,255,.88)" stroke-width="5"/>
+      <line x1="80" y1="70" x2="116" y2="70" stroke="white" stroke-width="4.5" stroke-linecap="round"/>
+      <line x1="80" y1="86" x2="116" y2="86" stroke="white" stroke-width="4.5" stroke-linecap="round"/>
+      <line x1="80" y1="102" x2="100" y2="102" stroke="white" stroke-width="4.5" stroke-linecap="round"/>
+      <circle cx="136" cy="134" r="28" fill="#22c55e" stroke="#052e16" stroke-width="5"/>
+      <path d="M136,108 C118,114 115,148 136,155 C157,148 154,114 136,108Z" fill="#052e16" opacity=".85"/>
+      <path d="M136,108 C124,116 123,147 136,155 C149,147 148,116 136,108Z" fill="#86efac" opacity=".5"/>
+      <line x1="136" y1="155" x2="136" y2="136" stroke="#4ade80" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+    <span class="cfg-logo-text">ZeroPaper™</span>
+  </div>
+  <span class="cfg-back" onclick="history.back()">← Volver</span>
+</header>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-steps">
+    <div class="p-step active" id="ps1"><div class="p-dot">1</div><div class="p-lbl">EMPRESA</div></div>
+    <div class="p-step" id="ps2"><div class="p-dot">2</div><div class="p-lbl">INDUSTRIA</div></div>
+    <div class="p-step" id="ps3"><div class="p-dot">3</div><div class="p-lbl">MARCA</div></div>
+    <div class="p-step" id="ps4"><div class="p-dot">4</div><div class="p-lbl">DEPTOS</div></div>
+    <div class="p-step" id="ps5"><div class="p-dot">✓</div><div class="p-lbl">LISTO</div></div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="cfg-content">
+
+  <!-- ══ STEP 1: DATOS EMPRESA ══ -->
+  <div class="step active" id="step1">
+    <h2 class="step-title">Tu empresa 🏢</h2>
+    <p class="step-sub">Estos datos aparecerán en la app y en los documentos generados.</p>
+
+    <div class="field">
+      <label class="flbl">Nombre de la empresa *</label>
+      <input class="finp" id="empNombre" placeholder="Ej: Transportes del Sur S.A." oninput="updatePreview()">
+    </div>
+    <div class="field">
+      <label class="flbl">RUT / RUC / NIF (opcional)</label>
+      <input class="finp" id="empRut" placeholder="12.345.678-9">
+    </div>
+    <div class="field">
+      <label class="flbl">Email de contacto</label>
+      <input class="finp" id="empEmail" type="email" placeholder="admin@empresa.cl">
+    </div>
+    <div class="field">
+      <label class="flbl">País / Región</label>
+      <select class="finp" id="empPais">
+        <option value="CL">🇨🇱 Chile</option>
+        <option value="AR">🇦🇷 Argentina</option>
+        <option value="PE">🇵🇪 Perú</option>
+        <option value="CO">🇨🇴 Colombia</option>
+        <option value="MX">🇲🇽 México</option>
+        <option value="ES">🇪🇸 España</option>
+        <option value="UY">🇺🇾 Uruguay</option>
+        <option value="BO">🇧🇴 Bolivia</option>
+        <option value="EC">🇪🇨 Ecuador</option>
+        <option value="VE">🇻🇪 Venezuela</option>
+        <option value="OTHER">🌎 Otro</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="flbl">Tamaño de la empresa</label>
+      <div class="tag-select" id="empTamaño">
+        <div class="tag-opt" data-v="micro" onclick="pickTag('empTamaño',this)">Micro (1-5)</div>
+        <div class="tag-opt on" data-v="pequena" onclick="pickTag('empTamaño',this)">Pequeña (6-20)</div>
+        <div class="tag-opt" data-v="mediana" onclick="pickTag('empTamaño',this)">Mediana (21-100)</div>
+        <div class="tag-opt" data-v="grande" onclick="pickTag('empTamaño',this)">Grande (+100)</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <p class="step-sub" style="font-size:12px;">💡 En el siguiente paso elige el tipo de industria para adaptar los departamentos, campos de formulario y tipos de documentos automáticamente.</p>
+  </div>
+
+  <!-- ══ STEP 2: INDUSTRIA ══ -->
+  <div class="step" id="step2">
+    <h2 class="step-title">Tipo de industria 🏭</h2>
+    <p class="step-sub">Elige la que más se parece a tu empresa. Podrás personalizar cada detalle después.</p>
+
+    <div class="industry-grid" id="industryGrid"></div>
+
+    <div class="industry-info" id="industryInfo">
+      <div class="industry-info-name" id="infoName"></div>
+      <div class="industry-info-desc" id="infoDesc"></div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 3: BRANDING ══ -->
+  <div class="step" id="step3">
+    <h2 class="step-title">Tu marca 🎨</h2>
+    <p class="step-sub">Sube tu logo y elige los colores. La app tomará la identidad de tu empresa al instante.</p>
+
+    <!-- Logo -->
+    <label class="flbl">Logo de la empresa</label>
+    <div class="logo-upload-area" id="logoArea" onclick="document.getElementById('logoInput').click()">
+      <div id="logoPlaceholder">
+        <div class="logo-placeholder">🖼</div>
+        <div class="logo-upload-text">Toca para subir tu logo</div>
+        <div class="logo-upload-text" style="font-size:11px;margin-top:4px;">PNG, JPG, SVG · Max 2MB</div>
+      </div>
+      <div id="logoPreview" style="display:none;text-align:center;">
+        <img id="logoImg" class="logo-preview" alt="Logo">
+        <div style="font-size:11px;color:var(--g2);margin-top:4px;">✓ Logo cargado</div>
+      </div>
+      <input type="file" id="logoInput" accept="image/*" onchange="handleLogo(this)">
+    </div>
+
+    <!-- Colores -->
+    <label class="flbl">Colores de tu marca</label>
+    <div class="color-row">
+      <div class="color-pick">
+        <div class="color-swatch" id="sw1" style="background:#22c55e">
+          <input type="color" id="c1" value="#22c55e" oninput="updateColors()">
+        </div>
+        <div class="color-pick-lbl">PRIMARIO</div>
+      </div>
+      <div class="color-pick">
+        <div class="color-swatch" id="sw2" style="background:#4ade80">
+          <input type="color" id="c2" value="#4ade80" oninput="updateColors()">
+        </div>
+        <div class="color-pick-lbl">ACENTO</div>
+      </div>
+      <div class="color-pick">
+        <div class="color-swatch" id="sw3" style="background:#061a0a">
+          <input type="color" id="c3" value="#061a0a" oninput="updateColors()">
+        </div>
+        <div class="color-pick-lbl">FONDO</div>
+      </div>
+    </div>
+
+    <!-- Paletas predefinidas -->
+    <label class="flbl">Paletas predefinidas</label>
+    <div class="tag-select" id="palettePicker" style="margin-bottom:20px;"></div>
+
+    <!-- Preview -->
+    <div class="preview-wrap">
+      <div class="preview-title">📱 VISTA PREVIA DE LA APP</div>
+      <div class="preview-phone">
+        <div class="preview-phone-inner" id="previewInner">
+          <div class="preview-topbar" id="previewTopbar">
+            <div class="preview-logo-placeholder" id="previewLogoBox" style="background:var(--brand1);">🏢</div>
+            <div>
+              <div class="preview-company-name" id="previewCompanyName" style="color:#f0fff4;">Tu Empresa</div>
+              <div style="font-size:9px;color:rgba(255,255,255,.5);font-family:var(--mono);">POWERED BY ZEROPAPER</div>
+            </div>
+          </div>
+          <div style="background:rgba(255,255,255,.06);border-radius:8px;padding:8px;margin-bottom:6px;">
+            <div style="font-size:9px;color:rgba(255,255,255,.5);margin-bottom:4px;">ÚLTIMA OPERACIÓN</div>
+            <div style="font-size:12px;color:#fff;font-weight:700;">AB-CD-12 ↓ Ingreso</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.4);">Factura · hace 5 min</div>
+          </div>
+          <div id="previewBtn" class="preview-btn" style="background:var(--brand1);">+ Nuevo Registro</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ STEP 4: DEPARTAMENTOS ══ -->
+  <div class="step" id="step4">
+    <h2 class="step-title">Departamentos 🏢</h2>
+    <p class="step-sub">Activa los que usa tu empresa. Cada uno tiene su propio formulario y tipos de documentos.</p>
+
+    <div class="depto-list" id="deptoList"></div>
+
+    <div class="depto-add" onclick="toggleCustomDepto()">
+      <span style="font-size:20px;">＋</span>
+      <div>
+        <div style="font-weight:600;font-size:13px;">Agregar departamento personalizado</div>
+        <div style="font-size:11px;color:var(--mu);">Crea uno con tu nombre e ícono</div>
+      </div>
+    </div>
+
+    <div class="custom-depto-form" id="customDeptoForm">
+      <label class="flbl">Nombre del departamento</label>
+      <input class="finp" id="cdNombre" placeholder="Ej: Contabilidad, Gerencia, RRHH...">
+      <label class="flbl" style="margin-top:12px;">Ícono</label>
+      <div class="emoji-grid" id="emojiGrid"></div>
+      <label class="flbl" style="margin-top:12px;">Tipo de trabajo</label>
+      <div class="tag-select">
+        <div class="tag-opt on" data-v="acceso" onclick="pickTag('cdTipo',this)" id="cdTipo_acceso">Control de acceso</div>
+        <div class="tag-opt" data-v="documentos" onclick="pickTag('cdTipo',this)" id="cdTipo_documentos">Gestión documental</div>
+        <div class="tag-opt" data-v="mixto" onclick="pickTag('cdTipo',this)" id="cdTipo_mixto">Mixto</div>
+      </div>
+      <label class="flbl" style="margin-top:12px;">Tipos de documentos (Enter para agregar)</label>
+      <div class="doc-tags" id="cdDocTags"></div>
+      <input class="finp" id="cdDocInp" placeholder="FACTURA, CONTRATO, MEMO..." style="margin-top:8px;"
+        onkeydown="addDocTag(event)">
+      <button onclick="saveCustomDepto()" style="width:100%;margin-top:12px;padding:12px;background:linear-gradient(135deg,var(--g),var(--g2));border:none;border-radius:10px;color:#fff;font-weight:700;font-size:14px;cursor:pointer;">
+        ✓ Agregar Departamento
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ STEP 5: RESUMEN ══ -->
+  <div class="step" id="step5">
+    <h2 class="step-title">¡Todo listo! 🎉</h2>
+    <p class="step-sub">Revisa la configuración antes de guardar. Siempre podrás cambiarla después.</p>
+
+    <div class="summary-card" id="summaryCard"></div>
+
+    <label class="flbl">Código de empresa (para invitar operadores)</label>
+    <div class="code-box" style="margin-bottom:20px;">
+      <div>
+        <div style="font-size:10px;color:var(--mu);margin-bottom:4px;font-family:var(--mono);">COMPARTE ESTE CÓDIGO</div>
+        <div class="code-val" id="codigoDisplay">——————</div>
+      </div>
+      <button class="code-copy" onclick="copiarCodigo()">📋 Copiar</button>
+    </div>
+
+    <div class="summary-card" style="background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.3);">
+      <p style="font-size:13px;line-height:1.7;color:var(--fg2);">
+        ✅ <strong>La app adoptará tu identidad</strong> — logo, colores, nombre<br>
+        ✅ <strong>Tus operadores</strong> verán solo los departamentos activos<br>
+        ✅ <strong>Formularios adaptados</strong> a tu tipo de industria<br>
+        ✅ <strong>Archivadores digitales</strong> organizados por depto<br>
+        ✅ <strong>OCR inteligente</strong> reconoce tus documentos automáticamente
+      </p>
+    </div>
+  </div>
+
+</div><!-- fin cfg-content -->
+
+<!-- BOTONES FIJOS -->
+<div class="btn-row">
+  <button class="btn-back" id="btnBack" onclick="prevStep()" style="display:none;">← Atrás</button>
+  <button class="btn-next" id="btnNext" onclick="nextStep()">Siguiente →</button>
+  <button class="btn-save" id="btnSave" onclick="guardarConfig()" style="display:none;">💾 Guardar y activar</button>
+</div>
+
+<div id="cfgToast"></div>
+
+<script>
+'use strict';
+/* ════════════════════════════════════════
+   ZeroPaper™ — Configuración de Empresa
+   v1.0 | Multi-industria | White-label
+════════════════════════════════════════ */
+
+// ── Firebase ──
+const FB = { projectId:'zeropaper-prod', apiKey:'AIzaSyCli7F4hLi-XEmmekGZpO2KQ1SO612I85Y' };
+const FS = () => `https://firestore.googleapis.com/v1/projects/${FB.projectId}/databases/(default)/documents`;
+
+// ── Templates de Industria ──
+const INDUSTRIES = [
+  {
+    id:'puertos', name:'Puertos & Logística', icon:'⚓', color:'#22c55e', colorBg:'#061a0a',
+    desc:'Control de acceso portuario, documentación de embarques, tarja y reportes de contenedores.',
+    departments:[
+      {id:'porteria', name:'Portería / Control Acceso', icon:'🚪', tipo:'acceso',
+       docs:['GUIA_DESPACHO','FACTURA','NOTA_ENTREGA','ORDEN_COMPRA','PASE_SALIDA','CONTROL_ACCESO']},
+      {id:'bodega', name:'Bodega / Almacén', icon:'🏭', tipo:'documentos',
+       docs:['CONOCIMIENTO_EMBARQUE','MANIFIESTO','LISTA_EMPAQUE','ORDEN_CARGA','RECIBO_BODEGA','NOTA_COBRO']},
+      {id:'contenedores', name:'Contenedores', icon:'📦', tipo:'documentos',
+       docs:['EIR','BOOKING','INTERCHECK','GATE_IN','GATE_OUT','DAMAGE_REPORT','SEAL_REPORT','TARJA']},
+      {id:'administracion', name:'Administración', icon:'📋', tipo:'documentos',
+       docs:['CONTRATO','MEMO','CIRCULAR','INFORME','COTIZACION']}
+    ]
+  },
+  {
+    id:'legal', name:'Abogados & Legal', icon:'⚖️', color:'#3b82f6', colorBg:'#0a1628',
+    desc:'Gestión de expedientes, contratos, escrituras y documentos judiciales para estudios jurídicos.',
+    departments:[
+      {id:'civil', name:'Civil', icon:'📜', tipo:'documentos',
+       docs:['DEMANDA','CONTRATO','SENTENCIA','ESCRITURA','PODER_NOTARIAL','RECURSO']},
+      {id:'penal', name:'Penal', icon:'🔒', tipo:'documentos',
+       docs:['DENUNCIA','ACUSACION','SENTENCIA','ACTA','RECURSO_APELACION','OFICIO']},
+      {id:'laboral', name:'Laboral', icon:'👷', tipo:'documentos',
+       docs:['FINIQUITO','CONTRATO_TRABAJO','LIQUIDACION','CARTA_AVISO','DEMANDA_LABORAL']},
+      {id:'familia', name:'Familia', icon:'👨‍👩‍👧', tipo:'documentos',
+       docs:['ACTA_MATRIMONIO','DEMANDA_DIVORCIO','PENSION','CUSTODIA','PARTICION_BIENES']},
+      {id:'notarial', name:'Notarial / Registro', icon:'🏛', tipo:'documentos',
+       docs:['ESCRITURA_PUBLICA','PODER','PROTOCOLIZACION','HIPOTECA','TESTAMENTO']}
+    ]
+  },
+  {
+    id:'oficina', name:'Oficina & Administración', icon:'🏢', color:'#6366f1', colorBg:'#0f0f20',
+    desc:'Gestión documental para oficinas administrativas, RRHH y finanzas corporativas.',
+    departments:[
+      {id:'rrhh', name:'Recursos Humanos', icon:'👥', tipo:'documentos',
+       docs:['CONTRATO_TRABAJO','ANEXO_CONTRATO','EVALUACION','FINIQUITO','CARTA_AMONESTACION','VACACIONES']},
+      {id:'finanzas', name:'Finanzas & Contabilidad', icon:'💰', tipo:'documentos',
+       docs:['FACTURA','BOLETA','NOTA_DEBITO','NOTA_CREDITO','LIQUIDACION','BALANCE','IMPUESTO']},
+      {id:'operaciones', name:'Operaciones', icon:'⚙️', tipo:'documentos',
+       docs:['ORDEN_TRABAJO','INFORME','ACTA_REUNION','CIRCULAR','MEMO','REPORTE']},
+      {id:'gerencia', name:'Gerencia', icon:'🎯', tipo:'documentos',
+       docs:['ACTA_DIRECTORIO','INFORME_GESTION','PRESUPUESTO','PROYECTO','PROPUESTA']}
+    ]
+  },
+  {
+    id:'salud', name:'Salud & Clínica', icon:'🏥', color:'#06b6d4', colorBg:'#061618',
+    desc:'Ficha clínica, recetas, órdenes médicas y documentos para clínicas, hospitales y consultorios.',
+    departments:[
+      {id:'admision', name:'Admisión', icon:'🪑', tipo:'acceso',
+       docs:['FICHA_PACIENTE','ORDEN_MEDICA','VOUCHER','SEGURO','CONSENTIMIENTO']},
+      {id:'medico', name:'Médico / Consulta', icon:'🩺', tipo:'documentos',
+       docs:['RECETA','ORDEN_EXAMEN','INFORME_MEDICO','EPICRISIS','CERTIFICADO_MEDICO']},
+      {id:'laboratorio', name:'Laboratorio', icon:'🧪', tipo:'documentos',
+       docs:['SOLICITUD_EXAMEN','RESULTADO_EXAMEN','INFORME_LAB','MUESTRA']},
+      {id:'farmacia', name:'Farmacia', icon:'💊', tipo:'documentos',
+       docs:['RECETA','DESPACHO','CONTROL_STOCK','FACTURA','DEVOLUCIÓN']}
+    ]
+  },
+  {
+    id:'educacion', name:'Educación & Academia', icon:'🎓', color:'#8b5cf6', colorBg:'#0e0a1a',
+    desc:'Gestión documental para colegios, universidades e institutos.',
+    departments:[
+      {id:'secretaria', name:'Secretaría', icon:'📝', tipo:'documentos',
+       docs:['MATRICULA','CERTIFICADO_NOTAS','CONSTANCIA','DECRETO','CIRCULAR']},
+      {id:'direccion', name:'Dirección', icon:'🏫', tipo:'documentos',
+       docs:['ACTA_CONSEJO','INFORME','PROYECTO','MEMO','RESOLUCION']},
+      {id:'biblioteca', name:'Biblioteca', icon:'📚', tipo:'documentos',
+       docs:['PRESTAMO','DEVOLUCION','INVENTARIO','SOLICITUD','INFORME_MENSUAL']},
+      {id:'finanzas_edu', name:'Finanzas / Pagos', icon:'💳', tipo:'documentos',
+       docs:['BOLETA_PAGO','RECIBO','BECA','ARANCEL','CUOTA']}
+    ]
+  },
+  {
+    id:'retail', name:'Retail & Comercio', icon:'🏪', color:'#f59e0b', colorBg:'#1a1002',
+    desc:'Control de inventario, recepciones, despachos y documentación comercial.',
+    departments:[
+      {id:'caja', name:'Caja', icon:'💵', tipo:'acceso',
+       docs:['BOLETA','FACTURA','NOTA_CREDITO','VOUCHER_TARJETA','CIERRE_CAJA']},
+      {id:'bodega_r', name:'Bodega', icon:'📦', tipo:'documentos',
+       docs:['ORDEN_COMPRA','GUIA_DESPACHO','NOTA_ENTREGA','AJUSTE_INVENTARIO','DEVOLUCION']},
+      {id:'compras', name:'Compras', icon:'🛒', tipo:'documentos',
+       docs:['ORDEN_COMPRA','COTIZACION','FACTURA_PROVEEDOR','COMPARATIVO','CONTRATO_PROVEEDOR']}
+    ]
+  },
+  {
+    id:'construccion', name:'Construcción & Obras', icon:'🏗', color:'#f97316', colorBg:'#1a0c06',
+    desc:'Presupuestos, órdenes de trabajo, certificados de avance y documentación de obra.',
+    departments:[
+      {id:'obra', name:'Obra en Terreno', icon:'⛏', tipo:'documentos',
+       docs:['ORDEN_TRABAJO','PARTE_DIARIO','CERTIFICADO_AVANCE','PLANO','ACTA_ENTREGA']},
+      {id:'presupuesto', name:'Presupuesto', icon:'📊', tipo:'documentos',
+       docs:['COTIZACION','PRESUPUESTO','ADICIONAL','COMPARATIVO','CONTRATO']},
+      {id:'calidad', name:'Calidad & Seguridad', icon:'🪺', tipo:'documentos',
+       docs:['INSPECCION','PROTOCOLO','ACCIDENTE','CAPACITACION','CERTIFICADO']}
+    ]
+  },
+  {
+    id:'hoteleria', name:'Hotelería & Turismo', icon:'🏨', color:'#ec4899', colorBg:'#1a0614',
+    desc:'Check-in, reservas, facturas y documentos de alojamiento y servicios turísticos.',
+    departments:[
+      {id:'recepcion_h', name:'Recepción', icon:'🛎', tipo:'acceso',
+       docs:['RESERVA','CHECKIN','CHECKOUT','FACTURA','COMPROBANTE','VOUCHER_TOUR']},
+      {id:'reservas', name:'Reservas', icon:'📅', tipo:'documentos',
+       docs:['CONTRATO_GRUPO','COTIZACION_EVENTO','PROPUESTA','CONFIRMACION']},
+      {id:'administracion_h', name:'Administración', icon:'📋', tipo:'documentos',
+       docs:['INFORME_OCUPACION','BALANCE','CONTRATO_PROVEEDOR','MEMO']}
+    ]
+  },
+  {
+    id:'manufactura', name:'Manufactura & Fábrica', icon:'🏭', color:'#14b8a6', colorBg:'#061714',
+    desc:'Órdenes de producción, control de calidad, despacho y proveedores.',
+    departments:[
+      {id:'produccion', name:'Producción', icon:'⚙️', tipo:'documentos',
+       docs:['ORDEN_PRODUCCION','PARTE_PRODUCCION','MATERIA_PRIMA','CONTROL_CALIDAD','SCRAP']},
+      {id:'calidad_m', name:'Calidad', icon:'✅', tipo:'documentos',
+       docs:['CERTIFICADO_CALIDAD','INSPECCION','NO_CONFORMIDAD','ACCION_CORRECTIVA']},
+      {id:'despacho', name:'Despacho', icon:'🚛', tipo:'documentos',
+       docs:['GUIA_DESPACHO','FACTURA','NOTA_EMPAQUE','CONTROL_FLETE','DEVOLUCIÓN']}
+    ]
+  },
+  {
+    id:'contabilidad', name:'Contabilidad & Finanzas', icon:'📈', color:'#10b981', colorBg:'#061a10',
+    desc:'Procesamiento de facturas, balances, declaraciones de impuestos y auditorías.',
+    departments:[
+      {id:'contabilidad_d', name:'Contabilidad', icon:'📒', tipo:'documentos',
+       docs:['FACTURA','BOLETA','NOTA_DEBITO','NOTA_CREDITO','COMPROBANTE','CONCILIACION']},
+      {id:'impuestos', name:'Impuestos & SII', icon:'🏛', tipo:'documentos',
+       docs:['DECLARACION_IVA','F29','F22','LIBROS_IVA','RETENCION','IMPUESTO_RENTA']},
+      {id:'auditoria', name:'Auditoría', icon:'🔍', tipo:'documentos',
+       docs:['INFORME_AUDITORIA','BALANCE','ESTADO_RESULTADOS','FLUJO_CAJA','NOTAS']}
+    ]
+  }
+];
+
+const PALETTES = [
+  {name:'Eco Verde',   c1:'#22c55e', c2:'#4ade80', bg:'#061a0a'},
+  {name:'Océano',      c1:'#0891b2', c2:'#22d3ee', bg:'#061218'},
+  {name:'Marino',      c1:'#3b82f6', c2:'#60a5fa', bg:'#080f1e'},
+  {name:'Violeta',     c1:'#8b5cf6', c2:'#a78bfa', bg:'#0d0a1e'},
+  {name:'Rosa',        c1:'#ec4899', c2:'#f472b6', bg:'#1a0614'},
+  {name:'Ámbar',       c1:'#f59e0b', c2:'#fbbf24', bg:'#1a1002'},
+  {name:'Naranja',     c1:'#f97316', c2:'#fb923c', bg:'#1a0c06'},
+  {name:'Teal',        c1:'#14b8a6', c2:'#2dd4bf', bg:'#061614'},
+  {name:'Esmeralda',   c1:'#10b981', c2:'#34d399', bg:'#061210'},
+  {name:'Gris Pro',    c1:'#64748b', c2:'#94a3b8', bg:'#0f1015'}
+];
+
+const EMOJIS = ['🚪','📦','🏭','📋','💰','👥','⚙️','🎯','📊','🔍','📱','💼','🏢','📝','⚖️','🩺','💊','🧪','🎓','📚','🛎','🏗','🚛','📈','🔒','👷','🎨','🌐','💡','🔧'];
+
+// ── Estado ──
+let currentStep = 1;
+const TOTAL_STEPS = 5;
+let selectedIndustry = null;
+let logoData = null;
+let customDeptos = [];
+let selectedEmoji = '🏢';
+let cdDocTagsList = [];
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+  renderIndustryGrid();
+  renderPalettes();
+  renderEmojiGrid();
+  updateNavButtons();
+  // Cargar config existente si hay sesión
+  const s = JSON.parse(sessionStorage.getItem('zp_unified_session') || sessionStorage.getItem('zp5_session') || '{}');
+  if (s?.empresaId) loadExistingConfig(s.empresaId);
+});
+
+// ── Navigation ──
+function nextStep() {
+  if (!validateStep(currentStep)) return;
+  currentStep++;
+  showStep(currentStep);
+  updateNavButtons();
+  updateProgressBar();
+  if (currentStep === 4) buildDeptoList();
+  if (currentStep === 5) buildSummary();
+  window.scrollTo(0, 0);
+}
+
+function prevStep() {
+  currentStep--;
+  showStep(currentStep);
+  updateNavButtons();
+  updateProgressBar();
+  window.scrollTo(0, 0);
+}
+
+function showStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step' + n)?.classList.add('active');
+}
+
+function updateNavButtons() {
+  document.getElementById('btnBack').style.display = currentStep > 1 ? '' : 'none';
+  document.getElementById('btnNext').style.display = currentStep < TOTAL_STEPS ? '' : 'none';
+  document.getElementById('btnSave').style.display = currentStep === TOTAL_STEPS ? '' : 'none';
+}
+
+function updateProgressBar() {
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    const ps = document.getElementById('ps' + i);
+    ps.classList.remove('active', 'done');
+    if (i < currentStep) ps.classList.add('done');
+    if (i === currentStep) ps.classList.add('active');
+  }
+}
+
+// ── Validation ──
+function validateStep(step) {
+  if (step === 1) {
+    const nombre = document.getElementById('empNombre').value.trim();
+    if (!nombre) { toast('⚠ Ingresa el nombre de la empresa'); return false; }
+  }
+  if (step === 2) {
+    if (!selectedIndustry) { toast('⚠ Selecciona un tipo de industria'); return false; }
+  }
+  return true;
+}
+
+// ── Industry Grid ──
+function renderIndustryGrid() {
+  document.getElementById('industryGrid').innerHTML = INDUSTRIES.map(ind => `
+    <div class="industry-card" id="ic_${ind.id}" onclick="selectIndustry('${ind.id}')">
+      <div class="industry-icon">${ind.icon}</div>
+      <div class="industry-name">${ind.name}</div>
+      <div class="industry-desc">${ind.desc.slice(0,60)}...</div>
+    </div>`).join('');
+}
+
+function selectIndustry(id) {
+  document.querySelectorAll('.industry-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('ic_' + id)?.classList.add('selected');
+  selectedIndustry = INDUSTRIES.find(i => i.id === id);
+  // Show info box
+  document.getElementById('infoName').textContent = selectedIndustry.icon + ' ' + selectedIndustry.name;
+  document.getElementById('infoDesc').textContent = selectedIndustry.desc;
+  document.getElementById('industryInfo').classList.add('visible');
+  // Set matching color palette
+  const pal = PALETTES.find(p => p.c1 === selectedIndustry.color) || {c1:selectedIndustry.color, c2:selectedIndustry.color, bg:selectedIndustry.colorBg};
+  document.getElementById('c1').value = pal.c1;
+  document.getElementById('c2').value = pal.c2;
+  document.getElementById('c3').value = pal.bg;
+  updateColors();
+}
+
+// ── Palettes ──
+function renderPalettes() {
+  document.getElementById('palettePicker').innerHTML = PALETTES.map(p => `
+    <div class="tag-opt" onclick="applyPalette('${p.c1}','${p.c2}','${p.bg}')" style="display:flex;align-items:center;gap:6px;">
+      <span style="width:14px;height:14px;border-radius:50%;background:${p.c1};display:inline-block;"></span>
+      ${p.name}
+    </div>`).join('');
+}
+
+function applyPalette(c1, c2, bg) {
+  document.getElementById('c1').value = c1;
+  document.getElementById('c2').value = c2;
+  document.getElementById('c3').value = bg;
+  updateColors();
+}
+
+// ── Colors ──
+function updateColors() {
+  const c1 = document.getElementById('c1').value;
+  const c2 = document.getElementById('c2').value;
+  const bg = document.getElementById('c3').value;
+  document.getElementById('sw1').style.background = c1;
+  document.getElementById('sw2').style.background = c2;
+  document.getElementById('sw3').style.background = bg;
+  // Update CSS vars for preview
+  document.documentElement.style.setProperty('--brand1', c1);
+  document.documentElement.style.setProperty('--brand2', c2);
+  document.documentElement.style.setProperty('--brand-bg', bg);
+  // Update preview button
+  document.getElementById('previewBtn').style.background = c1;
+  document.getElementById('previewLogoBox').style.background = c1;
+  document.getElementById('previewInner').style.background = bg;
+  updatePreview();
+}
+
+// ── Logo ──
+function handleLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) { toast('⚠ Logo muy grande (máx 2MB)'); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    logoData = e.target.result;
+    document.getElementById('logoImg').src = logoData;
+    document.getElementById('logoPlaceholder').style.display = 'none';
+    document.getElementById('logoPreview').style.display = 'block';
+    document.getElementById('logoArea').classList.add('has-logo');
+    // Update preview
+    const pb = document.getElementById('previewLogoBox');
+    pb.innerHTML = `<img src="${logoData}" style="width:100%;height:100%;object-fit:contain;border-radius:6px;">`;
+    pb.style.background = 'transparent';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Preview ──
+function updatePreview() {
+  const nombre = document.getElementById('empNombre').value || 'Tu Empresa';
+  document.getElementById('previewCompanyName').textContent = nombre;
+}
+
+// ── Emoji Grid ──
+function renderEmojiGrid() {
+  document.getElementById('emojiGrid').innerHTML = EMOJIS.map(e => `
+    <button class="emoji-btn ${e === selectedEmoji ? 'selected' : ''}" onclick="selectEmoji('${e}')">${e}</button>`).join('');
+}
+
+function selectEmoji(e) {
+  selectedEmoji = e;
+  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.toggle('selected', b.textContent === e));
+}
+
+// ── Depto List ──
+function buildDeptoList() {
+  if (!selectedIndustry) return;
+  const list = document.getElementById('deptoList');
+  const allDeptos = [...selectedIndustry.departments, ...customDeptos];
+  list.innerHTML = allDeptos.map((d, i) => `
+    <div class="depto-item" id="di_${d.id}">
+      <div class="depto-icon">${d.icon}</div>
+      <div class="depto-info">
+        <div class="depto-name">${d.name}</div>
+        <div class="depto-sub">${d.docs?.slice(0,3).join(' · ') || ''}</div>
+      </div>
+      <button class="depto-toggle on" id="dt_${d.id}" onclick="toggleDepto('${d.id}')"></button>
+    </div>`).join('');
+}
+
+function toggleDepto(id) {
+  const btn = document.getElementById('dt_' + id);
+  const item = document.getElementById('di_' + id);
+  btn.classList.toggle('on');
+  item.classList.toggle('disabled');
+}
+
+function toggleCustomDepto() {
+  document.getElementById('customDeptoForm').classList.toggle('open');
+}
+
+function addDocTag(e) {
+  if (e.key !== 'Enter') return;
+  const val = e.target.value.trim().toUpperCase().replace(/\s+/g,'_');
+  if (!val || cdDocTagsList.includes(val)) return;
+  cdDocTagsList.push(val);
+  e.target.value = '';
+  renderCdDocTags();
+}
+
+function removeCdDocTag(val) {
+  cdDocTagsList = cdDocTagsList.filter(t => t !== val);
+  renderCdDocTags();
+}
+
+function renderCdDocTags() {
+  document.getElementById('cdDocTags').innerHTML = cdDocTagsList.map(t => `
+    <span class="doc-tag">${t} <span class="doc-tag-remove" onclick="removeCdDocTag('${t}')">✕</span></span>`).join('');
+}
+
+function saveCustomDepto() {
+  const nombre = document.getElementById('cdNombre').value.trim();
+  if (!nombre) { toast('⚠ Escribe el nombre del departamento'); return; }
+  const tipo = document.querySelector('[id^=cdTipo_].on')?.dataset.v || 'documentos';
+  const depto = {
+    id: 'custom_' + Date.now(),
+    name: nombre,
+    icon: selectedEmoji,
+    tipo,
+    docs: [...cdDocTagsList],
+    custom: true
+  };
+  customDeptos.push(depto);
+  document.getElementById('cdNombre').value = '';
+  cdDocTagsList = [];
+  renderCdDocTags();
+  document.getElementById('customDeptoForm').classList.remove('open');
+  buildDeptoList();
+  toast('✅ Departamento agregado');
+}
+
+// ── Tag picker ──
+function pickTag(groupId, el) {
+  document.getElementById(groupId)?.querySelectorAll('.tag-opt').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// ── Summary ──
+function buildSummary() {
+  const nombre = document.getElementById('empNombre').value || '—';
+  const industria = selectedIndustry?.name || '—';
+  const pais = document.getElementById('empPais').options[document.getElementById('empPais').selectedIndex]?.text || '—';
+  const tamano = document.querySelector('#empTamaño .on')?.textContent || '—';
+  const c1 = document.getElementById('c1').value;
+  const activeDeptos = selectedIndustry?.departments.filter(d =>
+    document.getElementById('dt_' + d.id)?.classList.contains('on')
+  ).length || selectedIndustry?.departments.length || 0;
+
+  const codigo = generateCode();
+  document.getElementById('codigoDisplay').textContent = codigo;
+  window._empCodigo = codigo;
+
+  document.getElementById('summaryCard').innerHTML = `
+    <div class="summary-row"><span class="summary-key">EMPRESA</span><span class="summary-val">${nombre}</span></div>
+    <div class="summary-row"><span class="summary-key">INDUSTRIA</span><span class="summary-val">${industria}</span></div>
+    <div class="summary-row"><span class="summary-key">PAÍS</span><span class="summary-val">${pais}</span></div>
+    <div class="summary-row"><span class="summary-key">TAMAÑO</span><span class="summary-val">${tamano}</span></div>
+    <div class="summary-row"><span class="summary-key">COLOR PRIMARIO</span><span class="summary-val" style="display:flex;align-items:center;gap:8px;"><span style="width:20px;height:20px;border-radius:50%;background:${c1};display:inline-block;"></span>${c1.toUpperCase()}</span></div>
+    <div class="summary-row"><span class="summary-key">LOGO</span><span class="summary-val">${logoData ? '✅ Cargado' : '⬜ Sin logo (usará icono)'}</span></div>
+    <div class="summary-row"><span class="summary-key">DEPARTAMENTOS</span><span class="summary-val">${activeDeptos} activos</span></div>`;
+}
+
+function generateCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length:6}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+}
+
+function copiarCodigo() {
+  const code = document.getElementById('codigoDisplay').textContent;
+  navigator.clipboard?.writeText(code).catch(()=>{});
+  toast('📋 Código copiado: ' + code);
+}
+
+// ── Load Existing Config ──
+async function loadExistingConfig(empresaId) {
+  try {
+    const res = await fetch(`${FS()}/empresas/${empresaId}/config/branding`);
+    const data = await res.json();
+    if (data?.fields) {
+      const f = data.fields;
+      if (f.color1?.stringValue) document.getElementById('c1').value = f.color1.stringValue;
+      if (f.color2?.stringValue) document.getElementById('c2').value = f.color2.stringValue;
+      if (f.colorBg?.stringValue) document.getElementById('c3').value = f.colorBg.stringValue;
+      if (f.logo?.stringValue) { logoData = f.logo.stringValue; }
+      if (f.industria?.stringValue) selectIndustry(f.industria.stringValue);
+      updateColors();
+    }
+  } catch(e) {}
+}
+
+// ── Save ──
+async function guardarConfig() {
+  const btn = document.getElementById('btnSave');
+  btn.textContent = '⏳ Guardando...'; btn.disabled = true;
+
+  const nombre = document.getElementById('empNombre').value.trim();
+  const rut    = document.getElementById('empRut').value.trim();
+  const email  = document.getElementById('empEmail').value.trim();
+  const pais   = document.getElementById('empPais').value;
+  const tamano = document.querySelector('#empTamaño .on')?.dataset.v || 'pequena';
+  const c1     = document.getElementById('c1').value;
+  const c2     = document.getElementById('c2').value;
+  const bg     = document.getElementById('c3').value;
+  const codigo = window._empCodigo || generateCode();
+
+  // Obtener deptos activos
+  const allDeptos = [...(selectedIndustry?.departments || []), ...customDeptos];
+  const activosDeptos = allDeptos.filter(d => document.getElementById('dt_' + d.id)?.classList.contains('on'));
+
+  // Sesión
+  const sess = JSON.parse(sessionStorage.getItem('zp5_session') || sessionStorage.getItem('zp_unified_session') || '{}');
+  const empresaId = sess?.empresaId || ('emp_' + Date.now());
+
+  const configData = {
+    fields: {
+      nombre:    { stringValue: nombre },
+      rut:       { stringValue: rut },
+      email:     { stringValue: email },
+      pais:      { stringValue: pais },
+      tamano:    { stringValue: tamano },
+      industria: { stringValue: selectedIndustry?.id || '' },
+      color1:    { stringValue: c1 },
+      color2:    { stringValue: c2 },
+      colorBg:   { stringValue: bg },
+      logo:      { stringValue: logoData || '' },
+      codigo:    { stringValue: codigo },
+      updatedAt: { integerValue: String(Date.now()) }
+    }
+  };
+
+  const deptosData = {
+    fields: {
+      deptos: { arrayValue: { values: activosDeptos.map(d => ({
+        mapValue: { fields: {
+          id:    { stringValue: d.id },
+          name:  { stringValue: d.name },
+          icon:  { stringValue: d.icon },
+          tipo:  { stringValue: d.tipo },
+          docs:  { arrayValue: { values: (d.docs || []).map(doc => ({ stringValue: doc })) } }
+        }}
+      })) }}
+    }
+  };
+
+  try {
+    await fsSet(`empresas/${empresaId}/config/branding`, configData);
+    await fsSet(`empresas/${empresaId}/config/deptos`, deptosData);
+    // Guardar código de empresa en doc raíz
+    await fsSet(`empresas/${empresaId}`, { fields: {
+      nombre: { stringValue: nombre },
+      codigo: { stringValue: codigo },
+      industria: { stringValue: selectedIndustry?.id || '' },
+      updatedAt: { integerValue: String(Date.now()) }
+    }});
+    toast('✅ Configuración guardada correctamente');
+    setTimeout(() => window.location.href = '/app', 1500);
+  } catch(e) {
+    toast('⚠ Error al guardar: ' + e.message);
+    btn.textContent = '💾 Guardar y activar'; btn.disabled = false;
+  }
+}
+
+// ── Firestore helpers ──
+async function fsSet(path, body) {
+  const url = `${FS()}/${path}`;
+  const r = await fetch(url, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+// ── Toast ──
+function toast(msg, dur=2500) {
+  const el = document.getElementById('cfgToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), dur);
+}
+</script>
+</body>
+</html>
